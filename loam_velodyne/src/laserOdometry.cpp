@@ -530,7 +530,7 @@ int main(int argc, char** argv)
             if (pointSearchCornerInd2[i] >= 0) {
               tripod1 = laserCloudCornerLast->points[pointSearchCornerInd1[i]];
               tripod2 = laserCloudCornerLast->points[pointSearchCornerInd2[i]];
-              	{
+
               float x0 = pointSel.x;//i
               float y0 = pointSel.y;
               float z0 = pointSel.z;
@@ -560,7 +560,7 @@ int main(int argc, char** argv)
                        + (y1 - y2)*((y0 - y1)*(z0 - z2) - (y0 - y2)*(z0 - z1))) / a012 / l12;
 
               float ld2 = a012 / l12;
-			  }
+
 				//just some model setting corresponding to math equation (2) & (3)
 				// as well as some jacobian settings
               pointProj = pointSel;
@@ -695,7 +695,7 @@ int main(int argc, char** argv)
               }
             }
           }
-
+			//corresponding edge points and planar points are found
           int pointSelNum = laserCloudOri->points.size();
           if (pointSelNum < 10) {
             continue;
@@ -767,9 +767,14 @@ int main(int argc, char** argv)
           cv::transpose(matA, matAt);
           matAtA = matAt * matA;
           matAtB = matAt * matB;
+		  //from all the points found, use least aquare method(L-M algorithm)
+		  //this is fot J(T)*J*delta = J(T)*b equation (2) in the pdf file
+		  // http://users.ics.forth.gr/~lourakis/levmar/levmar.pdf
+		  // and the matX is the delta
           cv::solve(matAtA, matAtB, matX, cv::DECOMP_QR);
 
           if (iterCount == 0) {
+		  	// first time set the parameter, maybe numda
             cv::Mat matE(1, 6, CV_32F, cv::Scalar::all(0));
             cv::Mat matV(6, 6, CV_32F, cv::Scalar::all(0));
             cv::Mat matV2(6, 6, CV_32F, cv::Scalar::all(0));
@@ -796,6 +801,7 @@ int main(int argc, char** argv)
             cv::Mat matX2(6, 1, CV_32F, cv::Scalar::all(0));
             matX.copyTo(matX2);
             matX = matP * matX2;
+			// equation (3) in the pdf file
           }
 
           //------- (bug fix: sometime the L-M optimization result matX contains NaN, which will break the whole node)
@@ -811,7 +817,7 @@ int main(int argc, char** argv)
             transform[4] += matX.at<float>(4, 0);
             transform[5] += matX.at<float>(5, 0);
           }
-          //-------
+          //the author fix a bug, the terminal just show the error, it's ok
 
 
           float deltaR = sqrt(
@@ -822,14 +828,18 @@ int main(int argc, char** argv)
                               pow(matX.at<float>(3, 0) * 100, 2) +
                               pow(matX.at<float>(4, 0) * 100, 2) +
                               pow(matX.at<float>(5, 0) * 100, 2));
-
+			// if it fail the test, quit the follow iterations
           if (deltaR < 0.1 && deltaT < 0.1) {
             break;
           }
         }
       }
 
+// T matrix update including translate and attitude updating
+
       float rx, ry, rz, tx, ty, tz;
+	  //the inside algorithm is kind of complicate, read it later
+	  //just translate updating, maybe easy
       AccumulateRotation(transformSum[0], transformSum[1], transformSum[2], 
                          -transform[0], -transform[1] * 1.05, -transform[2], rx, ry, rz);
 
@@ -843,13 +853,14 @@ int main(int argc, char** argv)
       float y2 = cos(rx) * y1 - sin(rx) * z1;
       float z2 = sin(rx) * y1 + cos(rx) * z1;
 
+		//attitude updating
       tx = transformSum[3] - (cos(ry) * x2 + sin(ry) * z2);
       ty = transformSum[4] - y2;
       tz = transformSum[5] - (-sin(ry) * x2 + cos(ry) * z2);
-
+		// if imu exist, complement it
       PluginIMURotation(rx, ry, rz, imuPitchStart, imuYawStart, imuRollStart, 
                         imuPitchLast, imuYawLast, imuRollLast, rx, ry, rz);
-
+		// now rx,ry,rz ... are new parameters
       transformSum[0] = rx;
       transformSum[1] = ry;
       transformSum[2] = rz;

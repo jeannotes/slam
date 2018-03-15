@@ -218,7 +218,9 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
     }
     return;
   }
-
+	//scanStartInd or the next index vector contains 
+	//points index corresponding to every angle(0 - 15)
+  	//from the first point to the last point(almost 28800)
   std::vector<int> scanStartInd(N_SCANS, 0);
   std::vector<int> scanEndInd(N_SCANS, 0);
   
@@ -247,12 +249,14 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
     point.x = laserCloudIn.points[i].y;
     point.y = laserCloudIn.points[i].z;
     point.z = laserCloudIn.points[i].x;
-
+	// it just change the xyz, doesn't matter
+	// so when computing orientation and pitch , it is the same
+	// pay attention
     float angle = atan(point.y / sqrt(point.x * point.x + point.z * point.z)) * 180 / M_PI;
     int scanID;
     int roundedAngle = int(angle + (angle<0.0?-0.5:+0.5)); 
   // 7.5 - 8.4 --> 8
-  // just for convience 
+  // just for convience , not sure
     if (roundedAngle > 0){
       scanID = roundedAngle;
     }
@@ -263,7 +267,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
       count--;
       continue;
     }
-
+	//didn't understand
     float ori = -atan2(point.x, point.z);
     if (!halfPassed) {
       if (ori < startOri - M_PI / 2) {
@@ -380,6 +384,8 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
                 + laserCloud->points[i + 1].z + laserCloud->points[i + 2].z
                 + laserCloud->points[i + 3].z + laserCloud->points[i + 4].z
                 + laserCloud->points[i + 5].z;
+	//start with the fifth point , 
+	//compute curvature using previous and next 5 points
     cloudCurvature[i] = diffX * diffX + diffY * diffY + diffZ * diffZ;
     cloudSortInd[i] = i;
     cloudNeighborPicked[i] = 0;
@@ -410,7 +416,6 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
     float diff = diffX * diffX + diffY * diffY + diffZ * diffZ;
 
     if (diff > 0.1) {
-
       float depth1 = sqrt(laserCloud->points[i].x * laserCloud->points[i].x + 
                      laserCloud->points[i].y * laserCloud->points[i].y +
                      laserCloud->points[i].z * laserCloud->points[i].z);
@@ -424,6 +429,10 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
         diffY = laserCloud->points[i + 1].y - laserCloud->points[i].y * depth2 / depth1;
         diffZ = laserCloud->points[i + 1].z - laserCloud->points[i].z * depth2 / depth1;
 
+		//these are condition (b)
+		//and it has two condition
+		//one: this point is far away from the next point
+		//another:the point is far away from previous one
         if (sqrt(diffX * diffX + diffY * diffY + diffZ * diffZ) / depth2 < 0.1) {
           cloudNeighborPicked[i - 5] = 1;
           cloudNeighborPicked[i - 4] = 1;
@@ -432,6 +441,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
           cloudNeighborPicked[i - 1] = 1;
           cloudNeighborPicked[i] = 1;
         }
+		//do not use previous 5 points
       } else {
         diffX = laserCloud->points[i + 1].x * depth1 / depth2 - laserCloud->points[i].x;
         diffY = laserCloud->points[i + 1].y * depth1 / depth2 - laserCloud->points[i].y;
@@ -445,6 +455,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
           cloudNeighborPicked[i + 5] = 1;
           cloudNeighborPicked[i + 6] = 1;
         }
+		//do not use previous 5 points
       }
     }
 
@@ -460,20 +471,22 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
     if (diff > 0.0002 * dis && diff2 > 0.0002 * dis) {
       cloudNeighborPicked[i] = 1;
     }
+	//this is condition a (B) in the thesis
   }
-
-
+	//get rid of some bad points, and then choose other points
   pcl::PointCloud<PointType> cornerPointsSharp;
   pcl::PointCloud<PointType> cornerPointsLessSharp;
   pcl::PointCloud<PointType> surfPointsFlat;
   pcl::PointCloud<PointType> surfPointsLessFlat;
-
+  for (int i = 0; i < N_SCANS; i++) {
+	ROS_INFO("index :%d,%d\n", scanStartInd[i], scanEndInd[i]);
+  }
   for (int i = 0; i < N_SCANS; i++) {
     pcl::PointCloud<PointType>::Ptr surfPointsLessFlatScan(new pcl::PointCloud<PointType>);
     for (int j = 0; j < 6; j++) {
       int sp = (scanStartInd[i] * (6 - j)  + scanEndInd[i] * j) / 6;
       int ep = (scanStartInd[i] * (5 - j)  + scanEndInd[i] * (j + 1)) / 6 - 1;
-
+	ROS_INFO("sp and ep:%d,%d\n", sp, ep);
 
       // didn't understand
       for (int k = sp + 1; k <= ep; k++) {
