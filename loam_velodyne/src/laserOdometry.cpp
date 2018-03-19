@@ -102,13 +102,13 @@ void TransformToStart(PointType const * const pi, PointType * const po)
 {
   float s = 10 * (pi->intensity - int(pi->intensity));
 
-  float rx = s * transform[0];
-  float ry = s * transform[1];
-  float rz = s * transform[2];
+  float rx = s * transform[0];//p
+  float ry = s * transform[1];//h
+  float rz = s * transform[2];//r
   float tx = s * transform[3];
   float ty = s * transform[4];
   float tz = s * transform[5];
-
+	//rotate to world coordinate
   float x1 = cos(rz) * (pi->x - tx) + sin(rz) * (pi->y - ty);
   float y1 = -sin(rz) * (pi->x - tx) + cos(rz) * (pi->y - ty);
   float z1 = (pi->z - tz);
@@ -126,14 +126,15 @@ void TransformToStart(PointType const * const pi, PointType * const po)
 void TransformToEnd(PointType const * const pi, PointType * const po)
 {
   float s = 10 * (pi->intensity - int(pi->intensity));
-
-  float rx = s * transform[0];
-  float ry = s * transform[1];
-  float rz = s * transform[2];
+	//here, the transform means translate from last point to this point
+	// not the first point to this point 
+  float rx = s * transform[0];//p
+  float ry = s * transform[1];//h
+  float rz = s * transform[2];//r
   float tx = s * transform[3];
   float ty = s * transform[4];
   float tz = s * transform[5];
-
+	//h*p*r
   float x1 = cos(rz) * (pi->x - tx) + sin(rz) * (pi->y - ty);
   float y1 = -sin(rz) * (pi->x - tx) + cos(rz) * (pi->y - ty);
   float z1 = (pi->z - tz);
@@ -146,13 +147,14 @@ void TransformToEnd(PointType const * const pi, PointType * const po)
   float y3 = y2;
   float z3 = sin(ry) * x2 + cos(ry) * z2;
 
-  rx = transform[0];
-  ry = transform[1];
-  rz = transform[2];
+  rx = transform[0];//p
+  ry = transform[1];//h
+  rz = transform[2];//r
   tx = transform[3];
   ty = transform[4];
   tz = transform[5];
 
+	//r*p*h
   float x4 = cos(ry) * x3 + sin(ry) * z3;
   float y4 = y3;
   float z4 = -sin(ry) * x3 + cos(ry) * z3;
@@ -164,6 +166,8 @@ void TransformToEnd(PointType const * const pi, PointType * const po)
   float x6 = cos(rz) * x5 - sin(rz) * y5 + tx;
   float y6 = sin(rz) * x5 + cos(rz) * y5 + ty;
   float z6 = z5 + tz;
+  //first, h*p*r, and then r*p*h back
+  //difference lies in (rz), maybe something carzy happens
 
   float x7 = cos(imuRollStart) * (x6 - imuShiftFromStartX) 
            - sin(imuRollStart) * (y6 - imuShiftFromStartY);
@@ -190,6 +194,7 @@ void TransformToEnd(PointType const * const pi, PointType * const po)
   po->x = cos(imuRollLast) * x11 + sin(imuRollLast) * y11;
   po->y = -sin(imuRollLast) * x11 + cos(imuRollLast) * y11;
   po->z = z11;
+  //this is just the opposite part of TransformToStartIMU in scanregistration.cpp
   po->intensity = int(pi->intensity);
 }
 
@@ -428,7 +433,7 @@ int main(int argc, char** argv)
         pcl::PointCloud<PointType>::Ptr laserCloudTemp = cornerPointsLessSharp;
         cornerPointsLessSharp = laserCloudCornerLast;
         laserCloudCornerLast = laserCloudTemp;
-
+		ROS_INFO("system_initialization\n");
         laserCloudTemp = surfPointsLessFlat;
         surfPointsLessFlat = laserCloudSurfLast;
         laserCloudSurfLast = laserCloudTemp;
@@ -450,15 +455,17 @@ int main(int argc, char** argv)
 
         transformSum[0] += imuPitchStart;
         transformSum[2] += imuRollStart;
+		//why no h angle, because the lidar is spinning, 
+		//cannot compensate the head angle(spinning angle)
 
         systemInited = true;
         continue;
       }
 
-       laserCloudOri->clear();
-       coeffSel->clear();
+      laserCloudOri->clear();
+      coeffSel->clear();
 
-		// here it means translaton, strange
+		// here it means translaton, strange, in thesis it means angle
       transform[3] -= imuVeloFromStartX * scanPeriod;
       transform[4] -= imuVeloFromStartY * scanPeriod;
       transform[5] -= imuVeloFromStartZ * scanPeriod;
@@ -471,8 +478,9 @@ int main(int argc, char** argv)
         for (int iterCount = 0; iterCount < 25; iterCount++) {
           for (int i = 0; i < cornerPointsSharpNum; i++) {
             TransformToStart(&cornerPointsSharp->points[i], &pointSel);
-
+			//it seems that they rotate to initial point coordinate
             if (iterCount % 5 == 0) {
+				// every 5 time, find the min1 and min2 point
               std::vector<int> indices;
               pcl::removeNaNFromPointCloud(*laserCloudCornerLast,*laserCloudCornerLast, indices);
 

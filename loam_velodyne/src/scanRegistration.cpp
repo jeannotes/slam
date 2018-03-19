@@ -111,11 +111,6 @@ void ShiftToStartIMU(float pointTime)
 	//should be read as :
 	//imuShiftFromStartXCur = imuShiftXCur - (imuShiftXStart + imuVeloXStart * pointTime);
 	// it is strange, this is the non-linear part of lidar motion
-	//why the spinning angle is start angle?
-	//this is for the goal of based on the first point
-	//however, it is not import, if this part is removed, then 
-	//in the TransformToStartIMU part, the final part of spinning of (imuShiftXCur)
-	//should be removed either
   imuShiftFromStartXCur = imuShiftXCur - imuShiftXStart - imuVeloXStart * pointTime;
   imuShiftFromStartYCur = imuShiftYCur - imuShiftYStart - imuVeloYStart * pointTime;
   imuShiftFromStartZCur = imuShiftZCur - imuShiftZStart - imuVeloZStart * pointTime;
@@ -131,6 +126,11 @@ void ShiftToStartIMU(float pointTime)
   imuShiftFromStartXCur = cos(imuRollStart) * x2 + sin(imuRollStart) * y2;
   imuShiftFromStartYCur = -sin(imuRollStart) * x2 + cos(imuRollStart) * y2;
   imuShiftFromStartZCur = z2;
+  //I think I get something, the lidar scans a cycle, and the imu moves
+  //if imu moves slowly, lidar scans quickly, it is ok
+  //however, if lidar scans slowly, imu moves quickly, this is bad thing, so we need to 
+  //shift to imu starting time, we use imu delta_position, and rotate to lidar coordinate(r*p*h)
+  //here it just compute this far, next VeloToStartIMU is the same
 }
 
 void VeloToStartIMU()
@@ -155,6 +155,8 @@ void VeloToStartIMU()
 
 void TransformToStartIMU(PointType *p)
 {
+	//first rotate to "first point" coordinate, h*p*r
+	//and in the final part we have (+ imuShiftFromStartXCur)!!
   float x1 = cos(imuRollCur) * p->x - sin(imuRollCur) * p->y;
   float y1 = sin(imuRollCur) * p->x + cos(imuRollCur) * p->y;
   float z1 = p->z;
@@ -166,6 +168,8 @@ void TransformToStartIMU(PointType *p)
   float x3 = cos(imuYawCur) * x2 + sin(imuYawCur) * z2;
   float y3 = y2;
   float z3 = -sin(imuYawCur) * x2 + cos(imuYawCur) * z2;
+  	//actually, first of all, it already rotate to initial state, because the rotating angle
+  	//is current angle.
 	//here it is for projecting to initial point, in vii part of the thesis
 	//all the other point is rotated to the initial state
   float x4 = cos(imuYawStart) * x3 - sin(imuYawStart) * z3;
@@ -179,6 +183,8 @@ void TransformToStartIMU(PointType *p)
   p->x = cos(imuRollStart) * x5 + sin(imuRollStart) * y5 + imuShiftFromStartXCur;
   p->y = -sin(imuRollStart) * x5 + cos(imuRollStart) * y5 + imuShiftFromStartYCur;
   p->z = z5 + imuShiftFromStartZCur;
+  //r*p*h, rotate to the point coordinate, because 
+  //finding interest points, we are in the lidar coordinate
   //now, this part corresponds to spinning back(using the first angle)
   //again, could be removed!!!
   //answers the first method!!!
@@ -397,6 +403,10 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
         imuShiftYStart = imuShiftYCur;
         imuShiftZStart = imuShiftZCur;
       } else {
+	  	/* we should think like this: why rotate imuYawStart every time?
+	  	because we "believe" lidar spins at a constant time, so imuYawStart =
+	  	every diff_angle(this time's angle - next's time angle)
+	  	*/
         ShiftToStartIMU(pointTime);
         VeloToStartIMU();
         TransformToStartIMU(&point);
@@ -410,7 +420,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
 
   pcl::PointCloud<PointType>::Ptr laserCloud(new pcl::PointCloud<PointType>());
   for (int i = 0; i < N_SCANS; i++) {
-    *laserCloud += laserCl...........oudScans[i];
+    *laserCloud += laserCloudScans[i];
   }
   int scanCount = -1;
   for (int i = 5; i < cloudSize - 5; i++) {
@@ -529,9 +539,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
   pcl::PointCloud<PointType> cornerPointsLessSharp;
   pcl::PointCloud<PointType> surfPointsFlat;
   pcl::PointCloud<PointType> surfPointsLessFlat;
-  for (int i = 0; i < N_SCANS; i++) {
-	ROS_INFO("index :%d,%d\n", scanStartInd[i], scanEndInd[i]);
-  }
+
   for (int i = 0; i < N_SCANS; i++) {
     pcl::PointCloud<PointType>::Ptr surfPointsLessFlatScan(new pcl::PointCloud<PointType>);
     for (int j = 0; j < 6; j++) {

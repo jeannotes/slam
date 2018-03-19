@@ -422,6 +422,7 @@ int main(int argc, char** argv)
         transformAssociateToMap();
 
         int laserCloudCornerLastNum = laserCloudCornerLast->points.size();
+		  //change last time's interest point to world coordinate
         for (int i = 0; i < laserCloudCornerLastNum; i++) {
           pointAssociateToMap(&laserCloudCornerLast->points[i], &pointSel);
           laserCloudCornerStack2->push_back(pointSel);
@@ -674,6 +675,8 @@ int main(int argc, char** argv)
         laserCloudCornerFromMap->clear();
         laserCloudSurfFromMap->clear();
         for (int i = 0; i < laserCloudValidNum; i++) {
+		//where does laserCloudValidInd come from?
+		//from laserCloudSurfLast, we've already change it(in world coordinate)
           *laserCloudCornerFromMap += *laserCloudCornerArray[laserCloudValidInd[i]];
           *laserCloudSurfFromMap += *laserCloudSurfArray[laserCloudValidInd[i]];
         }
@@ -681,6 +684,8 @@ int main(int argc, char** argv)
         int laserCloudSurfFromMapNum = laserCloudSurfFromMap->points.size();
 
         int laserCloudCornerStackNum2 = laserCloudCornerStack2->points.size();
+		//it is already be changed to world coordinate,why again change to lidar coordinate
+		//changed to world coordinate to get around 10*10*10 cubic indexies
         for (int i = 0; i < laserCloudCornerStackNum2; i++) {
           pointAssociateTobeMapped(&laserCloudCornerStack2->points[i], &laserCloudCornerStack2->points[i]);
         }
@@ -705,6 +710,7 @@ int main(int argc, char** argv)
 
         if (laserCloudCornerFromMapNum > 10 && laserCloudSurfFromMapNum > 100) {
           kdtreeCornerFromMap->setInputCloud(laserCloudCornerFromMap);
+		  //where does these come from, just the index using 10*10*10 cubic
           kdtreeSurfFromMap->setInputCloud(laserCloudSurfFromMap);
 
           for (int iterCount = 0; iterCount < 10; iterCount++) {
@@ -713,6 +719,7 @@ int main(int argc, char** argv)
 
             for (int i = 0; i < laserCloudCornerStackNum; i++) {
               pointOri = laserCloudCornerStack->points[i];
+			  // they are last time's interest point, change to world coordinate
               pointAssociateToMap(&pointOri, &pointSel);
               kdtreeCornerFromMap->nearestKSearch(pointSel, 5, pointSearchInd, pointSearchSqDis);
               
