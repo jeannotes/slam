@@ -108,6 +108,14 @@ ros::Publisher pubImuTrans;
 
 void ShiftToStartIMU(float pointTime)
 {
+	//should be read as :
+	//imuShiftFromStartXCur = imuShiftXCur - (imuShiftXStart + imuVeloXStart * pointTime);
+	// it is strange, this is the non-linear part of lidar motion
+	//why the spinning angle is start angle?
+	//this is for the goal of based on the first point
+	//however, it is not import, if this part is removed, then 
+	//in the TransformToStartIMU part, the final part of spinning of (imuShiftXCur)
+	//should be removed either
   imuShiftFromStartXCur = imuShiftXCur - imuShiftXStart - imuVeloXStart * pointTime;
   imuShiftFromStartYCur = imuShiftYCur - imuShiftYStart - imuVeloYStart * pointTime;
   imuShiftFromStartZCur = imuShiftZCur - imuShiftZStart - imuVeloZStart * pointTime;
@@ -127,6 +135,7 @@ void ShiftToStartIMU(float pointTime)
 
 void VeloToStartIMU()
 {
+	//the same as ShiftToStartIMU
   imuVeloFromStartXCur = imuVeloXCur - imuVeloXStart;
   imuVeloFromStartYCur = imuVeloYCur - imuVeloYStart;
   imuVeloFromStartZCur = imuVeloZCur - imuVeloZStart;
@@ -157,7 +166,8 @@ void TransformToStartIMU(PointType *p)
   float x3 = cos(imuYawCur) * x2 + sin(imuYawCur) * z2;
   float y3 = y2;
   float z3 = -sin(imuYawCur) * x2 + cos(imuYawCur) * z2;
-
+	//here it is for projecting to initial point, in vii part of the thesis
+	//all the other point is rotated to the initial state
   float x4 = cos(imuYawStart) * x3 - sin(imuYawStart) * z3;
   float y4 = y3;
   float z4 = sin(imuYawStart) * x3 + cos(imuYawStart) * z3;
@@ -169,6 +179,9 @@ void TransformToStartIMU(PointType *p)
   p->x = cos(imuRollStart) * x5 + sin(imuRollStart) * y5 + imuShiftFromStartXCur;
   p->y = -sin(imuRollStart) * x5 + cos(imuRollStart) * y5 + imuShiftFromStartYCur;
   p->z = z5 + imuShiftFromStartZCur;
+  //now, this part corresponds to spinning back(using the first angle)
+  //again, could be removed!!!
+  //answers the first method!!!
 }
 
 void AccumulateIMUShift()
@@ -191,11 +204,14 @@ void AccumulateIMUShift()
   accX = cos(yaw) * x2 + sin(yaw) * z2;
   accY = y2;
   accZ = -sin(yaw) * x2 + cos(yaw) * z2;
+  // untill now, the accel(x,y,z) updates using H*P*R*(x,y,z)^T to world coordinate
 
   int imuPointerBack = (imuPointerLast + imuQueLength - 1) % imuQueLength;
   double timeDiff = imuTime[imuPointerLast] - imuTime[imuPointerBack];
   if (timeDiff < scanPeriod) {
-
+	//it should be time of imuPointerLast, for accuracy, it use last time
+	//instead of using imu position to get a more accurate position
+	//clever!
     imuShiftX[imuPointerLast] = imuShiftX[imuPointerBack] + imuVeloX[imuPointerBack] * timeDiff 
                               + accX * timeDiff * timeDiff / 2;
     imuShiftY[imuPointerLast] = imuShiftY[imuPointerBack] + imuVeloY[imuPointerBack] * timeDiff 
@@ -286,7 +302,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
         ori += 2 * M_PI;
       } else if (ori > endOri + M_PI / 2) {
         ori -= 2 * M_PI;
-      } 
+      }
     }
 
     float relTime = (ori - startOri) / (endOri - startOri);
@@ -295,13 +311,30 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
     if (imuPointerLast >= 0) {
       float pointTime = relTime * scanPeriod;
       while (imuPointerFront != imuPointerLast) {
+	  	//this time imuPointerFront update, maybe for two reasons
+	  	//1 update it
+	  	//2 check time just like front and back pointer
         if (timeScanCur + pointTime < imuTime[imuPointerFront]) {
           break;
+		  //why check this? it ensures that we use the closest time
+		  /*
+			  most time it is like this
+			fronttime  ->   current  ->  lasttime
+			it's good if we don't care this, we just update fronttime
+			but something like this happens:
+			current  ->  fronttime  ->   lasttime
+			so we just update fronttime untill this time
+			*/
         }
         imuPointerFront = (imuPointerFront + 1) % imuQueLength;
       }
-
+		// use pose estimation from imu
       if (timeScanCur + pointTime > imuTime[imuPointerFront]) {
+	  	/*easy: 
+	  	fronttime  ->   lasttime  ->  current 
+		 we just have to use the latest time
+		 but it is rare, imu has high frequency
+	  	*/
         imuRollCur = imuRoll[imuPointerFront];
         imuPitchCur = imuPitch[imuPointerFront];
         imuYawCur = imuYaw[imuPointerFront];
@@ -314,6 +347,17 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
         imuShiftYCur = imuShiftY[imuPointerFront];
         imuShiftZCur = imuShiftZ[imuPointerFront];
       } else {
+	  	/*
+		this is what we just figure out
+		at the beginning:
+		fronttime  ->   current  ->  lasttime
+		lastly:
+		current  ->  fronttime  ->   lasttime
+		so the algorithm goes back use fronttime and (fronttime-1)
+		why?
+		(delta1 = (lasttime - fronttime)) > (delta2 = (fronttime - (fronttime-1)))
+		and the ratio is new
+	  */
         int imuPointerBack = (imuPointerFront + imuQueLength - 1) % imuQueLength;
         float ratioFront = (timeScanCur + pointTime - imuTime[imuPointerBack]) 
                          / (imuTime[imuPointerFront] - imuTime[imuPointerBack]);
@@ -337,6 +381,8 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
         imuShiftXCur = imuShiftX[imuPointerFront] * ratioFront + imuShiftX[imuPointerBack] * ratioBack;
         imuShiftYCur = imuShiftY[imuPointerFront] * ratioFront + imuShiftY[imuPointerBack] * ratioBack;
         imuShiftZCur = imuShiftZ[imuPointerFront] * ratioFront + imuShiftZ[imuPointerBack] * ratioBack;
+		// how to compute this
+		// just use y = k*x +b, kind of trick, the algorithm above is the final equation 
       }
       if (i == 0) {
         imuRollStart = imuRollCur;
@@ -354,6 +400,8 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
         ShiftToStartIMU(pointTime);
         VeloToStartIMU();
         TransformToStartIMU(&point);
+		//now, all points are in the same oritation
+		//lidar coordinate
       }
     }
     laserCloudScans[scanID].push_back(point);
@@ -362,7 +410,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
 
   pcl::PointCloud<PointType>::Ptr laserCloud(new pcl::PointCloud<PointType>());
   for (int i = 0; i < N_SCANS; i++) {
-    *laserCloud += laserCloudScans[i];
+    *laserCloud += laserCl...........oudScans[i];
   }
   int scanCount = -1;
   for (int i = 5; i < cloudSize - 5; i++) {
@@ -392,6 +440,9 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
     cloudLabel[i] = 0;
 
     if (int(laserCloud->points[i].intensity) != scanCount) {
+		//here, it is nsh_indoor_outdoor.bag the point didn't come together
+		//in contrast,for severals batches, we don't know how many
+		//bu at least 2(nsh_indoor_outdoor.bag)
       scanCount = int(laserCloud->points[i].intensity);
 
       if (scanCount > 0 && scanCount < N_SCANS) {
@@ -486,7 +537,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
     for (int j = 0; j < 6; j++) {
       int sp = (scanStartInd[i] * (6 - j)  + scanEndInd[i] * j) / 6;
       int ep = (scanStartInd[i] * (5 - j)  + scanEndInd[i] * (j + 1)) / 6 - 1;
-	ROS_INFO("sp and ep:%d,%d\n", sp, ep);
+	// use ep - sp,we will find that
 
       // didn't understand
       for (int k = sp + 1; k <= ep; k++) {
@@ -671,6 +722,17 @@ void imuHandler(const sensor_msgs::Imu::ConstPtr& imuIn)
   float accX = imuIn->linear_acceleration.y - sin(roll) * cos(pitch) * 9.81;
   float accY = imuIn->linear_acceleration.z - cos(roll) * cos(pitch) * 9.81;
   float accZ = imuIn->linear_acceleration.x + sin(pitch) * 9.81;
+  //http://blog.csdn.net/zetan/article/details/78253104
+  //get rid of gravity part
+  //h*p*r -> we have world coordinate
+  //here, the up(z) is not considered,well it is rare
+  //r*p*(0;0;9.8)^T -> lidar coordinate
+  //this is because of (0;0;9.8) is world coordinate
+  //the problem is we don't know the inside definition of spinning angle
+  //like how cnb is caculated(in one axis, the sin(theta) is oppisite)
+  //well, untill now it doesn't matter
+  //here, why do not remove the H part, like using h*r*p*(0;0;9.8)^T
+  //this is because the lidar is spinning around the z axis, it is useful
 
   imuPointerLast = (imuPointerLast + 1) % imuQueLength;
 

@@ -283,7 +283,7 @@ void laserCloudSharpHandler(const sensor_msgs::PointCloud2ConstPtr& cornerPoints
   newCornerPointsSharp = true;
 }
 
-void laserCloudLessSharpHandler(const sensor_msgs::PointCloud2ConstPtr& cornerPointsLessSharp2)
+void  laserCloudLessSharpHandler(const sensor_msgs::PointCloud2ConstPtr& cornerPointsLessSharp2)
 {
   timeCornerPointsLessSharp = cornerPointsLessSharp2->header.stamp.toSec();
 
@@ -456,8 +456,9 @@ int main(int argc, char** argv)
       }
 
        laserCloudOri->clear();
-      coeffSel->clear();
+       coeffSel->clear();
 
+		// here it means translaton, strange
       transform[3] -= imuVeloFromStartX * scanPeriod;
       transform[4] -= imuVeloFromStartY * scanPeriod;
       transform[5] -= imuVeloFromStartZ * scanPeriod;
@@ -835,7 +836,7 @@ int main(int argc, char** argv)
         }
       }
 
-// T matrix update including translate and attitude updating
+		// T matrix update including translate and attitude updating
 
       float rx, ry, rz, tx, ty, tz;
 	  //the inside algorithm is kind of complicate, read it later
