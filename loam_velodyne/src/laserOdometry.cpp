@@ -108,7 +108,8 @@ void TransformToStart(PointType const * const pi, PointType * const po)
   float tx = s * transform[3];
   float ty = s * transform[4];
   float tz = s * transform[5];
-	//rotate to world coordinate
+	//rotate to last frame coordinate
+	//here the transform means last frame to this time's frame
   float x1 = cos(rz) * (pi->x - tx) + sin(rz) * (pi->y - ty);
   float y1 = -sin(rz) * (pi->x - tx) + cos(rz) * (pi->y - ty);
   float z1 = (pi->z - tz);
@@ -478,7 +479,10 @@ int main(int argc, char** argv)
         for (int iterCount = 0; iterCount < 25; iterCount++) {
           for (int i = 0; i < cornerPointsSharpNum; i++) {
             TransformToStart(&cornerPointsSharp->points[i], &pointSel);
-			//it seems that they rotate to initial point coordinate
+			//we want to find correspondence, this time's point should
+			//transform to last frame's coordinate!!!
+			//and how transform update?
+			//through the iterations
             if (iterCount % 5 == 0) {
 				// every 5 time, find the min1 and min2 point
               std::vector<int> indices;
