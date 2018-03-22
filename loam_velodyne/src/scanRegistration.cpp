@@ -312,7 +312,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
     }
 
     float relTime = (ori - startOri) / (endOri - startOri);
-    point.intensity = scanID + scanPeriod * relTime;
+    point.intensity = scanID + scanPeriod * relTime;//including which line and concrete time
 
     if (imuPointerLast >= 0) {
       float pointTime = relTime * scanPeriod;
