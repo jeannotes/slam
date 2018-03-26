@@ -7,7 +7,8 @@
 class cloudHandler{
 public:
   cloudHandler():viewer("pcl viewer"){
-      pcl_sub = nh.subscribe("pcl_output", 10, &cloudHandler::cloudCB, this);
+      //pcl_sub = nh.subscribe("pcl_output", 10, &cloudHandler::cloudCB, this);
+      pcl_sub = nh.subscribe("/velodyne_points", 10, &cloudHandler::cloudCB, this);
       viewer_timer = nh.createTimer(ros::Duration(0.1), &cloudHandler::TimerCB, this);
   }
 

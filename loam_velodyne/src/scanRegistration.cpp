@@ -270,7 +270,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
     bool halfPassed = false;
     int count = cloudSize;
     PointType point;
-    std::vector<pcl::PointCloud<PointType>> laserCloudScans(N_SCANS);
+    std::vector<pcl::PointCloud<PointType> > laserCloudScans(N_SCANS);
     for (int i = 0; i < cloudSize; i++)
     {
         point.x = laserCloudIn.points[i].y;
@@ -292,6 +292,10 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
         {
             scanID = roundedAngle + (N_SCANS - 1);
         }
+		//index 1, 3, 5, 7, 9, ...,15
+		//angle 1  3  5  7  9,....,15
+		//index 0,   2,  4,  6, 8,....,14
+		//angle -15 -13 -11  -9
         if (scanID > (N_SCANS - 1) || scanID < 0)
         {
             count--;
