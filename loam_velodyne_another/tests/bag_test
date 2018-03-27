@@ -14,7 +14,6 @@ from itertools import izip
 A simple test to play test data into the system and record the results, then
 verify the results.
 Usage
-
 bag_test <comparison_bag.bag> <test_bag.bag>
 '''
 

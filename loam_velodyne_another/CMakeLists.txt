@@ -12,36 +12,32 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
+find_package(OpenCV REQUIRED)
 
 include_directories(
   include
 	${catkin_INCLUDE_DIRS} 
-	#${EIGEN3_INCLUDE_DIR}
+	${EIGEN3_INCLUDE_DIR} 
 	${PCL_INCLUDE_DIRS})
 
 catkin_package(
   CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy std_msgs
-  DEPENDS EIGEN3 PCL
+  DEPENDS EIGEN3 PCL OpenCV
   INCLUDE_DIRS include
-  LIBRARIES loam
 )
 
-add_definitions( -march=native )
 
+add_executable(scanRegistration src/scanRegistration.cpp)
+target_link_libraries(scanRegistration ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
-add_subdirectory(src/lib)
+add_executable(laserOdometry src/laserOdometry.cpp)
+target_link_libraries(laserOdometry ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
-add_executable(multiScanRegistration src/multi_scan_registration_node.cpp)
-target_link_libraries(multiScanRegistration ${catkin_LIBRARIES} ${PCL_LIBRARIES} loam )
+add_executable(laserMapping src/laserMapping.cpp)
+target_link_libraries(laserMapping ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
-add_executable(laserOdometry src/laser_odometry_node.cpp)
-target_link_libraries(laserOdometry ${catkin_LIBRARIES} ${PCL_LIBRARIES} loam )
-
-add_executable(laserMapping src/laser_mapping_node.cpp)
-target_link_libraries(laserMapping ${catkin_LIBRARIES} ${PCL_LIBRARIES} loam )
-
-add_executable(transformMaintenance src/transform_maintenance_node.cpp)
-target_link_libraries(transformMaintenance ${catkin_LIBRARIES} ${PCL_LIBRARIES} loam )
+add_executable(transformMaintenance src/transformMaintenance.cpp)
+target_link_libraries(transformMaintenance ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
 if (CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
@@ -57,7 +53,7 @@ if (CATKIN_ENABLE_TESTING)
   add_rostest(${PROJECT_BINARY_DIR}/test/loam.test
     DEPENDENCIES
       ${PROJECT_NAME}_test_data
-      multiScanRegistration
+      scanRegistration
       laserOdometry
       laserMapping
       transformMaintenance)
