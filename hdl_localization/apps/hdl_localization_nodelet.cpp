@@ -46,7 +46,7 @@ class HdlLocalizationNodelet : public nodelet::Nodelet
 		processing_time.resize(16);
 		initialize_params();
 
-		use_imu = private_nh.param<bool>("use_imu", true);
+		use_imu = private_nh.param<bool>("use_imu", false);
 		invert_imu = private_nh.param<bool>("invert_imu", false);
 		if (use_imu)
 		{
@@ -156,6 +156,7 @@ class HdlLocalizationNodelet : public nodelet::Nodelet
 		auto filtered = downsample(cloud);
 
 		// predict
+		// if  use_imu is false, it will not predict
 		if (!use_imu)
 		{
 			pose_estimator->predict(stamp, Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero());
