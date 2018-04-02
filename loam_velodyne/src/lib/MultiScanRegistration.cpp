@@ -35,223 +35,244 @@
 
 #include <pcl_conversions/pcl_conversions.h>
 
-
-namespace loam {
-
-MultiScanMapper::MultiScanMapper(const float& lowerBound,
-                                 const float& upperBound,
-                                 const uint16_t& nScanRings)
-    : _lowerBound(lowerBound),
-      _upperBound(upperBound),
-      _nScanRings(nScanRings),
-      _factor((nScanRings - 1) / (upperBound - lowerBound))
+namespace loam
 {
 
+MultiScanMapper::MultiScanMapper(const float &lowerBound,
+								 const float &upperBound,
+								 const uint16_t &nScanRings)
+	: _lowerBound(lowerBound),
+	  _upperBound(upperBound),
+	  _nScanRings(nScanRings),
+	  _factor((nScanRings - 1) / (upperBound - lowerBound))
+{
 }
 
 void MultiScanMapper::set(const float &lowerBound,
-                          const float &upperBound,
-                          const uint16_t &nScanRings)
+						  const float &upperBound,
+						  const uint16_t &nScanRings)
 {
-  _lowerBound = lowerBound;
-  _upperBound = upperBound;
-  _nScanRings = nScanRings;
-  _factor = (nScanRings - 1) / (upperBound - lowerBound);
+	_lowerBound = lowerBound;
+	_upperBound = upperBound;
+	_nScanRings = nScanRings;
+	_factor = (nScanRings - 1) / (upperBound - lowerBound);
 }
 
-
-
-int MultiScanMapper::getRingForAngle(const float& angle) {
-  return int(((angle * 180 / M_PI) - _lowerBound) * _factor + 0.5);
+int MultiScanMapper::getRingForAngle(const float &angle)
+{
+	return int(((angle * 180 / M_PI) - _lowerBound) * _factor + 0.5);
 }
 
+MultiScanRegistration::MultiScanRegistration(const MultiScanMapper &scanMapper,
+											 const RegistrationParams &config)
+	: ScanRegistration(config),
+	  _systemDelay(SYSTEM_DELAY),
+	  _scanMapper(scanMapper){
 
+	  };
 
-
-
-
-MultiScanRegistration::MultiScanRegistration(const MultiScanMapper& scanMapper,
-                                             const RegistrationParams& config)
-    : ScanRegistration(config),
-      _systemDelay(SYSTEM_DELAY),
-      _scanMapper(scanMapper)
+bool MultiScanRegistration::setup(ros::NodeHandle &node,
+								  ros::NodeHandle &privateNode)
 {
+	if (!ScanRegistration::setup(node, privateNode))
+	{
+		return false;
+	}
 
-};
+	// fetch scan mapping params
+	std::string lidarName;
 
+	if (privateNode.getParam("lidar", lidarName))
+	{
+		if (lidarName == "VLP-16")
+		{
+			_scanMapper = MultiScanMapper::Velodyne_VLP_16();
+		}
+		else if (lidarName == "HDL-32")
+		{
+			_scanMapper = MultiScanMapper::Velodyne_HDL_32();
+		}
+		else if (lidarName == "HDL-64E")
+		{
+			_scanMapper = MultiScanMapper::Velodyne_HDL_64E();
+		}
+		else
+		{
+			ROS_ERROR("Invalid lidar parameter: %s (only \"VLP-16\", \"HDL-32\" and \"HDL-64E\" are supported)", lidarName.c_str());
+			return false;
+		}
 
+		ROS_INFO("Set  %s  scan mapper.", lidarName.c_str());
+		if (!privateNode.hasParam("scanPeriod"))
+		{
+			_config.scanPeriod = 0.1;
+			ROS_INFO("Set scanPeriod: %f", _config.scanPeriod);
+		}
+	}
+	else
+	{
+		float vAngleMin, vAngleMax;
+		int nScanRings;
 
-bool MultiScanRegistration::setup(ros::NodeHandle& node,
-                                  ros::NodeHandle& privateNode)
-{
-  if (!ScanRegistration::setup(node, privateNode)) {
-    return false;
-  }
+		if (privateNode.getParam("minVerticalAngle", vAngleMin) &&
+			privateNode.getParam("maxVerticalAngle", vAngleMax) &&
+			privateNode.getParam("nScanRings", nScanRings))
+		{
+			if (vAngleMin >= vAngleMax)
+			{
+				ROS_ERROR("Invalid vertical range (min >= max)");
+				return false;
+			}
+			else if (nScanRings < 2)
+			{
+				ROS_ERROR("Invalid number of scan rings (n < 2)");
+				return false;
+			}
 
-  // fetch scan mapping params
-  std::string lidarName;
+			_scanMapper.set(vAngleMin, vAngleMax, nScanRings);
+			ROS_INFO("Set linear scan mapper from %g to %g degrees with %d scan rings.", vAngleMin, vAngleMax, nScanRings);
+		}
+	}
 
-  if (privateNode.getParam("lidar", lidarName)) {
-    if (lidarName == "VLP-16") {
-      _scanMapper = MultiScanMapper::Velodyne_VLP_16();
-    } else if (lidarName == "HDL-32") {
-      _scanMapper = MultiScanMapper::Velodyne_HDL_32();
-    } else if (lidarName == "HDL-64E") {
-      _scanMapper = MultiScanMapper::Velodyne_HDL_64E();
-    } else {
-      ROS_ERROR("Invalid lidar parameter: %s (only \"VLP-16\", \"HDL-32\" and \"HDL-64E\" are supported)", lidarName.c_str());
-      return false;
-    }
+	// subscribe to input cloud topic
+	_subLaserCloud = node.subscribe<sensor_msgs::PointCloud2>("/multi_scan_points", 2, &MultiScanRegistration::handleCloudMessage, this);
 
-    ROS_INFO("Set  %s  scan mapper.", lidarName.c_str());
-    if (!privateNode.hasParam("scanPeriod")) {
-      _config.scanPeriod = 0.1;
-      ROS_INFO("Set scanPeriod: %f", _config.scanPeriod);
-    }
-  } else {
-    float vAngleMin, vAngleMax;
-    int nScanRings;
-
-    if (privateNode.getParam("minVerticalAngle", vAngleMin) &&
-        privateNode.getParam("maxVerticalAngle", vAngleMax) &&
-        privateNode.getParam("nScanRings", nScanRings)) {
-      if (vAngleMin >= vAngleMax) {
-        ROS_ERROR("Invalid vertical range (min >= max)");
-        return false;
-      } else if (nScanRings < 2) {
-        ROS_ERROR("Invalid number of scan rings (n < 2)");
-        return false;
-      }
-
-      _scanMapper.set(vAngleMin, vAngleMax, nScanRings);
-      ROS_INFO("Set linear scan mapper from %g to %g degrees with %d scan rings.", vAngleMin, vAngleMax, nScanRings);
-    }
-  }
-
-
-  // subscribe to input cloud topic
-  _subLaserCloud = node.subscribe<sensor_msgs::PointCloud2>
-      ("/multi_scan_points", 2, &MultiScanRegistration::handleCloudMessage, this);
-
-  return true;
+	return true;
 }
-
-
 
 void MultiScanRegistration::handleCloudMessage(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
 {
-  if (_systemDelay > 0) {
-    _systemDelay--;
-    return;
-  }
+	if (_systemDelay > 0)
+	{
+		_systemDelay--;
+		return;
+	}
 
-  // fetch new input cloud
-  pcl::PointCloud<pcl::PointXYZ> laserCloudIn;
-  pcl::fromROSMsg(*laserCloudMsg, laserCloudIn);
+	// fetch new input cloud
+	pcl::PointCloud<pcl::PointXYZ> laserCloudIn;
+	pcl::fromROSMsg(*laserCloudMsg, laserCloudIn);
 
-  process(laserCloudIn, laserCloudMsg->header.stamp);
+	process(laserCloudIn, laserCloudMsg->header.stamp);
 }
 
-
-
-void MultiScanRegistration::process(const pcl::PointCloud<pcl::PointXYZ>& laserCloudIn,
-                                    const ros::Time& scanTime)
+void MultiScanRegistration::process(const pcl::PointCloud<pcl::PointXYZ> &laserCloudIn,
+									const ros::Time &scanTime)
 {
-  size_t cloudSize = laserCloudIn.size();
+	size_t cloudSize = laserCloudIn.size();
 
-  // reset internal buffers and set IMU start state based on current scan time
-  reset(scanTime);
+	// reset internal buffers and set IMU start state based on current scan time
+	reset(scanTime);
 
-  // determine scan start and end orientations
-  float startOri = -std::atan2(laserCloudIn[0].y, laserCloudIn[0].x);
-  float endOri = -std::atan2(laserCloudIn[cloudSize - 1].y,
-                             laserCloudIn[cloudSize - 1].x) + 2 * float(M_PI);
-  if (endOri - startOri > 3 * M_PI) {
-    endOri -= 2 * M_PI;
-  } else if (endOri - startOri < M_PI) {
-    endOri += 2 * M_PI;
-  }
+	// determine scan start and end orientations
+	float startOri = -std::atan2(laserCloudIn[0].y, laserCloudIn[0].x);
+	float endOri = -std::atan2(laserCloudIn[cloudSize - 1].y,
+							   laserCloudIn[cloudSize - 1].x) +
+				   2 * float(M_PI);
+	if (endOri - startOri > 3 * M_PI)
+	{
+		endOri -= 2 * M_PI;
+	}
+	else if (endOri - startOri < M_PI)
+	{
+		endOri += 2 * M_PI;
+	}
 
-  bool halfPassed = false;
-  pcl::PointXYZI point;
-  std::vector<pcl::PointCloud<pcl::PointXYZI> > laserCloudScans(_scanMapper.getNumberOfScanRings());
+	bool halfPassed = false;
+	pcl::PointXYZI point;
+	std::vector<pcl::PointCloud<pcl::PointXYZI> > laserCloudScans(_scanMapper.getNumberOfScanRings());
 
-  // extract valid points from input cloud
-  for (int i = 0; i < cloudSize; i++) {
-    point.x = laserCloudIn[i].y;
-    point.y = laserCloudIn[i].z;
-    point.z = laserCloudIn[i].x;
+	// extract valid points from input cloud
+	for (int i = 0; i < cloudSize; i++)
+	{
+		point.x = laserCloudIn[i].y;
+		point.y = laserCloudIn[i].z;
+		point.z = laserCloudIn[i].x;
 
-    // skip NaN and INF valued points
-    if (!pcl_isfinite(point.x) ||
-        !pcl_isfinite(point.y) ||
-        !pcl_isfinite(point.z)) {
-      continue;
-    }
+		// skip NaN and INF valued points
+		if (!pcl_isfinite(point.x) ||
+			!pcl_isfinite(point.y) ||
+			!pcl_isfinite(point.z))
+		{
+			continue;
+		}
 
-    // skip zero valued points
-    if (point.x * point.x + point.y * point.y + point.z * point.z < 0.0001) {
-      continue;
-    }
+		// skip zero valued points
+		if (point.x * point.x + point.y * point.y + point.z * point.z < 0.0001)
+		{
+			continue;
+		}
 
-    // calculate vertical point angle and scan ID
-    float angle = std::atan(point.y / std::sqrt(point.x * point.x + point.z * point.z));
-    int scanID = _scanMapper.getRingForAngle(angle);
-    if (scanID >= _scanMapper.getNumberOfScanRings() || scanID < 0 ){
-      continue;
-    }
+		// calculate vertical point angle and scan ID
+		float angle = std::atan(point.y / std::sqrt(point.x * point.x + point.z * point.z));
+		int scanID = _scanMapper.getRingForAngle(angle);
+		if (scanID >= _scanMapper.getNumberOfScanRings() || scanID < 0)
+		{
+			continue;
+		}
 
-    // calculate horizontal point angle
-    float ori = -std::atan2(point.x, point.z);
-    if (!halfPassed) {
-      if (ori < startOri - M_PI / 2) {
-        ori += 2 * M_PI;
-      } else if (ori > startOri + M_PI * 3 / 2) {
-        ori -= 2 * M_PI;
-      }
+		// calculate horizontal point angle
+		float ori = -std::atan2(point.x, point.z);
+		if (!halfPassed)
+		{
+			if (ori < startOri - M_PI / 2)
+			{
+				ori += 2 * M_PI;
+			}
+			else if (ori > startOri + M_PI * 3 / 2)
+			{
+				ori -= 2 * M_PI;
+			}
 
-      if (ori - startOri > M_PI) {
-        halfPassed = true;
-      }
-    } else {
-      ori += 2 * M_PI;
+			if (ori - startOri > M_PI)
+			{
+				halfPassed = true;
+			}
+		}
+		else
+		{
+			ori += 2 * M_PI;
 
-      if (ori < endOri - M_PI * 3 / 2) {
-        ori += 2 * M_PI;
-      } else if (ori > endOri + M_PI / 2) {
-        ori -= 2 * M_PI;
-      }
-    }
+			if (ori < endOri - M_PI * 3 / 2)
+			{
+				ori += 2 * M_PI;
+			}
+			else if (ori > endOri + M_PI / 2)
+			{
+				ori -= 2 * M_PI;
+			}
+		}
 
-    // calculate relative scan time based on point orientation
-    float relTime = _config.scanPeriod * (ori - startOri) / (endOri - startOri);
-    point.intensity = scanID + relTime;
+		// calculate relative scan time based on point orientation
+		float relTime = _config.scanPeriod * (ori - startOri) / (endOri - startOri);
+		point.intensity = scanID + relTime;
 
-    // project point to the start of the sweep using corresponding IMU data
-    if (hasIMUData()) {
-      setIMUTransformFor(relTime);
-      transformToStartIMU(point);
-    }
+		// project point to the start of the sweep using corresponding IMU data
+		if (hasIMUData())
+		{
+			setIMUTransformFor(relTime);
+			transformToStartIMU(point);
+		}
 
-    laserCloudScans[scanID].push_back(point);
-  }
+		laserCloudScans[scanID].push_back(point);
+	}
 
-  // construct sorted full resolution cloud
-  cloudSize = 0;
-  for (int i = 0; i < _scanMapper.getNumberOfScanRings(); i++) {
-    _laserCloud += laserCloudScans[i];
+	// construct sorted full resolution cloud
+	cloudSize = 0;
+	for (int i = 0; i < _scanMapper.getNumberOfScanRings(); i++)
+	{
+		_laserCloud += laserCloudScans[i];
 
-    IndexRange range(cloudSize, 0);
-    cloudSize += laserCloudScans[i].size();
-    range.second = cloudSize > 0 ? cloudSize - 1 : 0;
-    _scanIndices.push_back(range);
-  }
+		IndexRange range(cloudSize, 0);
+		cloudSize += laserCloudScans[i].size();
+		range.second = cloudSize > 0 ? cloudSize - 1 : 0;
+		_scanIndices.push_back(range);
+	}
 
-  // extract features
-  extractFeatures();
+	// extract features
+	extractFeatures();
 
-  // publish result
-  publishResult();
+	// publish result
+	publishResult();
 }
 
 } // end namespace loam

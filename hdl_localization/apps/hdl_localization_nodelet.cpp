@@ -50,7 +50,7 @@ class HdlLocalizationNodelet : public nodelet::Nodelet
 		invert_imu = private_nh.param<bool>("invert_imu", false);
 		if (use_imu)
 		{
-			NODELET_INFO("enable imu-based prediction");
+			NODELET_INFO("enable imu-based prediction, %d", use_imu);
 			imu_sub = mt_nh.subscribe("/gpsimu_driver/imu_data", 256, &HdlLocalizationNodelet::imu_callback, this);
 		}
 		points_sub = mt_nh.subscribe("/velodyne_points", 5, &HdlLocalizationNodelet::points_callback, this);
@@ -66,7 +66,7 @@ class HdlLocalizationNodelet : public nodelet::Nodelet
 	{
 		// intialize scan matching method
 		double downsample_resolution = private_nh.param<double>("downsample_resolution", 0.1);
-		std::string ndt_neighbor_search_method = private_nh.param<std::string>("ndt_neighbor_search_method", "DIRECT7");
+		std::string ndt_neighbor_search_method = private_nh.param<std::string>("ndt_neighbor_search_method", "DIRECT1");
 
 		double ndt_resolution = private_nh.param<double>("ndt_resolution", 1.0);
 		boost::shared_ptr<pcl::VoxelGrid<PointT>> voxelgrid(new pcl::VoxelGrid<PointT>());

@@ -16,12 +16,12 @@
     <node pkg="nodelet" type="nodelet" name="hdl_localization_nodelet" args="load hdl_localization/HdlLocalizationNodelet $(arg nodelet_manager)">
         <!-- imu settings -->
         <!-- during "cool_time", imu inputs are ignored -->
-        <param name="use_imu" value="true" />
+        <param name="use_imu" value="false" />
         <param name="invert_imu" value="true" />
         <param name="cool_time_duration" value="2.0" />
         <!-- ndt settings -->
         <!-- if NDT is slow for your PC, try DIRECT1 serach method, which is a bit unstable but extremely fast -->
-        <param name="ndt_neighbor_search_method" value="DIRECT11" />
+        <param name="ndt_neighbor_search_method" value="DIRECT1" />
         <param name="ndt_resolution" value="1.0" />
         <param name="downsample_resolution" value="0.1" />
         <!-- if "specify_init_pose" is true, pose estimator will be initialized with the following params -->

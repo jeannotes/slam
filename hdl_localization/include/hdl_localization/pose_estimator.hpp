@@ -31,9 +31,9 @@ class PoseEstimator
    * @param quat                initial orientation
    * @param cool_time_duration  during "cool time", prediction is not performed
    */
-	PoseEstimator(pcl::Registration<PointT, PointT>::Ptr &registration, const ros::Time &stamp, const Eigen::Vector3f &pos, const Eigen::Quaternionf &quat, double cool_time_duration = 1.0)
-		: init_stamp(stamp),
-		  registration(registration),
+	PoseEstimator(pcl::Registration<PointT, PointT>::Ptr &registration, 
+	const ros::Time &stamp, const Eigen::Vector3f &pos,	const Eigen::Quaternionf &quat, 
+	double cool_time_duration = 1.0): init_stamp(stamp),  registration(registration),
 		  cool_time_duration(cool_time_duration)
 	{
 		process_noise = Eigen::MatrixXf::Identity(16, 16);
