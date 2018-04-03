@@ -203,16 +203,14 @@ public:
             use_tf_listener_ = true;
         }
 
-        pose_ = Eigen::Translation< double, 3 >(pose_init_x, pose_init_y,
-                    pose_init_z)
-            * Eigen::AngleAxis< double >(pose_init_r, Eigen::Vector3d::UnitX()) * Eigen::AngleAxis< double >(pose_init_p, Eigen::Vector3d::UnitY()) * Eigen::AngleAxis< double >(pose_init_t, Eigen::Vector3d::UnitZ());
+        pose_ = Eigen::Translation< double, 3 >(pose_init_x, pose_init_y, pose_init_z)
+            * Eigen::AngleAxis< double >(pose_init_r, Eigen::Vector3d::UnitX())
+            * Eigen::AngleAxis< double >(pose_init_p, Eigen::Vector3d::UnitY())
+            * Eigen::AngleAxis< double >(pose_init_t, Eigen::Vector3d::UnitZ());
 
-        sensor_pose_ = Eigen::Translation< double, 3 >(sensor_pose_x, sensor_pose_y,
-                           sensor_pose_z)
-            * Eigen::AngleAxis< double >(sensor_pose_r,
-                  Eigen::Vector3d::UnitX())
-            * Eigen::AngleAxis< double >(sensor_pose_p,
-                  Eigen::Vector3d::UnitY())
+        sensor_pose_ = Eigen::Translation< double, 3 >(sensor_pose_x, sensor_pose_y, sensor_pose_z)
+            * Eigen::AngleAxis< double >(sensor_pose_r, Eigen::Vector3d::UnitX())
+            * Eigen::AngleAxis< double >(sensor_pose_p, Eigen::Vector3d::UnitY())
             * Eigen::AngleAxis< double >(sensor_pose_t, Eigen::Vector3d::UnitZ());
 
         map_publisher_ = nh_.advertise< ndt_map::NDTMapMsg >("ndt_map", 1000);

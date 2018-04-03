@@ -1,2 +1,6 @@
 {
+    "files.associations": {
+        "core": "cpp",
+        "numericaldiff": "cpp"
+    }
 }
