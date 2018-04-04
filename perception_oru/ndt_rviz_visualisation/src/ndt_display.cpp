@@ -15,8 +15,7 @@
 
 namespace lslgeneric {
 
-NDTDisplay::NDTDisplay()
-{
+NDTDisplay::NDTDisplay() {
     ROS_ERROR("BUILDING OBJECT");
     color_property_ = new rviz::ColorProperty(
         "Color", QColor(204, 51, 204), "Color to draw the acceleration arrows.",
@@ -32,31 +31,30 @@ NDTDisplay::NDTDisplay()
     history_length_property_->setMin(1);
     history_length_property_->setMax(100000);
 }
-void NDTDisplay::onInitialize() { MFDClass::onInitialize(); }
+void NDTDisplay::onInitialize() {
+    MFDClass::onInitialize();
+}
 
 NDTDisplay::~NDTDisplay() {}
-void NDTDisplay::reset()
-{
+void NDTDisplay::reset() {
     MFDClass::reset();
     visuals_.clear();
 }
-void NDTDisplay::updateColorAndAlpha()
-{
+void NDTDisplay::updateColorAndAlpha() {
     float alpha = alpha_property_->getFloat();
     Ogre::ColourValue color = color_property_->getOgreColor();
     for (size_t i = 0; i < visuals_.size(); i++) {
         visuals_[i]->setColor(color.r, color.g, color.b, alpha);
     }
 }
-void NDTDisplay::processMessage(const ndt_map::NDTMapMsg::ConstPtr& msg)
-{
+void NDTDisplay::processMessage(const ndt_map::NDTMapMsg::ConstPtr& msg) {
     ROS_ERROR("MESSAGE RECIVED");
     Ogre::Quaternion orientation;
     Ogre::Vector3 position;
     if (!context_->getFrameManager()->getTransform(
-            msg->header.frame_id, msg->header.stamp, position, orientation)) {
+                msg->header.frame_id, msg->header.stamp, position, orientation)) {
         ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
-            msg->header.frame_id.c_str(), qPrintable(fixed_frame_));
+                  msg->header.frame_id.c_str(), qPrintable(fixed_frame_));
         return;
     }
     for (int itr = 0; itr < msg->cells.size(); itr++) {

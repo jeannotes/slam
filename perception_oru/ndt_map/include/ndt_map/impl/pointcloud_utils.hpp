@@ -1,16 +1,13 @@
-namespace lslgeneric
-{
+namespace lslgeneric {
 
 template< typename PointT>
-pcl::PointCloud<PointT> transformPointCloud(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &Tr, const pcl::PointCloud<PointT> &pc)
-{
-    Eigen::Transform<float,3,Eigen::Affine,Eigen::ColMajor> T = Tr.cast<float>();
+pcl::PointCloud<PointT> transformPointCloud(Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> &Tr, const pcl::PointCloud<PointT> &pc) {
+    Eigen::Transform<float, 3, Eigen::Affine, Eigen::ColMajor> T = Tr.cast<float>();
     pcl::PointCloud<PointT> cloud;
-    for(unsigned int pit=0; pit<pc.points.size(); ++pit)
-    {
+    for (unsigned int pit = 0; pit < pc.points.size(); ++pit) {
         PointT thisPoint = pc.points[pit];
-        Eigen::Map<Eigen::Vector3f> pt((float*)&thisPoint,3);
-        pt = T*pt;
+        Eigen::Map<Eigen::Vector3f> pt((float*)&thisPoint, 3);
+        pt = T * pt;
         cloud.points.push_back(thisPoint);
     }
     cloud.width = pc.width;
@@ -19,21 +16,18 @@ pcl::PointCloud<PointT> transformPointCloud(Eigen::Transform<double,3,Eigen::Aff
 }
 
 template< typename PointT>
-void transformPointCloudInPlace(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &Tr, pcl::PointCloud<PointT> &pc)
-{
-    Eigen::Transform<float,3,Eigen::Affine,Eigen::ColMajor> T = Tr.cast<float>();
-    for(unsigned int pit=0; pit<pc.points.size(); ++pit)
-    {
-        Eigen::Map<Eigen::Vector3f> pt((float*)&pc.points[pit],3);
-        pt = T*pt;
+void transformPointCloudInPlace(Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> &Tr, pcl::PointCloud<PointT> &pc) {
+    Eigen::Transform<float, 3, Eigen::Affine, Eigen::ColMajor> T = Tr.cast<float>();
+    for (unsigned int pit = 0; pit < pc.points.size(); ++pit) {
+        Eigen::Map<Eigen::Vector3f> pt((float*)&pc.points[pit], 3);
+        pt = T * pt;
     }
 }
 
 template< typename PointT>
-double geomDist(PointT p1, PointT p2)
-{
+double geomDist(PointT p1, PointT p2) {
     Eigen::Vector3d v;
-    v << p1.x-p2.x, p1.y-p2.y, p1.z-p2.z;
+    v << p1.x - p2.x, p1.y - p2.y, p1.z - p2.z;
     return v.norm();
 }
 

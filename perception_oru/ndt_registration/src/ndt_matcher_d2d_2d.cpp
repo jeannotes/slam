@@ -6,30 +6,25 @@
 #include <fstream>
 #include <omp.h>
 #include <sys/time.h>
-namespace lslgeneric
-{
+namespace lslgeneric {
 
 //#define DO_DEBUG_PROC
 
 void NDTMatcherD2D_2D::init(bool _isIrregularGrid,
-        bool useDefaultGridResolutions, std::vector<double> _resolutions)
-{
+                            bool useDefaultGridResolutions, std::vector<double> _resolutions) {
     Jest.setZero();
-    Jest.block<2,2>(0,0).setIdentity();
+    Jest.block<2, 2>(0, 0).setIdentity();
     Hest.setZero();
     Zest.setZero();
     ZHest.setZero();
 
     isIrregularGrid = _isIrregularGrid;
-    if(useDefaultGridResolutions)
-    {
+    if (useDefaultGridResolutions) {
         resolutions.push_back(0.2);
         resolutions.push_back(0.5);
         resolutions.push_back(1);
         resolutions.push_back(2);
-    }
-    else
-    {
+    } else {
         resolutions = _resolutions;
     }
 
@@ -37,40 +32,37 @@ void NDTMatcherD2D_2D::init(bool _isIrregularGrid,
     lfd1 = 1; //lfd1/(double)sourceNDT.getMyIndex()->size(); //current_resolution*2.5;
     lfd2 = 0.05; //0.1/current_resolution;
     ITR_MAX = 50;
-    DELTA_SCORE = 10e-3*current_resolution;
+    DELTA_SCORE = 10e-3 * current_resolution;
     step_control = true;
     n_neighbours = 2;
 }
 
 bool NDTMatcherD2D_2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
-        pcl::PointCloud<pcl::PointXYZ>& source,
-        Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T ,
-        bool useInitialGuess)
-{
+                              pcl::PointCloud<pcl::PointXYZ>& source,
+                              Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T ,
+                              bool useInitialGuess) {
 
     struct timeval tv_start, tv_end;
     struct timeval tv_start0, tv_end0;
-    double time_load =0, time_match=0, time_combined=0;
+    double time_load = 0, time_match = 0, time_combined = 0;
 
-    gettimeofday(&tv_start0,NULL);
+    gettimeofday(&tv_start0, NULL);
 
     //initial guess
     pcl::PointCloud<pcl::PointXYZ> sourceCloud = source;
-    
-    Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> Temp, Tinit;
+
+    Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> Temp, Tinit;
     Tinit.setIdentity();
-    if(useInitialGuess)
-    {
-        lslgeneric::transformPointCloudInPlace(T,sourceCloud);
-	Tinit = T;
+    if (useInitialGuess) {
+        lslgeneric::transformPointCloudInPlace(T, sourceCloud);
+        Tinit = T;
     }
 
     T.setIdentity();
     bool ret = false;
 
 #if 0
-    if(isIrregularGrid)
-    {
+    if (isIrregularGrid) {
 
         OctTree<PointTarget> pr1;
         NDTMap<PointTarget> targetNDT( &pr1 );
@@ -84,21 +76,19 @@ bool NDTMatcherD2D_2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
 
         ret = this->match( targetNDT, sourceNDT, T );
 
-    }
-    else
+    } else
 #endif
     {
 
         //iterative regular grid
-        for(int r_ctr = resolutions.size()-1; r_ctr >=0;  r_ctr--)
-        {
+        for (int r_ctr = resolutions.size() - 1; r_ctr >= 0;  r_ctr--) {
 
             current_resolution = resolutions[r_ctr];
 
             LazyGrid prototypeSource(current_resolution);
             LazyGrid prototypeTarget(current_resolution);
 
-            gettimeofday(&tv_start,NULL);
+            gettimeofday(&tv_start, NULL);
             NDTMap targetNDT( &prototypeTarget );
             targetNDT.loadPointCloud( target );
             targetNDT.computeNDTCells();
@@ -106,150 +96,138 @@ bool NDTMatcherD2D_2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
             NDTMap sourceNDT( &prototypeSource );
             sourceNDT.loadPointCloud( sourceCloud );
             sourceNDT.computeNDTCells();
-            gettimeofday(&tv_end,NULL);
+            gettimeofday(&tv_end, NULL);
 
-            time_load += (tv_end.tv_sec-tv_start.tv_sec)*1000.+(tv_end.tv_usec-tv_start.tv_usec)/1000.;
+            time_load += (tv_end.tv_sec - tv_start.tv_sec) * 1000. + (tv_end.tv_usec - tv_start.tv_usec) / 1000.;
             Temp.setIdentity();
 
-            gettimeofday(&tv_start,NULL);
+            gettimeofday(&tv_start, NULL);
             ret = this->match( targetNDT, sourceNDT, Temp );
-            lslgeneric::transformPointCloudInPlace(Temp,sourceCloud);
-            gettimeofday(&tv_end,NULL);
+            lslgeneric::transformPointCloudInPlace(Temp, sourceCloud);
+            gettimeofday(&tv_end, NULL);
 
-            time_match += (tv_end.tv_sec-tv_start.tv_sec)*1000.+(tv_end.tv_usec-tv_start.tv_usec)/1000.;
+            time_match += (tv_end.tv_sec - tv_start.tv_sec) * 1000. + (tv_end.tv_usec - tv_start.tv_usec) / 1000.;
 
             //transform moving
-            T = Temp*T;
+            T = Temp * T;
 
 #ifdef DO_DEBUG_PROC
-            std::cout<<"RESOLUTION: "<<current_resolution<<std::endl;
-            std::cout<<"rotation   : "<<Temp.rotation().eulerAngles(0,1,2).transpose()<<std::endl;
-            std::cout<<"translation: "<<Temp.translation().transpose()<<std::endl;
-            std::cout<<"--------------------------------------------------------\nOverall Transform:\n";
-            std::cout<<"rotation   : "<<T.rotation().eulerAngles(0,1,2).transpose()<<std::endl;
-            std::cout<<"translation: "<<T.translation().transpose()<<std::endl;
+            std::cout << "RESOLUTION: " << current_resolution << std::endl;
+            std::cout << "rotation   : " << Temp.rotation().eulerAngles(0, 1, 2).transpose() << std::endl;
+            std::cout << "translation: " << Temp.translation().transpose() << std::endl;
+            std::cout << "--------------------------------------------------------\nOverall Transform:\n";
+            std::cout << "rotation   : " << T.rotation().eulerAngles(0, 1, 2).transpose() << std::endl;
+            std::cout << "translation: " << T.translation().transpose() << std::endl;
 
 #endif
         }
     }
-    gettimeofday(&tv_end0,NULL);
-    time_combined = (tv_end0.tv_sec-tv_start0.tv_sec)*1000.+(tv_end0.tv_usec-tv_start0.tv_usec)/1000.;
-    std::cout<<"load: "<<time_load<<" match "<<time_match<<" combined "<<time_combined<<std::endl;
-    if(useInitialGuess)
-    {
-	T = T*Tinit;
+    gettimeofday(&tv_end0, NULL);
+    time_combined = (tv_end0.tv_sec - tv_start0.tv_sec) * 1000. + (tv_end0.tv_usec - tv_start0.tv_usec) / 1000.;
+    std::cout << "load: " << time_load << " match " << time_match << " combined " << time_combined << std::endl;
+    if (useInitialGuess) {
+        T = T * Tinit;
     }
     return ret;
 }
 
 bool NDTMatcherD2D_2D::match( NDTMap& targetNDT,
-        NDTMap& sourceNDT,
-        Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T ,
-        bool useInitialGuess)
-{
+                              NDTMap& sourceNDT,
+                              Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T ,
+                              bool useInitialGuess) {
 
     //locals
     bool convergence = false;
     int itr_ctr = 0;
     double step_size = 1;
-    Eigen::Matrix<double,3,1>  pose_increment_v, scg;
+    Eigen::Matrix<double, 3, 1>  pose_increment_v, scg;
     //Eigen::MatrixXd Hessian(6,6), score_gradient(6,1), H(3,3); //column vectors, pose_increment_v(6,1)
-    Eigen::MatrixXd H(3,3), score_gradient_2d(3,1);
-    Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> TR, Tbest;
+    Eigen::MatrixXd H(3, 3), score_gradient_2d(3, 1);
+    Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> TR, Tbest;
     Eigen::Vector3d transformed_vec, mean;
     bool ret = true;
     double score_best = INT_MAX;
-    if(!useInitialGuess)
-    {
+    if (!useInitialGuess) {
         T.setIdentity();
     }
     Tbest = T;
 
     std::vector<NDTCell*> nextNDT = sourceNDT.pseudoTransformNDT(T);
-    while(!convergence)
-    {
+    while (!convergence) {
         TR.setIdentity();
         H.setZero();
         score_gradient_2d.setZero();
 
 //        double score_here = derivativesNDT(nextNDT,targetNDT,score_gradient,Hessian,true);
-        double score_here = derivativesNDT_2d(nextNDT,targetNDT,score_gradient_2d,H,true);
-	scg = score_gradient_2d;
-	std::cout<<"itr "<<itr_ctr<<" score "<<score_here<<std::endl;
-	if(score_here < score_best) 
-	{
-	    Tbest = T;
-	    score_best = score_here;
-	    std::cout<<"best score "<<score_best<<" at "<<itr_ctr<<std::endl;
-	}
+        double score_here = derivativesNDT_2d(nextNDT, targetNDT, score_gradient_2d, H, true);
+        scg = score_gradient_2d;
+        std::cout << "itr " << itr_ctr << " score " << score_here << std::endl;
+        if (score_here < score_best) {
+            Tbest = T;
+            score_best = score_here;
+            std::cout << "best score " << score_best << " at " << itr_ctr << std::endl;
+        }
 
-        if (score_gradient_2d.norm()<= 10e-2*DELTA_SCORE)
-        {
-          std::cout<<"\%gradient vanished, norm : " << score_gradient_2d.norm() << std::endl;
-            for(unsigned int i=0; i<nextNDT.size(); i++)
-            {
-                if(nextNDT[i]!=NULL)
+        if (score_gradient_2d.norm() <= 10e-2 * DELTA_SCORE) {
+            std::cout << "\%gradient vanished, norm : " << score_gradient_2d.norm() << std::endl;
+            for (unsigned int i = 0; i < nextNDT.size(); i++) {
+                if (nextNDT[i] != NULL)
                     delete nextNDT[i];
             }
-	    if(score_here > score_best) 
-	    {
-		std::cout<<"crap iterations, best was "<<score_best<<" last was "<<score_here<<std::endl;
-		T = Tbest;
-	    }
+            if (score_here > score_best) {
+                std::cout << "crap iterations, best was " << score_best << " last was " << score_here << std::endl;
+                T = Tbest;
+            }
             return true;
         }
         //std::cout<<"Hh(:,:,"<<itr_ctr+1<<")  =  ["<< H<<"];\n"<<std::endl;				  //
         //std::cout<<"gradh (:,"<<itr_ctr+1<<")= ["<<scg.transpose()<<"];"<<std::endl;         //
-        
-        Eigen::SelfAdjointEigenSolver<Eigen::Matrix<double,3,3> > Sol (H);
-        Eigen::Matrix<double,3,1> evals = Sol.eigenvalues().real();
+
+        Eigen::SelfAdjointEigenSolver<Eigen::Matrix<double, 3, 3> > Sol (H);
+        Eigen::Matrix<double, 3, 1> evals = Sol.eigenvalues().real();
         double minCoeff = evals.minCoeff();
         double maxCoeff = evals.maxCoeff();
-        if(minCoeff < 10e-3 )   //|| evals.minCoeff() < 0.001*evals.maxCoeff()) {
-        {
-            Eigen::Matrix<double,3,3> evecs = Sol.eigenvectors().real();
+        if (minCoeff < 10e-3 ) { //|| evals.minCoeff() < 0.001*evals.maxCoeff()) {
+            Eigen::Matrix<double, 3, 3> evecs = Sol.eigenvectors().real();
             double regularizer = score_gradient_2d.norm();
-	    regularizer = regularizer + minCoeff > 0 ? regularizer : 0.001*maxCoeff - minCoeff;
+            regularizer = regularizer + minCoeff > 0 ? regularizer : 0.001 * maxCoeff - minCoeff;
             //double regularizer = 0.001*maxCoeff - minCoeff;
-            Eigen::Matrix<double,3,1> reg;
+            Eigen::Matrix<double, 3, 1> reg;
             //ugly
-            reg<<regularizer,regularizer,regularizer;
+            reg << regularizer, regularizer, regularizer;
             evals += reg;
-            Eigen::Matrix<double,3,3> Lam;
+            Eigen::Matrix<double, 3, 3> Lam;
             Lam = evals.asDiagonal();
-            H = evecs*Lam*(evecs.transpose());
+            H = evecs * Lam * (evecs.transpose());
             //std::cerr<<"regularizing\n";
         }
-        std::cout<<"Hh(:,:,"<<itr_ctr+1<<")  =  ["<< H<<"];\n"<<std::endl;				  //
-        std::cout<<"gradh (:,"<<itr_ctr+1<<")= ["<<scg.transpose()<<"];"<<std::endl;         //
+        std::cout << "Hh(:,:," << itr_ctr + 1 << ")  =  [" << H << "];\n" << std::endl;				 //
+        std::cout << "gradh (:," << itr_ctr + 1 << ")= [" << scg.transpose() << "];" << std::endl; //
 
         pose_increment_v = -H.ldlt().solve(scg);
         double dginit = pose_increment_v.dot(scg);
-        if(dginit > 0)
-        {
-            std::cout<<"\%can't decrease in this direction any more, done \n";
-            for(unsigned int i=0; i<nextNDT.size(); i++)
-            {
-                if(nextNDT[i]!=NULL)
+        if (dginit > 0) {
+            std::cout << "\%can't decrease in this direction any more, done \n";
+            for (unsigned int i = 0; i < nextNDT.size(); i++) {
+                if (nextNDT[i] != NULL)
                     delete nextNDT[i];
             }
-	    if(score_here > score_best) 
-	    {
-		//std::cout<<"crap iterations, best was "<<score_best<<" last was "<<score_here<<std::endl;
-		T = Tbest;
-	    }
+            if (score_here > score_best) {
+                //std::cout<<"crap iterations, best was "<<score_best<<" last was "<<score_here<<std::endl;
+                T = Tbest;
+            }
             return true;
         }
-	if(step_control) {
-	    step_size = lineSearch2D(pose_increment_v,nextNDT,targetNDT);
-	} else {
-	    step_size = 1;
-	}
-        pose_increment_v = step_size*pose_increment_v;
+        if (step_control) {
+            step_size = lineSearch2D(pose_increment_v, nextNDT, targetNDT);
+        } else {
+            step_size = 1;
+        }
+        pose_increment_v = step_size * pose_increment_v;
         TR.setIdentity();
-        TR =  Eigen::Translation<double,3>(pose_increment_v(0),pose_increment_v(1),0)*
-              Eigen::AngleAxis<double>(pose_increment_v(2),Eigen::Vector3d::UnitZ()) ;
-        T = TR*T;
+        TR =  Eigen::Translation<double, 3>(pose_increment_v(0), pose_increment_v(1), 0) *
+              Eigen::AngleAxis<double>(pose_increment_v(2), Eigen::Vector3d::UnitZ()) ;
+        T = TR * T;
 //        std::cout<<"step size = "<<step_size<<std::endl;
 //        std::cout<<"incr(:,"<<itr_ctr+1<<") = ["<<pose_increment_v.transpose()<<"]';\n";
 //        std::cout<<"pose(:,"<<itr_ctr+2<<") = ["<<T.translation().transpose()<<" "<<T.rotation().eulerAngles(0,1,2).transpose()<<"]';\n";
@@ -258,67 +236,61 @@ bool NDTMatcherD2D_2D::match( NDTMap& targetNDT,
             if(nextNDT[i]!=NULL)
                 delete nextNDT[i];
         }
-	*/
-        for(unsigned int i=0; i<nextNDT.size(); i++)
-        {
-	    //TRANSFORM
-	    Eigen::Vector3d meanC = nextNDT[i]->getMean();
-	    Eigen::Matrix3d covC = nextNDT[i]->getCov();
-	    meanC = TR*meanC;
-	    covC = TR.rotation()*covC*TR.rotation().transpose();
-	    nextNDT[i]->setMean(meanC);
-	    nextNDT[i]->setCov(covC);
+        */
+        for (unsigned int i = 0; i < nextNDT.size(); i++) {
+            //TRANSFORM
+            Eigen::Vector3d meanC = nextNDT[i]->getMean();
+            Eigen::Matrix3d covC = nextNDT[i]->getCov();
+            meanC = TR * meanC;
+            covC = TR.rotation() * covC * TR.rotation().transpose();
+            nextNDT[i]->setMean(meanC);
+            nextNDT[i]->setCov(covC);
         }
 
-        if(itr_ctr>0)
-        {
+        if (itr_ctr > 0) {
             convergence = ((pose_increment_v.norm()) < DELTA_SCORE);
         }
-        if(itr_ctr>ITR_MAX)
-        {
+        if (itr_ctr > ITR_MAX) {
             convergence = true;
             ret = false;
         }
         itr_ctr++;
     }
-    
+
     //std::vector<NDTCell<PointSource>*> nextNDT = sourceNDT.pseudoTransformNDT(T);
     score_gradient_2d.setZero();
     //double score_here = derivativesNDT(nextNDT,targetNDT,score_gradient,Hessian,false);
-    double score_here = derivativesNDT_2d(nextNDT,targetNDT,score_gradient_2d,H,false);
-    if(score_here > score_best) 
-    {
-	//std::cout<<"crap iterations, best was "<<score_best<<" last was "<<score_here<<std::endl;
-	T = Tbest;
+    double score_here = derivativesNDT_2d(nextNDT, targetNDT, score_gradient_2d, H, false);
+    if (score_here > score_best) {
+        //std::cout<<"crap iterations, best was "<<score_best<<" last was "<<score_here<<std::endl;
+        T = Tbest;
     }
-    for(unsigned int i=0; i<nextNDT.size(); i++)
-    {
-	if(nextNDT[i]!=NULL)
-	    delete nextNDT[i];
+    for (unsigned int i = 0; i < nextNDT.size(); i++) {
+        if (nextNDT[i] != NULL)
+            delete nextNDT[i];
     }
-    
+
     return ret;
 }
 
 //iteratively update the score gradient and hessian (2d version)
 bool NDTMatcherD2D_2D::update_gradient_hessian_local_2d(
-        Eigen::MatrixXd &score_gradient,
-        Eigen::MatrixXd &Hessian,
-	const Eigen::Vector3d & x,
-	const Eigen::Matrix3d & B,
-        const double &likelihood,
-        const Eigen::Matrix<double,3,3> &_Jest,
-        const Eigen::Matrix<double,9,3> &_Hest,
-        const Eigen::Matrix<double,3,9> &_Zest,
-        const Eigen::Matrix<double,9,9> &_ZHest,
-        bool computeHessian) 
-{
+    Eigen::MatrixXd &score_gradient,
+    Eigen::MatrixXd &Hessian,
+    const Eigen::Vector3d & x,
+    const Eigen::Matrix3d & B,
+    const double &likelihood,
+    const Eigen::Matrix<double, 3, 3> &_Jest,
+    const Eigen::Matrix<double, 9, 3> &_Hest,
+    const Eigen::Matrix<double, 3, 9> &_Zest,
+    const Eigen::Matrix<double, 9, 9> &_ZHest,
+    bool computeHessian) {
 
     //vars for gradient
-    Eigen::Matrix<double,3,1> _xtBJ, _xtBZBx, _Q;
+    Eigen::Matrix<double, 3, 1> _xtBJ, _xtBZBx, _Q;
     //vars for hessian
-    Eigen::Matrix<double,3,3> _xtBZBJ, _xtBH, _xtBZBZBx, _xtBZhBx;
-    Eigen::Matrix<double,1,3> _TMP1, _xtB;
+    Eigen::Matrix<double, 3, 3> _xtBZBJ, _xtBH, _xtBZBZBx, _xtBZhBx;
+    Eigen::Matrix<double, 1, 3> _TMP1, _xtB;
 
     _xtBJ.setZero();
     _xtBZBx.setZero();
@@ -330,32 +302,29 @@ bool NDTMatcherD2D_2D::update_gradient_hessian_local_2d(
     _TMP1.setZero();
     _xtB.setZero();
 
-    _xtB = x.transpose()*B;
-    _xtBJ = _xtB*_Jest;
+    _xtB = x.transpose() * B;
+    _xtBJ = _xtB * _Jest;
 
 //    for(unsigned int i=0; i<3; i++)
 //    {
-        _TMP1 = _xtB*_Zest.block<3,3>(0,6)*B;
-        _xtBZBx(2) = _TMP1*x;
-        if(computeHessian)
-        {
-            _xtBZBJ.col(2) = (_TMP1*_Jest).transpose(); //-
-            for(unsigned int j=0; j<3; j++)
-            {
-                _xtBH(2,j) = _xtB*_Hest.block<3,1>(6,j);
-                _xtBZBZBx(2,j) = _TMP1*_Zest.block<3,3>(0,3*j)*B*x;
-                _xtBZhBx(2,j) = _xtB*_ZHest.block<3,3>(6,3*j)*B*x;
-            }
+    _TMP1 = _xtB * _Zest.block<3, 3>(0, 6) * B;
+    _xtBZBx(2) = _TMP1 * x;
+    if (computeHessian) {
+        _xtBZBJ.col(2) = (_TMP1 * _Jest).transpose(); //-
+        for (unsigned int j = 0; j < 3; j++) {
+            _xtBH(2, j) = _xtB * _Hest.block<3, 1>(6, j);
+            _xtBZBZBx(2, j) = _TMP1 * _Zest.block<3, 3>(0, 3 * j) * B * x;
+            _xtBZhBx(2, j) = _xtB * _ZHest.block<3, 3>(6, 3 * j) * B * x;
         }
+    }
 //    }
-    _Q = 2*_xtBJ-_xtBZBx;
-    double factor = -(lfd2/2)*likelihood;
-    score_gradient += _Q*factor;
+    _Q = 2 * _xtBJ - _xtBZBx;
+    double factor = -(lfd2 / 2) * likelihood;
+    score_gradient += _Q * factor;
 
-    if(computeHessian)
-    {
-        Hessian += factor*(2*_Jest.transpose()*B*_Jest+2*_xtBH -_xtBZhBx -2*_xtBZBJ.transpose()
-                           -2*_xtBZBJ +_xtBZBZBx +_xtBZBZBx.transpose() -lfd2*_Q*_Q.transpose()/2 ); // + Eigen::Matrix<double,6,6>::Identity();
+    if (computeHessian) {
+        Hessian += factor * (2 * _Jest.transpose() * B * _Jest + 2 * _xtBH - _xtBZhBx - 2 * _xtBZBJ.transpose()
+                             - 2 * _xtBZBJ + _xtBZBZBx + _xtBZBZBx.transpose() - lfd2 * _Q * _Q.transpose() / 2 ); // + Eigen::Matrix<double,6,6>::Identity();
 
     }
     return true;
@@ -368,8 +337,7 @@ bool NDTMatcherD2D_2D::update_gradient_hessian_2d(
     const Eigen::Vector3d & x,
     const Eigen::Matrix3d & B,
     const double &likelihood,
-    bool computeHessian)
-{
+    bool computeHessian) {
 
     xtBJ.setZero();
     xtBZBx.setZero();
@@ -381,30 +349,27 @@ bool NDTMatcherD2D_2D::update_gradient_hessian_2d(
     xtBZhBx.setZero();
     TMP1.setZero();
     xtB.setZero();
-    
-    xtB = x.transpose()*B;
-    xtBJ = xtB*Jest;
 
-    TMP1 = xtB*Zest.block<3,3>(0,6)*B;
-    xtBZBx(2) = TMP1*x;
-    if(computeHessian)
-    {
-	xtBZBJ.col(2) = (TMP1*Jest).transpose(); //-
-	for(unsigned int j=0; j<3; j++)
-	{
-	    xtBH(2,j) = xtB*Hest.block<3,1>(6,j);
-	    xtBZBZBx(2,j) = TMP1*Zest.block<3,3>(0,3*j)*B*x;
-	    xtBZhBx(2,j) = xtB*ZHest.block<3,3>(6,3*j)*B*x;
-	}
+    xtB = x.transpose() * B;
+    xtBJ = xtB * Jest;
+
+    TMP1 = xtB * Zest.block<3, 3>(0, 6) * B;
+    xtBZBx(2) = TMP1 * x;
+    if (computeHessian) {
+        xtBZBJ.col(2) = (TMP1 * Jest).transpose(); //-
+        for (unsigned int j = 0; j < 3; j++) {
+            xtBH(2, j) = xtB * Hest.block<3, 1>(6, j);
+            xtBZBZBx(2, j) = TMP1 * Zest.block<3, 3>(0, 3 * j) * B * x;
+            xtBZhBx(2, j) = xtB * ZHest.block<3, 3>(6, 3 * j) * B * x;
+        }
     }
-    Q = 2*xtBJ-xtBZBx;
-    double factor = -(lfd2/2)*likelihood;
-    score_gradient += Q*factor;
+    Q = 2 * xtBJ - xtBZBx;
+    double factor = -(lfd2 / 2) * likelihood;
+    score_gradient += Q * factor;
 
-    if(computeHessian)
-    {
-	Hessian += factor*(2*Jest.transpose()*B*Jest+2*xtBH -xtBZhBx -2*xtBZBJ.transpose()
-		-2*xtBZBJ +xtBZBZBx +xtBZBZBx.transpose() -lfd2*Q*Q.transpose()/2 );
+    if (computeHessian) {
+        Hessian += factor * (2 * Jest.transpose() * B * Jest + 2 * xtBH - xtBZhBx - 2 * xtBZBJ.transpose()
+                             - 2 * xtBZBJ + xtBZBZBx + xtBZBZBx.transpose() - lfd2 * Q * Q.transpose() / 2 );
 
     }
     return true;
@@ -412,52 +377,48 @@ bool NDTMatcherD2D_2D::update_gradient_hessian_2d(
 
 //pre-computes the derivative matrices Jest, Hest, Zest, ZHest
 void NDTMatcherD2D_2D::computeDerivativesLocal_2d(Eigen::Vector3d &x, Eigen::Matrix3d C1,
-                                 Eigen::Matrix<double,3,3> &_Jest,
-                                 Eigen::Matrix<double,9,3> &_Hest,
-                                 Eigen::Matrix<double,3,9> &_Zest,
-                                 Eigen::Matrix<double,9,9> &_ZHest,
-                                 bool computeHessian) 
-{
-    _Jest(0,2) = -x(1);
-    _Jest(1,2) = x(0);
+        Eigen::Matrix<double, 3, 3> &_Jest,
+        Eigen::Matrix<double, 9, 3> &_Hest,
+        Eigen::Matrix<double, 3, 9> &_Zest,
+        Eigen::Matrix<double, 9, 9> &_ZHest,
+        bool computeHessian) {
+    _Jest(0, 2) = -x(1);
+    _Jest(1, 2) = x(0);
 
     Eigen::Matrix3d myBlock;
     //_Zest
-    _Zest.block<3,3>(0,6)<<
-	-2*C1(0,1), -C1(1,1) + C1(0,0),  -C1(1,2),
-	-C1(1,1) + C1(0,0),    2*C1(0,1), C1(0,2),
-	-C1(1,2),      C1(0,2),    0;
+    _Zest.block<3, 3>(0, 6) <<
+                            -2 * C1(0, 1), -C1(1, 1) + C1(0, 0),  -C1(1, 2),
+                            -C1(1, 1) + C1(0, 0),    2 * C1(0, 1), C1(0, 2),
+                            -C1(1, 2),      C1(0, 2),    0;
 
-    if(computeHessian)
-    {
-	_Hest.block<3,1>(6,2)<<-x(0),-x(1),0;
-	_ZHest.block<3,3>(6,6)<<
-	    2*C1(1,1) - 2*C1(0,0),        -4*C1(0,1), -C1(0,2),
-	    -4*C1(0,1), 2*C1(0,0) - 2*C1(1,1), -C1(1,2),
-	    -C1(0,2),          -C1(1,2),    0;
+    if (computeHessian) {
+        _Hest.block<3, 1>(6, 2) << -x(0), -x(1), 0;
+        _ZHest.block<3, 3>(6, 6) <<
+                                 2 * C1(1, 1) - 2 * C1(0, 0),        -4 * C1(0, 1), -C1(0, 2),
+                                 -4 * C1(0, 1), 2 * C1(0, 0) - 2 * C1(1, 1), -C1(1, 2),
+                                 -C1(0, 2),          -C1(1, 2),    0;
     }
 }
 
-void NDTMatcherD2D_2D::computeDerivatives_2d(Eigen::Vector3d &x, Eigen::Matrix3d C1, bool computeHessian)
-{
+void NDTMatcherD2D_2D::computeDerivatives_2d(Eigen::Vector3d &x, Eigen::Matrix3d C1, bool computeHessian) {
 
-    Jest(0,2) = -x(1);
-    Jest(1,2) = x(0);
+    Jest(0, 2) = -x(1);
+    Jest(1, 2) = x(0);
 
     Eigen::Matrix3d myBlock;
     //_Zest
-    Zest.block<3,3>(0,6)<<
-	-2*C1(0,1), -C1(1,1) + C1(0,0),  -C1(1,2),
-	-C1(1,1) + C1(0,0),    2*C1(0,1), C1(0,2),
-	-C1(1,2),      C1(0,2),    0;
+    Zest.block<3, 3>(0, 6) <<
+                           -2 * C1(0, 1), -C1(1, 1) + C1(0, 0),  -C1(1, 2),
+                           -C1(1, 1) + C1(0, 0),    2 * C1(0, 1), C1(0, 2),
+                           -C1(1, 2),      C1(0, 2),    0;
 
-    if(computeHessian)
-    {
-	Hest.block<3,1>(6,2)<<-x(0),-x(1),0;
-	ZHest.block<3,3>(6,6)<<
-	    2*C1(1,1) - 2*C1(0,0),        -4*C1(0,1), -C1(0,2),
-	    -4*C1(0,1), 2*C1(0,0) - 2*C1(1,1), -C1(1,2),
-	    -C1(0,2),          -C1(1,2),    0;
+    if (computeHessian) {
+        Hest.block<3, 1>(6, 2) << -x(0), -x(1), 0;
+        ZHest.block<3, 3>(6, 6) <<
+                                2 * C1(1, 1) - 2 * C1(0, 0),        -4 * C1(0, 1), -C1(0, 2),
+                                -4 * C1(0, 1), 2 * C1(0, 0) - 2 * C1(1, 1), -C1(1, 2),
+                                -C1(0, 2),          -C1(1, 2),    0;
     }
 }
 
@@ -468,13 +429,12 @@ void NDTMatcherD2D_2D::computeDerivatives_2d(Eigen::Vector3d &x, Eigen::Matrix3d
 #define USE_OMP_NDT_MATCHER_D2D_2D
 //compute the score gradient of a point cloud + transformation to an NDT
 double NDTMatcherD2D_2D::derivativesNDT_2d(
-        const std::vector<NDTCell*> &sourceNDT,
-        const NDTMap &targetNDT,
-        Eigen::MatrixXd &score_gradient,
-        Eigen::MatrixXd &Hessian,
-        bool computeHessian
-    )
-{
+    const std::vector<NDTCell*> &sourceNDT,
+    const NDTMap &targetNDT,
+    Eigen::MatrixXd &score_gradient,
+    Eigen::MatrixXd &Hessian,
+    bool computeHessian
+) {
 
 //    struct timeval tv_start, tv_end;
     double score_here = 0;
@@ -493,9 +453,9 @@ double NDTMatcherD2D_2D::derivativesNDT_2d(
 #define N_THREADS_2D 6
 
     //n_threads = omp_get_num_threads();
-    score_gradient_omp.resize(n_dimensions,N_THREADS_2D);
-    score_here_omp.resize(1,N_THREADS_2D);
-    Hessian_omp.resize(n_dimensions,n_dimensions*N_THREADS_2D);
+    score_gradient_omp.resize(n_dimensions, N_THREADS_2D);
+    score_here_omp.resize(1, N_THREADS_2D);
+    Hessian_omp.resize(n_dimensions, n_dimensions * N_THREADS_2D);
 
     score_gradient_omp.setZero();
     score_here_omp.setZero();
@@ -505,19 +465,18 @@ double NDTMatcherD2D_2D::derivativesNDT_2d(
     #pragma omp parallel num_threads(N_THREADS_2D)
     {
         #pragma omp for
-        for(unsigned int i=0; i<sourceNDT.size(); i++)
-        {
+        for (unsigned int i = 0; i < sourceNDT.size(); i++) {
             pcl::PointXYZ point;
             Eigen::Vector3d transformed;
             Eigen::Vector3d meanMoving, meanFixed;
             Eigen::Matrix3d CMoving, CFixed, CSum, Cinv, R;
-            Eigen::MatrixXd score_gradient_omp_loc(n_dimensions,1);
-            Eigen::MatrixXd Hessian_omp_loc(n_dimensions,n_dimensions);
-            Eigen::Matrix<double,3,3> _Jest;
-            Eigen::Matrix<double,9,3> _Hest;
-            Eigen::Matrix<double,3,9> _Zest;
-            Eigen::Matrix<double,9,9> _ZHest;
-            double score_here_loc=0;
+            Eigen::MatrixXd score_gradient_omp_loc(n_dimensions, 1);
+            Eigen::MatrixXd Hessian_omp_loc(n_dimensions, n_dimensions);
+            Eigen::Matrix<double, 3, 3> _Jest;
+            Eigen::Matrix<double, 9, 3> _Hest;
+            Eigen::Matrix<double, 3, 9> _Zest;
+            Eigen::Matrix<double, 9, 9> _ZHest;
+            double score_here_loc = 0;
             int thread_id = omp_get_thread_num();
             NDTCell *cell;
             bool exists = false;
@@ -527,46 +486,40 @@ double NDTMatcherD2D_2D::derivativesNDT_2d(
             score_gradient_omp_loc.setZero();
             Hessian_omp_loc.setZero();
             _Jest.setZero();
-            _Jest.block<2,2>(0,0).setIdentity();
+            _Jest.block<2, 2>(0, 0).setIdentity();
             _Hest.setZero();
             _Zest.setZero();
             _ZHest.setZero();
 
             meanMoving = sourceNDT[i]->getMean();
-            CMoving= sourceNDT[i]->getCov();
+            CMoving = sourceNDT[i]->getCov();
             computeDerivativesLocal_2d(meanMoving, CMoving, _Jest, _Hest, _Zest, _ZHest, computeHessian);
 
             point.x = meanMoving(0);
             point.y = meanMoving(1);
             point.z = meanMoving(2);
-            std::vector<NDTCell*> cells = targetNDT.getCellsForPoint(point,n_neighbours); //targetNDT.getAllCells(); //
-            for(unsigned int j=0; j<cells.size(); j++)
-            {
+            std::vector<NDTCell*> cells = targetNDT.getCellsForPoint(point, n_neighbours); //targetNDT.getAllCells(); //
+            for (unsigned int j = 0; j < cells.size(); j++) {
                 cell = cells[j];
-                if(cell == NULL)
-                {
+                if (cell == NULL) {
                     continue;
                 }
-                if(cell->hasGaussian_)
-                {
+                if (cell->hasGaussian_) {
                     transformed = meanMoving - cell->getMean();
                     CFixed = cell->getCov();
-                    CSum = (CFixed+CMoving);
-                    CSum.computeInverseAndDetWithCheck(Cinv,det,exists);
-                    if(!exists)
-                    {
+                    CSum = (CFixed + CMoving);
+                    CSum.computeInverseAndDetWithCheck(Cinv, det, exists);
+                    if (!exists) {
                         continue;
                     }
-                    double l = (transformed).dot(Cinv*(transformed));
-                    if(l*0 != 0)
-                    {
+                    double l = (transformed).dot(Cinv * (transformed));
+                    if (l * 0 != 0) {
                         continue;
                     }
                     //if(l > 120) continue;
-                    double sh = -lfd1*(exp(-lfd2*l/2));
-                    if(!update_gradient_hessian_local_2d(score_gradient_omp_loc,Hessian_omp_loc,transformed, Cinv, sh,
-                                                      _Jest, _Hest, _Zest, _ZHest, computeHessian))
-                    {
+                    double sh = -lfd1 * (exp(-lfd2 * l / 2));
+                    if (!update_gradient_hessian_local_2d(score_gradient_omp_loc, Hessian_omp_loc, transformed, Cinv, sh,
+                                                          _Jest, _Hest, _Zest, _ZHest, computeHessian)) {
                         continue;
                     }
                     score_here_loc += sh;
@@ -575,8 +528,8 @@ double NDTMatcherD2D_2D::derivativesNDT_2d(
             }
             //score_gradient_omp.block(0,thread_id,n_dimensions,1) += score_gradient_omp_loc;
             score_gradient_omp.col(thread_id) += score_gradient_omp_loc;
-            Hessian_omp.block(0,n_dimensions*thread_id,n_dimensions,n_dimensions) += Hessian_omp_loc;
-            score_here_omp(0,thread_id) += score_here_loc;
+            Hessian_omp.block(0, n_dimensions * thread_id, n_dimensions, n_dimensions) += Hessian_omp_loc;
+            score_here_omp(0, thread_id) += score_here_loc;
 
         }
     } //end pragma block
@@ -585,12 +538,10 @@ double NDTMatcherD2D_2D::derivativesNDT_2d(
 
     score_gradient = score_gradient_omp.rowwise().sum();
     score_here = score_here_omp.sum();
-    if(computeHessian)
-    {
+    if (computeHessian) {
         //std::cout<<"Homp: "<<Hessian_omp<<std::endl;
-        for(int i=0; i<N_THREADS_2D; ++i)
-        {
-            Hessian += Hessian_omp.block(0,n_dimensions*i,n_dimensions,n_dimensions);
+        for (int i = 0; i < N_THREADS_2D; ++i) {
+            Hessian += Hessian_omp.block(0, n_dimensions * i, n_dimensions, n_dimensions);
         }
     }
 
@@ -602,49 +553,42 @@ double NDTMatcherD2D_2D::derivativesNDT_2d(
     NDTCell *cell;
     bool exists = false;
     double det = 0;
-    for(unsigned int i=0; i<sourceNDT.size(); i++)
-    {
+    for (unsigned int i = 0; i < sourceNDT.size(); i++) {
         meanMoving = sourceNDT[i]->getMean();
-        CMoving= sourceNDT[i]->getCov();
+        CMoving = sourceNDT[i]->getCov();
         computeDerivatives_2d(meanMoving, CMoving, computeHessian);
 
         point.x = meanMoving(0);
         point.y = meanMoving(1);
         point.z = meanMoving(2);
-        std::vector<NDTCell*> cells = targetNDT.getCellsForPoint(point,n_neighbours); //targetNDT.getAllCells(); //
-        for(int j=0; j<cells.size(); j++)
-        {
+        std::vector<NDTCell*> cells = targetNDT.getCellsForPoint(point, n_neighbours); //targetNDT.getAllCells(); //
+        for (int j = 0; j < cells.size(); j++) {
             cell = cells[j];
-            if(cell == NULL)
-            {
+            if (cell == NULL) {
                 continue;
             }
-            if(cell->hasGaussian_)
-            {
+            if (cell->hasGaussian_) {
                 transformed = meanMoving - cell->getMean();
                 CFixed = cell->getCov();
-                CSum = (CFixed+CMoving);
-                CSum.computeInverseAndDetWithCheck(Cinv,det,exists);
-                if(!exists)
-                {
+                CSum = (CFixed + CMoving);
+                CSum.computeInverseAndDetWithCheck(Cinv, det, exists);
+                if (!exists) {
                     //delete cell;
                     continue;
                 }
-                double l = (transformed).dot(Cinv*(transformed));
-                if(l*0 != 0)
-                {
+                double l = (transformed).dot(Cinv * (transformed));
+                if (l * 0 != 0) {
                     //delete cell;
                     continue;
                 }
                 //if(l > 120) continue;
-                double sh = -lfd1*(exp(-lfd2*l/2));
+                double sh = -lfd1 * (exp(-lfd2 * l / 2));
                 //compute Jest, Hest, Zest, ZHest
                 //update score gradient
                 //std::cout<<"m1 = ["<<meanMoving.transpose()<<"]';\n m2 = ["<<cell->getMean().transpose()<<"]';\n";
                 //std::cout<<"C1 = ["<<CMoving<<"];\n C2 = ["<<CFixed<<"];\n";
 //		    if(!update_gradient_hessian(score_gradient, Hessian, transformed, Cinv, sh, computeHessian))
-                if(!update_gradient_hessian_2d(score_gradient,Hessian,transformed, Cinv, sh, computeHessian))
-                {
+                if (!update_gradient_hessian_2d(score_gradient, Hessian, transformed, Cinv, sh, computeHessian)) {
                     //delete cell;
                     continue;
                 }
@@ -664,11 +608,10 @@ double NDTMatcherD2D_2D::derivativesNDT_2d(
 }
 
 double NDTMatcherD2D_2D::lineSearch2D(
-    Eigen::Matrix<double,3,1> &increment,
+    Eigen::Matrix<double, 3, 1> &increment,
     std::vector<NDTCell*> &sourceNDT,
     NDTMap &targetNDT
-)
-{
+) {
 
     // default params
     double stp = 1.0; //default step
@@ -685,12 +628,12 @@ double NDTMatcherD2D_2D::lineSearch2D(
     std::vector<NDTCell*> sourceNDTHere;
     double score_init = 0.0;
 
-    Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> ps;
+    Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> ps;
     ps.setIdentity();
 
-    Eigen::Matrix<double,3,1> scg_here;
-    Eigen::MatrixXd pincr(3,1), score_gradient_here(3,1);
-    Eigen::MatrixXd pseudoH(3,3);
+    Eigen::Matrix<double, 3, 1> scg_here;
+    Eigen::MatrixXd pincr(3, 1), score_gradient_here(3, 1);
+    Eigen::MatrixXd pseudoH(3, 3);
     Eigen::Vector3d eulerAngles;
     /////
 
@@ -711,7 +654,7 @@ double NDTMatcherD2D_2D::lineSearch2D(
 //  cout<<"increment "<<increment.transpose()<<endl;
 
     score_gradient_here.setZero();
-    score_init = derivativesNDT_2d(sourceNDT,targetNDT,score_gradient_here,pseudoH,false);
+    score_init = derivativesNDT_2d(sourceNDT, targetNDT, score_gradient_here, pseudoH, false);
     scg_here = score_gradient_here;
 
     //scg_here(0,0) = score_gradient_here(0,0);
@@ -721,8 +664,7 @@ double NDTMatcherD2D_2D::lineSearch2D(
     dginit = increment.dot(scg_here);
 //  cout<<"dginit "<<dginit<<endl;
 
-    if (dginit >= 0.0)
-    {
+    if (dginit >= 0.0) {
         std::cout << "MoreThuente::cvsrch - wrong direction (dginit = " << dginit << ")" << std::endl;
         //return recoverystep; //TODO TSV -1; //
         //return -1;
@@ -730,18 +672,14 @@ double NDTMatcherD2D_2D::lineSearch2D(
         increment = -increment;
         dginit = -dginit;
 
-        if (dginit >= 0.0)
-        {
-            for(unsigned int i=0; i<sourceNDTHere.size(); i++)
-            {
-                if(sourceNDTHere[i]!=NULL)
+        if (dginit >= 0.0) {
+            for (unsigned int i = 0; i < sourceNDTHere.size(); i++) {
+                if (sourceNDTHere[i] != NULL)
                     delete sourceNDTHere[i];
             }
             return recoverystep;
         }
-    }
-    else
-    {
+    } else {
 //     cout<<"correct direction (dginit = " << dginit << ")" << endl;
     }
 
@@ -783,17 +721,13 @@ double NDTMatcherD2D_2D::lineSearch2D(
     double stmin, stmax;
     double fm, fxm, fym, dgm, dgxm, dgym;
 
-    while (1)
-    {
+    while (1) {
         // Set the minimum and maximum steps to correspond to the present
         // interval of uncertainty.
-        if (brackt)
-        {
+        if (brackt) {
             stmin = MoreThuente::min(stx, sty);
             stmax = MoreThuente::max(stx, sty);
-        }
-        else
-        {
+        } else {
             stmin = stx;
             stmax = stp + 4 * (stp - stx);
         }
@@ -807,8 +741,7 @@ double NDTMatcherD2D_2D::lineSearch2D(
 
         if ((brackt && ((stp <= stmin) || (stp >= stmax))) ||
                 (nfev >= maxfev - 1) || (infoc == 0) ||
-                (brackt && (stmax - stmin <= xtol * stmax)))
-        {
+                (brackt && (stmax - stmin <= xtol * stmax))) {
             stp = stx;
         }
 
@@ -816,26 +749,23 @@ double NDTMatcherD2D_2D::lineSearch2D(
         // and compute the directional derivative.
         ///////////////////////////////////////////////////////////////////////////
 
-        pincr = stp*increment;
+        pincr = stp * increment;
 
-        ps = Eigen::Translation<double,3>(pincr(0),pincr(1),0)*
-             Eigen::AngleAxisd(pincr(2),Eigen::Vector3d::UnitZ());
+        ps = Eigen::Translation<double, 3>(pincr(0), pincr(1), 0) *
+             Eigen::AngleAxisd(pincr(2), Eigen::Vector3d::UnitZ());
 
-        for(unsigned int i=0; i<sourceNDTHere.size(); i++)
-        {
-            if(sourceNDTHere[i]!=NULL)
+        for (unsigned int i = 0; i < sourceNDTHere.size(); i++) {
+            if (sourceNDTHere[i] != NULL)
                 delete sourceNDTHere[i];
         }
         sourceNDTHere.clear();
-        for(unsigned int i=0; i<sourceNDT.size(); i++)
-        {
+        for (unsigned int i = 0; i < sourceNDT.size(); i++) {
             NDTCell *cell = sourceNDT[i];
-            if(cell!=NULL)
-            {
+            if (cell != NULL) {
                 Eigen::Vector3d mean = cell->getMean();
                 Eigen::Matrix3d cov = cell->getCov();
-                mean = ps*mean;
-                cov = ps.rotation()*cov*ps.rotation().transpose();
+                mean = ps * mean;
+                cov = ps.rotation() * cov * ps.rotation().transpose();
                 NDTCell* nd = (NDTCell*)cell->copy();
                 nd->setMean(mean);
                 nd->setCov(cov);
@@ -853,7 +783,7 @@ double NDTMatcherD2D_2D::lineSearch2D(
 
         //option 2:
         //f = scoreNDT(sourceNDTHere,targetNDT);
-        f = derivativesNDT_2d(sourceNDTHere,targetNDT,score_gradient_here,pseudoH,false);
+        f = derivativesNDT_2d(sourceNDTHere, targetNDT, score_gradient_here, pseudoH, false);
         //std::cout<<"scg2  " <<score_gradient_here.transpose()<<std::endl;
 
 
@@ -893,7 +823,7 @@ double NDTMatcherD2D_2D::lineSearch2D(
         if (nfev >= maxfev)
             info = 3;			// max'd out on fevals
 
-        if (brackt && (stmax-stmin <= xtol*stmax))
+        if (brackt && (stmax - stmin <= xtol * stmax))
             info = 2;			// bracketed soln
 
         // RPP sufficient decrease test can be different
@@ -903,13 +833,11 @@ double NDTMatcherD2D_2D::lineSearch2D(
         //cout<<"ftest2 "<<gtol*(-dginit)<<endl;
         //cout<<"sufficientDecrease? "<<sufficientDecreaseTest<<endl;
         //cout<<"curvature ok? "<<(fabs(dg) <= gtol*(-dginit))<<endl;
-        if ((sufficientDecreaseTest) && (fabs(dg) <= gtol*(-dginit)))
+        if ((sufficientDecreaseTest) && (fabs(dg) <= gtol * (-dginit)))
             info = 1;			// Success!!!!
 
-        if (info != 0) 		// Line search is done
-        {
-            if (info != 1) 		// Line search failed
-            {
+        if (info != 0) {	// Line search is done
+            if (info != 1) {	// Line search failed
                 // RPP add
                 // counter.incrementNumFailedLineSearches();
 
@@ -920,9 +848,7 @@ double NDTMatcherD2D_2D::lineSearch2D(
 
                 //message = "(USING RECOVERY STEP!)";
 
-            }
-            else 			// Line search succeeded
-            {
+            } else {		// Line search succeeded
                 //message = "(STEP ACCEPTED!)";
             }
 
@@ -930,9 +856,8 @@ double NDTMatcherD2D_2D::lineSearch2D(
 
             // Returning the line search flag
             //cout<<"LineSearch::"<<message<<" info "<<info<<endl;
-            for(unsigned int i=0; i<sourceNDTHere.size(); i++)
-            {
-                if(sourceNDTHere[i]!=NULL)
+            for (unsigned int i = 0; i < sourceNDTHere.size(); i++) {
+                if (sourceNDTHere[i] != NULL)
                     delete sourceNDTHere[i];
             }
             //std::cout<<"nfev = "<<nfev<<std::endl;
@@ -946,8 +871,7 @@ double NDTMatcherD2D_2D::lineSearch2D(
         // In the first stage we seek a step for which the modified
         // function has a nonpositive value and nonnegative derivative.
 
-        if (stage1 && (f <= ftest1) && (dg >= MoreThuente::min(ftol, gtol) * dginit))
-        {
+        if (stage1 && (f <= ftest1) && (dg >= MoreThuente::min(ftol, gtol) * dginit)) {
             stage1 = false;
         }
 
@@ -957,8 +881,7 @@ double NDTMatcherD2D_2D::lineSearch2D(
         // lower function value has been obtained but the decrease is not
         // sufficient.
 
-        if (stage1 && (f <= fx) && (f > ftest1))
-        {
+        if (stage1 && (f <= fx) && (f > ftest1)) {
 
             // Define the modified function and derivative values.
 
@@ -973,39 +896,37 @@ double NDTMatcherD2D_2D::lineSearch2D(
             // and to compute the new step.
 
             //VALGRIND_CHECK_VALUE_IS_DEFINED(dgm);
-            infoc = MoreThuente::cstep(stx,fxm,dgxm,sty,fym,dgym,stp,fm,dgm,
-                                       brackt,stmin,stmax);
+            infoc = MoreThuente::cstep(stx, fxm, dgxm, sty, fym, dgym, stp, fm, dgm,
+                                       brackt, stmin, stmax);
 
             // Reset the function and gradient values for f.
 
-            fx = fxm + stx*dgtest;
-            fy = fym + sty*dgtest;
+            fx = fxm + stx * dgtest;
+            fy = fym + sty * dgtest;
             dgx = dgxm + dgtest;
             dgy = dgym + dgtest;
 
         }
 
-        else
-        {
+        else {
 
             // Call cstep to update the interval of uncertainty
             // and to compute the new step.
 
             //VALGRIND_CHECK_VALUE_IS_DEFINED(dg);
-            infoc = MoreThuente::cstep(stx,fx,dgx,sty,fy,dgy,stp,f,dg,
-                                       brackt,stmin,stmax);
+            infoc = MoreThuente::cstep(stx, fx, dgx, sty, fy, dgy, stp, f, dg,
+                                       brackt, stmin, stmax);
 
         }
 
         // Force a sufficient decrease in the size of the
         // interval of uncertainty.
 
-        if (brackt)
-        {
+        if (brackt) {
             if (fabs(sty - stx) >= 0.66 * width1)
                 stp = stx + 0.5 * (sty - stx);
             width1 = width;
-            width = fabs(sty-stx);
+            width = fabs(sty - stx);
         }
 
     } // while-loop
@@ -1015,8 +936,7 @@ double NDTMatcherD2D_2D::lineSearch2D(
 int NDTMatcherD2D_2D::MoreThuente::cstep(double& stx, double& fx, double& dx,
         double& sty, double& fy, double& dy,
         double& stp, double& fp, double& dp,
-        bool& brackt, double stmin, double stmax)
-{
+        bool& brackt, double stmin, double stmax) {
     int info = 0;
 
     // Check the input parameters for errors.
@@ -1038,11 +958,10 @@ int NDTMatcherD2D_2D::MoreThuente::cstep(double& stx, double& fx, double& dx,
     double theta;
     double s;
     double gamma;
-    double p,q,r;
+    double p, q, r;
     double stpc, stpq, stpf;
 
-    if (fp > fx)
-    {
+    if (fp > fx) {
         info = 1;
         bound = 1;
         theta = 3 * (fx - fp) / (stp - stx) + dx + dp;
@@ -1072,13 +991,12 @@ int NDTMatcherD2D_2D::MoreThuente::cstep(double& stx, double& fx, double& dx,
     // stx than the quadratic (secant) step, the cubic step is taken,
     // else the quadratic step is taken.
 
-    else if (sgnd < 0.0)
-    {
+    else if (sgnd < 0.0) {
         info = 2;
         bound = false;
         theta = 3 * (fx - fp) / (stp - stx) + dx + dp;
-        s = MoreThuente::absmax(theta,dx,dp);
-        gamma = s * sqrt(((theta/s) * (theta/s)) - (dx / s) * (dp / s));
+        s = MoreThuente::absmax(theta, dx, dp);
+        gamma = s * sqrt(((theta / s) * (theta / s)) - (dx / s) * (dp / s));
         if (stp > stx)
             gamma = -gamma;
         p = (gamma - dp) + theta;
@@ -1102,8 +1020,7 @@ int NDTMatcherD2D_2D::MoreThuente::cstep(double& stx, double& fx, double& dx,
     // bracketed then the the step closest to stx is taken, else the
     // step farthest away is taken.
 
-    else if (fabs(dp) < fabs(dx))
-    {
+    else if (fabs(dp) < fabs(dx)) {
         info = 3;
         bound = true;
         theta = 3 * (fx - fp) / (stp - stx) + dx + dp;
@@ -1112,7 +1029,7 @@ int NDTMatcherD2D_2D::MoreThuente::cstep(double& stx, double& fx, double& dx,
         // The case gamma = 0 only arises if the cubic does not tend
         // to infinity in the direction of the step.
 
-        gamma = s * sqrt(max(0,(theta / s) * (theta / s) - (dx / s) * (dp / s)));
+        gamma = s * sqrt(max(0, (theta / s) * (theta / s) - (dx / s) * (dp / s)));
         if (stp > stx)
             gamma = -gamma;
 
@@ -1126,16 +1043,13 @@ int NDTMatcherD2D_2D::MoreThuente::cstep(double& stx, double& fx, double& dx,
         else
             stpc = stmin;
 
-        stpq = stp + (dp/ (dp - dx)) * (stx - stp);
-        if (brackt)
-        {
+        stpq = stp + (dp / (dp - dx)) * (stx - stp);
+        if (brackt) {
             if (fabs(stp - stpc) < fabs(stp - stpq))
                 stpf = stpc;
             else
                 stpf = stpq;
-        }
-        else
-        {
+        } else {
             if (fabs(stp - stpc) > fabs(stp - stpq))
                 stpf = stpc;
             else
@@ -1148,15 +1062,13 @@ int NDTMatcherD2D_2D::MoreThuente::cstep(double& stx, double& fx, double& dx,
     // the minimum is not bracketed, the step is either stmin or
     // stmax, else the cubic step is taken.
 
-    else
-    {
+    else {
         info = 4;
         bound = false;
-        if (brackt)
-        {
+        if (brackt) {
             theta = 3 * (fp - fy) / (sty - stp) + dy + dp;
             s = MoreThuente::absmax(theta, dy, dp);
-            gamma = s * sqrt(((theta/s)*(theta/s)) - (dy / s) * (dp / s));
+            gamma = s * sqrt(((theta / s) * (theta / s)) - (dy / s) * (dp / s));
             if (stp > sty)
                 gamma = -gamma;
             p = (gamma - dp) + theta;
@@ -1164,8 +1076,7 @@ int NDTMatcherD2D_2D::MoreThuente::cstep(double& stx, double& fx, double& dx,
             r = p / q;
             stpc = stp + r * (sty - stp);
             stpf = stpc;
-        }
-        else if (stp > stx)
+        } else if (stp > stx)
             stpf = stmax;
         else
             stpf = stmin;
@@ -1174,16 +1085,12 @@ int NDTMatcherD2D_2D::MoreThuente::cstep(double& stx, double& fx, double& dx,
     // Update the interval of uncertainty. This update does not depend
     // on the new step or the case analysis above.
 
-    if (fp > fx)
-    {
+    if (fp > fx) {
         sty = stp;
         fy = fp;
         dy = dp;
-    }
-    else
-    {
-        if (sgnd < 0.0)
-        {
+    } else {
+        if (sgnd < 0.0) {
             sty = stx;
             fy = fx;
             dy = dx;
@@ -1198,8 +1105,7 @@ int NDTMatcherD2D_2D::MoreThuente::cstep(double& stx, double& fx, double& dx,
     stpf = MoreThuente::min(stmax, stpf);
     stpf = MoreThuente::max(stmin, stpf);
     stp = stpf;
-    if (brackt && bound)
-    {
+    if (brackt && bound) {
         if (sty > stx)
             stp = min(stx + 0.66 * (sty - stx), stp);
         else
@@ -1210,18 +1116,15 @@ int NDTMatcherD2D_2D::MoreThuente::cstep(double& stx, double& fx, double& dx,
 
 }
 
-double NDTMatcherD2D_2D::MoreThuente::min(double a, double b)
-{
+double NDTMatcherD2D_2D::MoreThuente::min(double a, double b) {
     return (a < b ? a : b);
 }
 
-double NDTMatcherD2D_2D::MoreThuente::max(double a, double b)
-{
+double NDTMatcherD2D_2D::MoreThuente::max(double a, double b) {
     return (a > b ? a : b);
 }
 
-double NDTMatcherD2D_2D::MoreThuente::absmax(double a, double b, double c)
-{
+double NDTMatcherD2D_2D::MoreThuente::absmax(double a, double b, double c) {
     a = fabs(a);
     b = fabs(b);
     c = fabs(c);
@@ -1232,8 +1135,7 @@ double NDTMatcherD2D_2D::MoreThuente::absmax(double a, double b, double c)
         return (b > c) ? b : c;
 }
 
-double NDTMatcherD2D_2D::normalizeAngle(double a)
-{
+double NDTMatcherD2D_2D::normalizeAngle(double a) {
     //set the angle between -M_PI and M_PI
     return atan2(sin(a), cos(a));
 

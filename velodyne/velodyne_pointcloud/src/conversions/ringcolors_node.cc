@@ -17,17 +17,16 @@
 #include "colors.h"
 
 /** Main node entry point. */
-int main(int argc, char **argv)
-{
-  ros::init(argc, argv, "colors_node");
-  ros::NodeHandle node;
-  ros::NodeHandle priv_nh("~");
+int main(int argc, char **argv) {
+    ros::init(argc, argv, "colors_node");
+    ros::NodeHandle node;
+    ros::NodeHandle priv_nh("~");
 
-  // create conversion class, which subscribes to input messages
-  velodyne_pointcloud::RingColors colors(node, priv_nh);
+    // create conversion class, which subscribes to input messages
+    velodyne_pointcloud::RingColors colors(node, priv_nh);
 
-  // handle callbacks until shut down
-  ros::spin();
+    // handle callbacks until shut down
+    ros::spin();
 
-  return 0;
+    return 0;
 }

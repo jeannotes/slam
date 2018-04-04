@@ -39,8 +39,7 @@
 #include <ndt_map/ndt_cell.h>
 #include <vector>
 
-namespace lslgeneric
-{
+namespace lslgeneric {
 
 /** \brief Implements an OctTree with adaptive leaf splitting as a post process step
     \details The OctTree is split unitl a conservative initial size. After this, a post
@@ -50,8 +49,7 @@ the residual variance. A second option using the omnibus normality test will be 
 soon.
  */
 template<typename PointT>
-class AdaptiveOctTree : public OctTree<PointT>
-{
+class AdaptiveOctTree : public OctTree<PointT> {
 protected:
     std::vector<OctTree<PointT>*> splitTree(OctTree<PointT> *leaf);
     std::vector<OctTree<PointT>*> myTreeLeafs;
@@ -71,7 +69,7 @@ public:
     AdaptiveOctTree();
     ///creates an oct tree node with known center and size
     AdaptiveOctTree(pcl::PointXYZ center, double xsize, double ysize,
-                    double zsize, NDTCell<PointT>* type, OctTree<PointT> *_parent=NULL, unsigned int _depth=0);
+                    double zsize, NDTCell<PointT>* type, OctTree<PointT> *_parent = NULL, unsigned int _depth = 0);
     virtual ~AdaptiveOctTree();
 
     virtual void postProcessPoints();

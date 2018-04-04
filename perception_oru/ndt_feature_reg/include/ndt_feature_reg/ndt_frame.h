@@ -50,36 +50,29 @@
 #include <ndt_feature_reg/ndt_frame_tools.h>
 #include <ndt_map/pointcloud_utils.h>
 
-namespace ndt_feature_reg
-{
+namespace ndt_feature_reg {
 inline
-double getDoubleTime(struct timeval& time)
-{
+double getDoubleTime(struct timeval& time) {
     return time.tv_sec + time.tv_usec * 1e-6;
 }
 
 inline
-double getDoubleTime()
-{
+double getDoubleTime() {
     struct timeval time;
-    gettimeofday(&time,NULL);
+    gettimeofday(&time, NULL);
     return getDoubleTime(time);
 }
 
-class NDTFrame
-{
+class NDTFrame {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 public:
-    NDTFrame() : supportSize(3),maxVar(0.3),current_res(0.2)
-    {
+    NDTFrame() : supportSize(3), maxVar(0.3), current_res(0.2) {
         ndt_map = lslgeneric::NDTMap(&idx_prototype);
     }
-    virtual ~NDTFrame()
-    {
+    virtual ~NDTFrame() {
     }
-    NDTFrame(const NDTFrame &other)
-    {
+    NDTFrame(const NDTFrame &other) {
         other.img.copyTo(img);
         other.depth_img.copyTo(depth_img);
         kpts = other.kpts;
@@ -90,12 +83,11 @@ public:
         supportSize = other.supportSize;
         cameraParams = other.cameraParams;
         maxVar = other.maxVar;
-        current_res=other.current_res;
+        current_res = other.current_res;
         other.dtors.copyTo(dtors);
     }
 
-    void clear()
-    {
+    void clear() {
         maxVar = 0;
         kpts.resize(0);
         pc_kpts.resize(0);
@@ -121,42 +113,35 @@ public:
     lslgeneric::CellVector idx_prototype;
     lslgeneric::NDTMap ndt_map;
 
-    const pcl::PointXYZ& getKeyPointCenter(int keyPointIdx)
-    {
+    const pcl::PointXYZ& getKeyPointCenter(int keyPointIdx) {
         //const std::vector<size_t> &indices = kpts_pc_indices[keyPointIdx];
         const pcl::PointXYZ &pt = pc_kpts[keyPointIdx]; // TODO - The first points is the centre only if the centre point is invalid...
         return pt;
     }
 
-    void assignPts()
-    {
-        if(pc_kpts.size() == 0)
+    void assignPts() {
+        if (pc_kpts.size() == 0)
             computeNDT();
         pts.resize(pc_kpts.size());
-        for (size_t i = 0; i < pc_kpts.size(); i++)
-        {
+        for (size_t i = 0; i < pc_kpts.size(); i++) {
             const pcl::PointXYZ& pt = pc_kpts[i];
-            pts[i].head(3) = Eigen::Vector3d(pt.x,pt.y,pt.z);
+            pts[i].head(3) = Eigen::Vector3d(pt.x, pt.y, pt.z);
             pts[i](3) = 1.0;
             //std::cout<<"keypoint "<<i<<" at "<<pts[i].transpose()<<std::endl;
         }
     }
 
-    void computeNDT(bool estimateDI = false, bool nonMean = false)
-    {
-        if(kpts.size() > 0)
-        {
+    void computeNDT(bool estimateDI = false, bool nonMean = false) {
+        if (kpts.size() > 0) {
             //double t1 = getDoubleTime();
-            pc_kpts = ndt_map.loadDepthImageFeatures(depth_img,kpts,supportSize,maxVar,cameraParams,estimateDI,nonMean);
+            pc_kpts = ndt_map.loadDepthImageFeatures(depth_img, kpts, supportSize, maxVar, cameraParams, estimateDI, nonMean);
             //double t2 = getDoubleTime();
             //std::cout<<"computing ndt took (features)"<<t2-t1<<std::endl;
-        }
-        else
-        {
+        } else {
             lslgeneric::LazyGrid idx_prototype_grid(current_res);
             ndt_map = lslgeneric::NDTMap(&idx_prototype_grid);
             //double t1 = getDoubleTime();
-            ndt_map.loadDepthImage(depth_img,cameraParams);
+            ndt_map.loadDepthImage(depth_img, cameraParams);
             ndt_map.computeNDTCells();
             //double t2 = getDoubleTime();
             //std::cout<<"computing ndt took (grid)"<<t2-t1<<std::endl;
@@ -203,14 +188,13 @@ public:
         kpts = good_kpts;
     } */
 
-    pcl::PointCloud<pcl::PointXYZRGB> getColoredPointCloud()
-    {
-        lslgeneric::DepthCamera<pcl::PointXYZRGB> cameraParamsLocal (cameraParams.fx,cameraParams.fy,cameraParams.cx,
-                cameraParams.cy,cameraParams.dist,cameraParams.ds, cameraParams.isFloatImg);
+    pcl::PointCloud<pcl::PointXYZRGB> getColoredPointCloud() {
+        lslgeneric::DepthCamera<pcl::PointXYZRGB> cameraParamsLocal (cameraParams.fx, cameraParams.fy, cameraParams.cx,
+                cameraParams.cy, cameraParams.dist, cameraParams.ds, cameraParams.isFloatImg);
         cameraParamsLocal.setupDepthPointCloudLookUpTable(depth_img.size());
 
         pcl::PointCloud<pcl::PointXYZRGB> cloud; //(new pcl::PointCloud<pcl::PointXYZRGB>);
-        cameraParamsLocal.convertDepthImageToPointCloud(depth_img,cloud);
+        cameraParamsLocal.convertDepthImageToPointCloud(depth_img, cloud);
 
         size_t w = img.size().width;
         size_t h = img.size().height;
@@ -219,29 +203,24 @@ public:
         cloud.height = h;
         cloud.is_dense = true;
         const uchar* pimg = img.ptr<uchar>(0);
-        std::cout<<"img channels "<<img.channels()<<std::endl;
+        std::cout << "img channels " << img.channels() << std::endl;
         pcl::PointXYZRGB color;
         //int r=0, g=0, b=0;
         uint8_t r = 0, g = 0, b = 0;
 
-        for( size_t i =0; i<h; i++)
-        {
-            for( size_t j =0; j<w; j++)
-            {
-                if(img.channels() == 3)
-                {
-                    const cv::Vec3b& bgr = img.at<cv::Vec3b>((int)i,(int)j);
+        for ( size_t i = 0; i < h; i++) {
+            for ( size_t j = 0; j < w; j++) {
+                if (img.channels() == 3) {
+                    const cv::Vec3b& bgr = img.at<cv::Vec3b>((int)i, (int)j);
                     r = bgr[0];
                     g = bgr[1];
                     b = bgr[2];
 
-                    idx = 3*(i * w + j);
+                    idx = 3 * (i * w + j);
                     /*			r = pimg[idx];
                     			g = pimg[idx+1];
                     			b = pimg[idx+2];*/
-                }
-                else if (img.channels() == 1)
-                {
+                } else if (img.channels() == 1) {
                     idx = (i * w + j);
                     r = pimg[idx];
                     g = pimg[idx];
@@ -342,26 +321,23 @@ public:
 };
 
 
-class PoseEstimator
-{
+class PoseEstimator {
 public:
     PoseEstimator(int NRansac,
                   double maxidx, double maxidd);
     size_t estimate(const NDTFrame &f0, const NDTFrame &f1);
     size_t estimate(const NDTFrame &f0, const NDTFrame &f1, const std::vector<cv::DMatch>& matches);
 
-    const std::vector<cv::DMatch>& getInliers() const
-    {
+    const std::vector<cv::DMatch>& getInliers() const {
         return inliers;
     }
 
     void matchFrames(const NDTFrame& f0, const NDTFrame& f2, std::vector<cv::DMatch>& fwd_matches);
 
-    inline Eigen::Affine3f getTransform()
-    {
+    inline Eigen::Affine3f getTransform() {
         Eigen::Affine3f transl_transform = (Eigen::Affine3f)Eigen::Translation3f(trans[0], trans[1], trans[2]);
         Eigen::Affine3f rot_transform = (Eigen::Affine3f)Eigen::Matrix3f(rot.cast<float>());
-        return transl_transform*rot_transform;
+        return transl_transform * rot_transform;
     }
 
     // all matches and inliers

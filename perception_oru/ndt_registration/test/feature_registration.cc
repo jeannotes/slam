@@ -17,8 +17,7 @@
 #include <NDTMatcherF2F.hh>
 #include <PointCloudUtils.hh>
 
-class FeatureCloud
-{
+class FeatureCloud {
 public:
     // A bit of shorthand
     typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
@@ -30,24 +29,21 @@ public:
     FeatureCloud () :
         //search_method_xyz_ (new SearchMethod),
         normal_radius_ (0.05),
-        feature_radius_ (0.05)
-    {
+        feature_radius_ (0.05) {
     }
 
     ~FeatureCloud () {}
 
     // Process the given cloud
     void
-    setInputCloud (PointCloud::Ptr xyz)
-    {
+    setInputCloud (PointCloud::Ptr xyz) {
         xyz_ = xyz;
         processInput ();
     }
 
     // Load and process the cloud in the given PCD file
     void
-    loadInputCloud (const std::string &pcd_file)
-    {
+    loadInputCloud (const std::string &pcd_file) {
         xyz_ = PointCloud::Ptr (new PointCloud);
         pcl::io::loadPCDFile (pcd_file, *xyz_);
         processInput ();
@@ -55,38 +51,33 @@ public:
 
     // Get a pointer to the cloud 3D points
     PointCloud::Ptr
-    getPointCloud () const
-    {
+    getPointCloud () const {
         return (xyz_);
     }
 
     // Get a pointer to the cloud of 3D surface normals
     SurfaceNormals::Ptr
-    getSurfaceNormals () const
-    {
+    getSurfaceNormals () const {
         return (normals_);
     }
 
     // Get a pointer to the cloud of feature descriptors
     LocalFeatures::Ptr
-    getLocalFeatures () const
-    {
+    getLocalFeatures () const {
         return (features_);
     }
 
 protected:
     // Compute the surface normals and local features
     void
-    processInput ()
-    {
+    processInput () {
         computeSurfaceNormals ();
         computeLocalFeatures ();
     }
 
     // Compute the surface normals
     void
-    computeSurfaceNormals ()
-    {
+    computeSurfaceNormals () {
         normals_ = SurfaceNormals::Ptr (new SurfaceNormals);
 
         pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> norm_est;
@@ -98,8 +89,7 @@ protected:
 
     // Compute the local feature descriptors
     void
-    computeLocalFeatures ()
-    {
+    computeLocalFeatures () {
         features_ = LocalFeatures::Ptr (new LocalFeatures);
 
         pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh_est;
@@ -123,19 +113,17 @@ private:
     float feature_radius_;
 };
 
-class TemplateRegistration
-{
+class TemplateRegistration {
 public:
 
     // A struct for storing alignment results
 
-    typedef Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> Result;
+    typedef Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> Result;
 
     TemplateRegistration () :
         min_sample_distance_ (0.05),
-        max_correspondence_distance_ (0.01*0.01),
-        nr_iterations_ (500)
-    {
+        max_correspondence_distance_ (0.01 * 0.01),
+        nr_iterations_ (500) {
         // Intialize the parameters in the Sample Consensus Intial Alignment (SAC-IA) algorithm
         sac_ia_.setMinSampleDistance (min_sample_distance_);
         sac_ia_.setMaxCorrespondenceDistance (max_correspondence_distance_);
@@ -147,8 +135,7 @@ public:
 
     // Set the given cloud as the target to which the templates will be aligned
     void
-    setTargetCloud (FeatureCloud &target_cloud)
-    {
+    setTargetCloud (FeatureCloud &target_cloud) {
         target_ = target_cloud;
         sac_ia_.setInputTarget (target_cloud.getPointCloud ());
         sac_ia_.setTargetFeatures (target_cloud.getLocalFeatures ());
@@ -156,8 +143,7 @@ public:
 
     // Align the moving cloud to the target specified by setTargetCloud ()
     void
-    align (FeatureCloud &moving_cloud, TemplateRegistration::Result &result)
-    {
+    align (FeatureCloud &moving_cloud, TemplateRegistration::Result &result) {
         sac_ia_.setInputCloud (moving_cloud.getPointCloud ());
         sac_ia_.setSourceFeatures (moving_cloud.getLocalFeatures ());
 
@@ -179,17 +165,16 @@ private:
 };
 
 bool matchICP(pcl::PointCloud<pcl::PointXYZ> &fixed,  pcl::PointCloud<pcl::PointXYZ> &moving,
-              Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &Tout)
-{
+              Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> &Tout) {
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_in (new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_out (new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PointCloud<pcl::PointXYZ>::ConstPtr f (new pcl::PointCloud<pcl::PointXYZ>(fixed) );
     pcl::PointCloud<pcl::PointXYZ>::ConstPtr m (new pcl::PointCloud<pcl::PointXYZ>(moving) );
 
-    pcl::VoxelGrid<pcl::PointXYZ> gr1,gr2;
-    gr1.setLeafSize(0.1,0.1,0.1);
-    gr2.setLeafSize(0.1,0.1,0.1);
+    pcl::VoxelGrid<pcl::PointXYZ> gr1, gr2;
+    gr1.setLeafSize(0.1, 0.1, 0.1);
+    gr2.setLeafSize(0.1, 0.1, 0.1);
 
     gr1.setInputCloud(m);
     gr2.setInputCloud(f);
@@ -210,7 +195,7 @@ bool matchICP(pcl::PointCloud<pcl::PointXYZ> &fixed,  pcl::PointCloud<pcl::Point
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
 
     icp.setMaximumIterations(10000);
-    std::cout<<"max itr are "<<icp.getMaximumIterations()<<std::endl;
+    std::cout << "max itr are " << icp.getMaximumIterations() << std::endl;
     icp.setInputCloud(cloud_in);
     icp.setInputTarget(cloud_out);
 
@@ -246,10 +231,8 @@ bool matchICP(pcl::PointCloud<pcl::PointXYZ> &fixed,  pcl::PointCloud<pcl::Point
 
 // Align two point clouds based on the features
 int
-main (int argc, char **argv)
-{
-    if (argc < 3)
-    {
+main (int argc, char **argv) {
+    if (argc < 3) {
         printf ("No targets given!\n");
         return (-1);
     }
@@ -266,10 +249,10 @@ main (int argc, char **argv)
     *cloudF = lslgeneric::readVRML(argv[2]);
 
     double __res[] = {0.2, 0.4, 1, 2};
-    std::vector<double> resolutions (__res, __res+sizeof(__res)/sizeof(double));
+    std::vector<double> resolutions (__res, __res + sizeof(__res) / sizeof(double));
     lslgeneric::NDTMatcherF2F matcherF2F(false, false, false, resolutions);
-    bool ret = matcherF2F.match(*cloudF,*cloudM,ToutNDT);
-    Final1 = lslgeneric::transformPointCloud(ToutNDT,*cloudM);
+    bool ret = matcherF2F.match(*cloudF, *cloudM, ToutNDT);
+    Final1 = lslgeneric::transformPointCloud(ToutNDT, *cloudM);
 
     /* char f[50];
      snprintf(f,49,"/home/tsv/ndt_tmp/c2_offset.wrl");
@@ -282,11 +265,11 @@ main (int argc, char **argv)
      return (0);
      */
     //start timing
-    gettimeofday(&tv_start,NULL);
+    gettimeofday(&tv_start, NULL);
 
-    pcl::VoxelGrid<pcl::PointXYZ> gr1,gr2;
-    gr1.setLeafSize(0.05,0.05,0.05);
-    gr2.setLeafSize(0.05,0.05,0.05);
+    pcl::VoxelGrid<pcl::PointXYZ> gr1, gr2;
+    gr1.setLeafSize(0.05, 0.05, 0.05);
+    gr2.setLeafSize(0.05, 0.05, 0.05);
 
     gr1.setInputCloud(cloudM);
     gr2.setInputCloud(cloudF);
@@ -310,46 +293,46 @@ main (int argc, char **argv)
     templateReg.setTargetCloud (target_cloud);
 
     // Find the best template alignment
-    templateReg.align(moving_cloud,ToutFPFH);
+    templateReg.align(moving_cloud, ToutFPFH);
     //stop timing1
-    gettimeofday(&tv_end1,NULL);
+    gettimeofday(&tv_end1, NULL);
 
-    std::cout<<"ToutFPFH: "<<ToutFPFH.translation().transpose()<<"\n"<<ToutFPFH.rotation()<<std::endl;
-    Final0 = lslgeneric::transformPointCloud(ToutFPFH,*cloudM);
+    std::cout << "ToutFPFH: " << ToutFPFH.translation().transpose() << "\n" << ToutFPFH.rotation() << std::endl;
+    Final0 = lslgeneric::transformPointCloud(ToutFPFH, *cloudM);
 
-    bool converged = matchICP(*cloudF,Final0,ToutICP);
-    Final = lslgeneric::transformPointCloud(ToutICP,Final0);
+    bool converged = matchICP(*cloudF, Final0, ToutICP);
+    Final = lslgeneric::transformPointCloud(ToutICP, Final0);
     //stop timing2
-    gettimeofday(&tv_end2,NULL);
+    gettimeofday(&tv_end2, NULL);
 
 
-    Tout = ToutFPFH*(ToutNDT.inverse());
-    std::cout<<"FPFH\n";
-    std::cout<<"E translation "<<Tout.translation().transpose()
-             <<" (norm) "<<Tout.translation().norm()<<std::endl;
-    std::cout<<"E rotation "<<Tout.rotation().eulerAngles(0,1,2).transpose()
-             <<" (norm) "<<Tout.rotation().eulerAngles(0,1,2).norm()<<std::endl;
-    std::cout<<" TIME: "<<
-             (tv_end1.tv_sec-tv_start.tv_sec)*1000.+(tv_end1.tv_usec-tv_start.tv_usec)/1000.<<std::endl;
+    Tout = ToutFPFH * (ToutNDT.inverse());
+    std::cout << "FPFH\n";
+    std::cout << "E translation " << Tout.translation().transpose()
+              << " (norm) " << Tout.translation().norm() << std::endl;
+    std::cout << "E rotation " << Tout.rotation().eulerAngles(0, 1, 2).transpose()
+              << " (norm) " << Tout.rotation().eulerAngles(0, 1, 2).norm() << std::endl;
+    std::cout << " TIME: " <<
+              (tv_end1.tv_sec - tv_start.tv_sec) * 1000. + (tv_end1.tv_usec - tv_start.tv_usec) / 1000. << std::endl;
 
-    Tout = ToutICP*ToutFPFH*(ToutNDT.inverse());
-    std::cout<<"FPFH+ICP\n";
-    std::cout<<"E translation "<<Tout.translation().transpose()
-             <<" (norm) "<<Tout.translation().norm()<<std::endl;
-    std::cout<<"E rotation "<<Tout.rotation().eulerAngles(0,1,2).transpose()
-             <<" (norm) "<<Tout.rotation().eulerAngles(0,1,2).norm()<<std::endl;
-    std::cout<<" TIME: "<<
-             (tv_end2.tv_sec-tv_start.tv_sec)*1000.+(tv_end2.tv_usec-tv_start.tv_usec)/1000.<<std::endl;
+    Tout = ToutICP * ToutFPFH * (ToutNDT.inverse());
+    std::cout << "FPFH+ICP\n";
+    std::cout << "E translation " << Tout.translation().transpose()
+              << " (norm) " << Tout.translation().norm() << std::endl;
+    std::cout << "E rotation " << Tout.rotation().eulerAngles(0, 1, 2).transpose()
+              << " (norm) " << Tout.rotation().eulerAngles(0, 1, 2).norm() << std::endl;
+    std::cout << " TIME: " <<
+              (tv_end2.tv_sec - tv_start.tv_sec) * 1000. + (tv_end2.tv_usec - tv_start.tv_usec) / 1000. << std::endl;
 
     char fname[50];
-    snprintf(fname,49,"/home/tsv/ndt_tmp/c2_offset.wrl");
-    FILE *fout = fopen(fname,"w");
-    fprintf(fout,"#VRML V2.0 utf8\n");
-    lslgeneric::writeToVRML(fout,*cloudM,Eigen::Vector3d(1,0,0));
-    lslgeneric::writeToVRML(fout,Final0,Eigen::Vector3d(0,0,1));
-    lslgeneric::writeToVRML(fout,Final1,Eigen::Vector3d(0,1,1));
-    lslgeneric::writeToVRML(fout,Final,Eigen::Vector3d(0,1,0));
-    lslgeneric::writeToVRML(fout,*cloudF,Eigen::Vector3d(1,1,1));
+    snprintf(fname, 49, "/home/tsv/ndt_tmp/c2_offset.wrl");
+    FILE *fout = fopen(fname, "w");
+    fprintf(fout, "#VRML V2.0 utf8\n");
+    lslgeneric::writeToVRML(fout, *cloudM, Eigen::Vector3d(1, 0, 0));
+    lslgeneric::writeToVRML(fout, Final0, Eigen::Vector3d(0, 0, 1));
+    lslgeneric::writeToVRML(fout, Final1, Eigen::Vector3d(0, 1, 1));
+    lslgeneric::writeToVRML(fout, Final, Eigen::Vector3d(0, 1, 0));
+    lslgeneric::writeToVRML(fout, *cloudF, Eigen::Vector3d(1, 1, 1));
     fclose(fout);
 
 

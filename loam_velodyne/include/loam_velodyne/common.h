@@ -54,11 +54,11 @@ inline void publishCloudMsg(ros::Publisher& publisher,
                             const pcl::PointCloud<PointT>& cloud,
                             const ros::Time& stamp,
                             std::string frameID) {
-  sensor_msgs::PointCloud2 msg;
-  pcl::toROSMsg(cloud, msg);
-  msg.header.stamp = stamp;
-  msg.header.frame_id = frameID;
-  publisher.publish(msg);
+    sensor_msgs::PointCloud2 msg;
+    pcl::toROSMsg(cloud, msg);
+    msg.header.stamp = stamp;
+    msg.header.frame_id = frameID;
+    publisher.publish(msg);
 }
 
 } // end namespace loam

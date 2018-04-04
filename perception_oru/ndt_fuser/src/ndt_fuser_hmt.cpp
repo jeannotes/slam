@@ -1,8 +1,7 @@
 #include <ndt_fuser/ndt_fuser_hmt.h>
 
 namespace lslgeneric {
-void NDTFuserHMT::initialize(Eigen::Affine3d initPos, pcl::PointCloud< pcl::PointXYZ >& cloud, bool preLoad)
-{
+void NDTFuserHMT::initialize(Eigen::Affine3d initPos, pcl::PointCloud< pcl::PointXYZ >& cloud, bool preLoad) {
     ///Set the cloud to sensor frame with respect to base
     lslgeneric::transformPointCloudInPlace(sensor_pose, cloud);
     lslgeneric::transformPointCloudInPlace(initPos, cloud);
@@ -11,8 +10,8 @@ void NDTFuserHMT::initialize(Eigen::Affine3d initPos, pcl::PointCloud< pcl::Poin
     //#else
     if (beHMT) {
         map = new lslgeneric::NDTMapHMT(resolution,
-            Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2),
-            map_size_x, map_size_y, map_size_z, sensor_range, hmt_map_dir, true);
+                                        Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2),
+                                        map_size_x, map_size_y, map_size_z, sensor_range, hmt_map_dir, true);
         if (preLoad) {
             lslgeneric::NDTMapHMT* map_hmt = dynamic_cast< lslgeneric::NDTMapHMT* >(map);
             std::cout << "Trying to pre-load maps at " << initPos.translation() << std::endl;
@@ -56,8 +55,7 @@ void NDTFuserHMT::initialize(Eigen::Affine3d initPos, pcl::PointCloud< pcl::Poin
      *
      *
      */
-Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud< pcl::PointXYZ >& cloud)
-{
+Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud< pcl::PointXYZ >& cloud) {
     if (!isInit) {
         fprintf(stderr, "NDT-FuserHMT: Call Initialize first!!\n");
         return Tnow;
@@ -74,21 +72,21 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud< pc
     ndlocal.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
     //pass through ndlocal and set all cells with vertically pointing normals to non-gaussian :-O
     /*SpatialIndex *index = ndlocal.getMyIndex();
-	  typename SpatialIndexctorItr it = index->begin();
-	  while (it != index->end())
-	  {
-	  NDTCell *cell = dynamic_cast<NDTCell*> (*it);
-	  if(cell!=NULL)
-	  {
-	  if(cell->hasGaussian_)
-	  {
-	  if(cell->getClass() == NDTCell::HORIZONTAL) {
-	  cell->hasGaussian_ = false;
-	  }
-	  }
-	  }
-	  it++;
-	  }*/
+      typename SpatialIndexctorItr it = index->begin();
+      while (it != index->end())
+      {
+      NDTCell *cell = dynamic_cast<NDTCell*> (*it);
+      if(cell!=NULL)
+      {
+      if(cell->hasGaussian_)
+      {
+      if(cell->getClass() == NDTCell::HORIZONTAL) {
+      cell->hasGaussian_ = false;
+      }
+      }
+      }
+      it++;
+      }*/
 
     t1 = getDoubleTime();
     Eigen::Affine3d Tinit = Tnow * Tmotion;
@@ -97,8 +95,7 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud< pc
         lslgeneric::transformPointCloudInPlace(Tnow, cloud);
         Eigen::Affine3d spose = Tnow * sensor_pose;
         map->addPointCloudMeanUpdate(spose.translation(), cloud, localMapSize, 1e5, 25, 2 * map_size_z, 0.06);
-        if (visualize) //&&ctr%20==0)
-        {
+        if (visualize) { //&&ctr%20==0)
 #ifndef NO_NDT_VIZ
             if (ctr % 50 == 0) {
 
@@ -181,8 +178,7 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud< pc
                     //t4 = getDoubleTime();
                     //std::cout<<"match: "<<t3-t2<<" addPointCloud: "<<t5-t4<<" ndlocal "<<t1-t0<<" total: "<<t5-t0<<std::endl;
                     Tlast_fuse = Tnow;
-                    if (visualize) //&&ctr%20==0)
-                    {
+                    if (visualize) { //&&ctr%20==0)
 #ifndef NO_NDT_VIZ
                         if (ctr % 30 == 0) {
                             viewer->plotNDTSAccordingToOccupancy(-1, map);
@@ -270,8 +266,7 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud< pc
                     //t4 = getDoubleTime();
                     //std::cout<<"match: "<<t3-t2<<" addPointCloud: "<<t5-t4<<" ndlocal "<<t1-t0<<" total: "<<t5-t0<<std::endl;
                     Tlast_fuse = Tnow;
-                    if (visualize) //&&ctr%20==0)
-                    {
+                    if (visualize) { //&&ctr%20==0)
 #ifndef NO_NDT_VIZ
                         if (ctr % 2 == 0) {
                             viewer->plotNDTSAccordingToOccupancy(-1, map);

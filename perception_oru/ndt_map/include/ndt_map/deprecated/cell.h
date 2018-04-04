@@ -39,8 +39,7 @@
 #include <cstdio>
 #include <cmath>
 
-namespace lslgeneric
-{
+namespace lslgeneric {
 
 /** \brief Base class for a rectangular 3D cell
   * \details The Cell class provides a base for all types of derived cells.
@@ -49,8 +48,7 @@ namespace lslgeneric
   * cell classes in \ref SpatialIndex implementations.
   */
 template<typename PointT>
-class Cell
-{
+class Cell {
 
 protected:
     PointT center_;
@@ -58,15 +56,13 @@ protected:
 
 public:
     Cell() { }
-    inline Cell(PointT &center, double &xsize, double &ysize, double &zsize)
-    {
+    inline Cell(PointT &center, double &xsize, double &ysize, double &zsize) {
         center_ = center;
         xsize_ = xsize;
         ysize_ = ysize;
         zsize_ = zsize;
     }
-    inline Cell(const Cell& other)
-    {
+    inline Cell(const Cell& other) {
         center_ = other.center_;
         xsize_ = other.xsize_;
         ysize_ = other.ysize_;
@@ -74,61 +70,50 @@ public:
     }
     virtual ~Cell() { }
 
-    inline void setCenter(const PointT &cn)
-    {
+    inline void setCenter(const PointT &cn) {
         center_ = cn;
     }
-    inline void setDimensions(const double &xs, const double &ys, const double &zs)
-    {
+    inline void setDimensions(const double &xs, const double &ys, const double &zs) {
         xsize_ = xs;
         ysize_ = ys;
         zsize_ = zs;
     }
 
-    inline PointT getCenter() const
-    {
+    inline PointT getCenter() const {
         return center_;
     }
-    inline void getDimensions(double &xs, double &ys, double &zs) const
-    {
+    inline void getDimensions(double &xs, double &ys, double &zs) const {
         xs = xsize_;
         ys = ysize_;
         zs = zsize_;
     }
-    inline bool isInside(const PointT pt) const
-    {
-        if(pt.x < center_.x-xsize_/2 || pt.x > center_.x+xsize_/2)
-        {
+    inline bool isInside(const PointT pt) const {
+        if (pt.x < center_.x - xsize_ / 2 || pt.x > center_.x + xsize_ / 2) {
             return false;
         }
-        if(pt.y < center_.y-ysize_/2 || pt.y > center_.y+ysize_/2)
-        {
+        if (pt.y < center_.y - ysize_ / 2 || pt.y > center_.y + ysize_ / 2) {
             return false;
         }
-        if(pt.z < center_.z-zsize_/2 || pt.z > center_.z+zsize_/2)
-        {
+        if (pt.z < center_.z - zsize_ / 2 || pt.z > center_.z + zsize_ / 2) {
             return false;
         }
         return true;
     }
-    virtual double getDiagonal() const
-    {
-        return std::sqrt(xsize_*xsize_+ysize_*ysize_+zsize_*zsize_);
+    virtual double getDiagonal() const {
+        return std::sqrt(xsize_ * xsize_ + ysize_ * ysize_ + zsize_ * zsize_);
     }
 
     ///clone - create an empty object with same type
-    inline virtual Cell<PointT>* clone() const
-    {
+    inline virtual Cell<PointT>* clone() const {
         Cell<PointT> *ret = new Cell<PointT>();
-        return(ret);
+        return (ret);
     }
     ///copy - create the same object as a new instance
-    virtual Cell<PointT>* copy() const
-    {
+    virtual Cell<PointT>* copy() const {
         Cell<PointT> *ret = new Cell<PointT>();
-        ret->setDimensions(xsize_,ysize_,zsize_);
+        ret->setDimensions(xsize_, ysize_, zsize_);
         ret->setCenter(center_);
-        return(ret);
+        return (ret);
     }
 
     virtual void addPoint(PointT &pt) { }

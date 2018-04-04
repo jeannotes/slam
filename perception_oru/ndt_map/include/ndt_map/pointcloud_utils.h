@@ -39,15 +39,14 @@
 #include <pcl/point_types.h>
 #include <Eigen/Core>
 
-namespace lslgeneric
-{
+namespace lslgeneric {
 /* \brief Routines to read/write point clouds from VRML files */
 
 template< typename PointT>
-pcl::PointCloud<PointT> transformPointCloud(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &T,
+pcl::PointCloud<PointT> transformPointCloud(Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> &T,
         const pcl::PointCloud<PointT> &pc);
 template< typename PointT>
-void transformPointCloudInPlace(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &T, pcl::PointCloud<PointT> &pc);
+void transformPointCloudInPlace(Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> &T, pcl::PointCloud<PointT> &pc);
 
 template< typename PointT>
 double geomDist(PointT p1, PointT p2);

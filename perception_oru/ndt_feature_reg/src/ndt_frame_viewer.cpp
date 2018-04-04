@@ -1,11 +1,9 @@
 #include <ndt_map/pointcloud_utils.h>
 #include <ndt_feature_reg/ndt_frame_viewer.h>
 
-namespace ndt_feature_reg
-{
+namespace ndt_feature_reg {
 
-NDTFrameViewer::NDTFrameViewer(NDTFrameProc *proc)
-{
+NDTFrameViewer::NDTFrameViewer(NDTFrameProc *proc) {
     //_frames.push_back(f);
     _proc = proc;
     initViewer();
@@ -20,8 +18,7 @@ NDTFrameViewer<PointT>::NDTFrameViewer(NDTFrame<PointT> *f0, NDTFrame<PointT> *f
 } */
 
 void
-NDTFrameViewer::initViewer()
-{
+NDTFrameViewer::initViewer() {
     _viewer.reset (new pcl::visualization::PCLVisualizer ("3D Viewer"));
     _viewer->setBackgroundColor( 0, 0, 0.01 );
     _viewer->addCoordinateSystem(1.0);
@@ -43,15 +40,13 @@ NDTFrameViewer<PointT>::showPC()
 }*/
 
 void
-NDTFrameViewer::showFeaturePC()
-{
+NDTFrameViewer::showFeaturePC() {
 
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr big_cloud (new pcl::PointCloud<pcl::PointXYZRGB>());
     std::string name = "featcloud"; // + toString(i);
-    for (size_t i = 0; i < _proc->frames.size(); i++)
-    {
+    for (size_t i = 0; i < _proc->frames.size(); i++) {
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr tmp = _proc->createColoredFeaturePC(*_proc->frames[i], this->getPCLColor(i));
-        lslgeneric::transformPointCloudInPlace(_proc->transformVector[i],*tmp);
+        lslgeneric::transformPointCloudInPlace(_proc->transformVector[i], *tmp);
 
         //lslgeneric::writeToVRML(name.c_str(),*tmp);
         // TODO -> check why this is needed here!?!
@@ -68,25 +63,22 @@ NDTFrameViewer::showFeaturePC()
 }
 
 void
-NDTFrameViewer::showNDT()
-{
+NDTFrameViewer::showNDT() {
 
 }
 
 void
-NDTFrameViewer::showMatches(const std::vector<std::pair<int,int> > &matches)
-{
+NDTFrameViewer::showMatches(const std::vector<std::pair<int, int> > &matches) {
     assert(_proc->frames.size() == 2);
 
-    for (size_t i = 0; i < matches.size(); i++)
-    {
+    for (size_t i = 0; i < matches.size(); i++) {
         const pcl::PointXYZ& pt1 = _proc->frames[0]->getKeyPointCenter(matches[i].first);
         const pcl::PointXYZ& pt2 = _proc->frames[1]->getKeyPointCenter(matches[i].second);
 
-        Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T = _proc->transformVector[1];
+        Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> T = _proc->transformVector[1];
         Eigen::Vector3d pt;
-        pt<<pt2.x,pt2.y,pt2.z;
-        pt = T*pt;
+        pt << pt2.x, pt2.y, pt2.z;
+        pt = T * pt;
         pcl::PointXYZ pt3;
         pt3.x = pt(0);
         pt3.y = pt(1);
@@ -98,22 +90,19 @@ NDTFrameViewer::showMatches(const std::vector<std::pair<int,int> > &matches)
 }
 
 void
-NDTFrameViewer::showMatches(const std::vector<cv::DMatch> &matches)
-{
-    std::vector<std::pair<int,int> > tmp;
+NDTFrameViewer::showMatches(const std::vector<cv::DMatch> &matches) {
+    std::vector<std::pair<int, int> > tmp;
     _proc->convertMatches(matches, tmp);
     this->showMatches(tmp);
 }
 
 bool
-NDTFrameViewer::wasStopped()
-{
+NDTFrameViewer::wasStopped() {
     return _viewer->wasStopped();
 }
 
 void
-NDTFrameViewer::spinOnce()
-{
+NDTFrameViewer::spinOnce() {
     _viewer->spinOnce(100);
 }
 

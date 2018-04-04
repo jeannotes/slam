@@ -40,8 +40,7 @@
 
 #include <ndt_map/ndt_cell.h>
 
-namespace lslgeneric
-{
+namespace lslgeneric {
 
 /** \brief Base class for all spatial indexing structures
     \details
@@ -52,8 +51,7 @@ the ability to find the cell in which a point is placed and to store
 newly observed points. It should also be possible to check the size of
 the occupied space, as well as to get cells neighboring any given cell.
 */
-class SpatialIndex
-{
+class SpatialIndex {
 protected:
 
 public:
@@ -61,8 +59,7 @@ public:
     typedef typename CellPtrVector::iterator CellVectorItr;
     typedef typename CellPtrVector::const_iterator CellVectorConstItr;
 
-    virtual ~SpatialIndex()
-    {
+    virtual ~SpatialIndex() {
     }
 
     virtual NDTCell* getCellForPoint(const pcl::PointXYZ &point) = 0;
@@ -75,10 +72,9 @@ public:
     ///iterator through all cells in index, points at the end
     virtual CellVectorItr end() = 0;
     virtual CellVectorConstItr end() const = 0;
-    
+
     // should be 'pure'?
-    virtual int size() const
-    {
+    virtual int size() const {
         return -1;
     }
 
@@ -93,14 +89,13 @@ public:
     virtual void setSize(const double &sx, const double &sy, const double &sz) {}
 
     ///method to return all cells within a certain radius from a point
-    virtual void getNeighbors(const pcl::PointXYZ &point, const double &radius, std::vector<NDTCell*> &cells)= 0;
+    virtual void getNeighbors(const pcl::PointXYZ &point, const double &radius, std::vector<NDTCell*> &cells) = 0;
 
     ///sets the cell factory type
     virtual void setCellType(NDTCell *type) = 0;
 
     ///reads map contents from .jff file
-    virtual int loadFromJFF(FILE * jffin) const
-    {
+    virtual int loadFromJFF(FILE * jffin) const {
         std::cerr << "Calling from SpatialIndex.h\n";
         return -1;
     }

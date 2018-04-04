@@ -17,14 +17,13 @@ using namespace std;
 using namespace lslgeneric;
 namespace po = boost::program_options;
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     cout << "--------------------------------------------------" << endl;
     cout << "Small test program of CellVector + F2F matcher " << endl;
     cout << "--------------------------------------------------" << endl;
 
     po::options_description desc("Allowed options");
-    Eigen::Matrix<double,6,1> pose_increment_v;
+    Eigen::Matrix<double, 6, 1> pose_increment_v;
     string static_file_name, moving_file_name;
     int nb_clusters, nb_points;
     double std_dev, min, max;
@@ -54,8 +53,7 @@ int main(int argc, char** argv)
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
 
-    if (vm.count("help"))
-    {
+    if (vm.count("help")) {
         cout << desc << "\n";
         return 1;
     }
@@ -67,58 +65,54 @@ int main(int argc, char** argv)
     bool use_f2f = !vm.count("nf2f");
     bool usegt = vm.count("usegt");
     pcl::PointCloud<pcl::PointXYZ> static_pc, moving_pc, tmp_pc;
-    Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> gt_transform;
+    Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> gt_transform;
 
     // Generate the static point cloud + indices...
     boost::mt19937 rng;
-    boost::uniform_real<> ud(min,max);
+    boost::uniform_real<> ud(min, max);
     boost::normal_distribution<> nd(0.0, std_dev);
     boost::variate_generator<boost::mt19937&, boost::normal_distribution<> > var_nor(rng, nd);
     boost::variate_generator<boost::mt19937&, boost::uniform_real<> > var_uni(rng, ud);
-    std::vector<std::pair<int,int> > corresp;
+    std::vector<std::pair<int, int> > corresp;
 
     size_t index = 0;
     std::vector<std::vector<size_t> > all_indices;
-    for (int i = 0; i < nb_clusters; i++)
-    {
+    for (int i = 0; i < nb_clusters; i++) {
         std::vector<size_t> indices;
         double c_x = var_uni();
         double c_y = var_uni();
         double c_z = var_uni();
-        for (int j = 0; j < nb_points; j++)
-        {
-            static_pc.push_back(pcl::PointXYZ(c_x+var_nor(), c_y+var_nor(), c_z+var_nor()));
+        for (int j = 0; j < nb_points; j++) {
+            static_pc.push_back(pcl::PointXYZ(c_x + var_nor(), c_y + var_nor(), c_z + var_nor()));
             indices.push_back(index);
             index++;
         }
         all_indices.push_back(indices);
-        corresp.push_back(std::pair<int,int>(i,nb_clusters-1-i)); // nb_clusters-1-i -> To check the da functions is working.
+        corresp.push_back(std::pair<int, int>(i, nb_clusters - 1 - i)); // nb_clusters-1-i -> To check the da functions is working.
     }
     std::vector<std::vector<size_t> > all_indices_moving(all_indices.size());  // Reverse the correspondances (To check the da functions)
     std::reverse_copy(all_indices.begin(), all_indices.end(), all_indices_moving.begin());
 
-    for (int i = 0; i < 1/*nb_clusters*/; i++)
-    {
-        tmp_pc.push_back(pcl::PointXYZ(i,i,i));
+    for (int i = 0; i < 1/*nb_clusters*/; i++) {
+        tmp_pc.push_back(pcl::PointXYZ(i, i, i));
     }
 
     // Specify some offset...
-    gt_transform = Eigen::Translation<double,3>(pose_increment_v(0),pose_increment_v(1),pose_increment_v(2))*
-                   Eigen::AngleAxis<double>(pose_increment_v(3),Eigen::Vector3d::UnitX()) *
-                   Eigen::AngleAxis<double>(pose_increment_v(4),Eigen::Vector3d::UnitY()) *
-                   Eigen::AngleAxis<double>(pose_increment_v(5),Eigen::Vector3d::UnitZ()) ;
+    gt_transform = Eigen::Translation<double, 3>(pose_increment_v(0), pose_increment_v(1), pose_increment_v(2)) *
+                   Eigen::AngleAxis<double>(pose_increment_v(3), Eigen::Vector3d::UnitX()) *
+                   Eigen::AngleAxis<double>(pose_increment_v(4), Eigen::Vector3d::UnitY()) *
+                   Eigen::AngleAxis<double>(pose_increment_v(5), Eigen::Vector3d::UnitZ()) ;
 
 
     std::vector<double> resolutions;
     if (use_singleres)
         resolutions.push_back(1.);
-    NDTMatcherD2D<pcl::PointXYZ,pcl::PointXYZ> matcher(use_irregular_grid,!use_singleres,resolutions);
-    Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T_f2f,T_p2p, T_feat;
+    NDTMatcherD2D<pcl::PointXYZ, pcl::PointXYZ> matcher(use_irregular_grid, !use_singleres, resolutions);
+    Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> T_f2f, T_p2p, T_feat;
     T_f2f.setIdentity();
     T_p2p.setIdentity();
     T_feat.setIdentity();
-    if (usegt)
-    {
+    if (usegt) {
         T_f2f = gt_transform;
         T_p2p = gt_transform;
         T_feat = gt_transform;
@@ -126,20 +120,16 @@ int main(int argc, char** argv)
 
     moving_pc = transformPointCloud(gt_transform, static_pc);
 
-    if (use_p2preg)
-    {
+    if (use_p2preg) {
         matcher.match(moving_pc, static_pc, T_p2p);
     }
     {
         double current_resolution = 1;
 
         SpatialIndex<pcl::PointXYZ>* index = NULL;
-        if (use_lazzy)
-        {
+        if (use_lazzy) {
             index = new LazyGrid<pcl::PointXYZ>(current_resolution);
-        }
-        else
-        {
+        } else {
             index = new CellVector<pcl::PointXYZ>();
         }
 
@@ -157,45 +147,40 @@ int main(int argc, char** argv)
             mov.loadPointCloud( moving_pc );
         mov.computeNDTCells();
 
-        if (use_f2f)
-        {
+        if (use_f2f) {
             matcher.match( mov, ndt, T_f2f );
         }
-        if (use_featurecorr)
-        {
-            NDTMatcherFeatureD2D<pcl::PointXYZ,pcl::PointXYZ> matcher_feat(corresp);
+        if (use_featurecorr) {
+            NDTMatcherFeatureD2D<pcl::PointXYZ, pcl::PointXYZ> matcher_feat(corresp);
             matcher_feat.match( mov, ndt, T_feat );
         }
         delete index;
     }
 
-    std::cout<<"GT translation "<<gt_transform.translation().transpose()
-             <<" (norm) "<<gt_transform.translation().norm()<<std::endl;
-    std::cout<<"GT rotation "<<gt_transform.rotation().eulerAngles(0,1,2).transpose()
-             <<" (norm) "<<gt_transform.rotation().eulerAngles(0,1,2).norm()<<std::endl;
+    std::cout << "GT translation " << gt_transform.translation().transpose()
+              << " (norm) " << gt_transform.translation().norm() << std::endl;
+    std::cout << "GT rotation " << gt_transform.rotation().eulerAngles(0, 1, 2).transpose()
+              << " (norm) " << gt_transform.rotation().eulerAngles(0, 1, 2).norm() << std::endl;
 
-    if (use_f2f)
-    {
-        std::cout<<"f2f translation "<<T_f2f.translation().transpose()
-                 <<" (norm) "<<T_f2f.translation().norm()<<std::endl;
-        std::cout<<"f2f rotation "<<T_f2f.rotation().eulerAngles(0,1,2).transpose()
-                 <<" (norm) "<<T_f2f.rotation().eulerAngles(0,1,2).norm()<<std::endl;
+    if (use_f2f) {
+        std::cout << "f2f translation " << T_f2f.translation().transpose()
+                  << " (norm) " << T_f2f.translation().norm() << std::endl;
+        std::cout << "f2f rotation " << T_f2f.rotation().eulerAngles(0, 1, 2).transpose()
+                  << " (norm) " << T_f2f.rotation().eulerAngles(0, 1, 2).norm() << std::endl;
     }
 
-    if (use_featurecorr)
-    {
-        std::cout<<"feat translation "<<T_feat.translation().transpose()
-                 <<" (norm) "<<T_feat.translation().norm()<<std::endl;
-        std::cout<<"feat rotation "<<T_feat.rotation().eulerAngles(0,1,2).transpose()
-                 <<" (norm) "<<T_feat.rotation().eulerAngles(0,1,2).norm()<<std::endl;
+    if (use_featurecorr) {
+        std::cout << "feat translation " << T_feat.translation().transpose()
+                  << " (norm) " << T_feat.translation().norm() << std::endl;
+        std::cout << "feat rotation " << T_feat.rotation().eulerAngles(0, 1, 2).transpose()
+                  << " (norm) " << T_feat.rotation().eulerAngles(0, 1, 2).norm() << std::endl;
     }
 
-    if (use_p2preg)
-    {
-        std::cout<<"p2preg translation "<<T_p2p.translation().transpose()
-                 <<" (norm) "<<T_p2p.translation().norm()<<std::endl;
-        std::cout<<"p2preg rotation "<<T_p2p.rotation().eulerAngles(0,1,2).transpose()
-                 <<" (norm) "<<T_p2p.rotation().eulerAngles(0,1,2).norm()<<std::endl;
+    if (use_p2preg) {
+        std::cout << "p2preg translation " << T_p2p.translation().transpose()
+                  << " (norm) " << T_p2p.translation().norm() << std::endl;
+        std::cout << "p2preg rotation " << T_p2p.rotation().eulerAngles(0, 1, 2).transpose()
+                  << " (norm) " << T_p2p.rotation().eulerAngles(0, 1, 2).norm() << std::endl;
     }
     cout << "done." << endl;
 }

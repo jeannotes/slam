@@ -15,8 +15,7 @@
 
 using namespace std;
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     if (argc != 3) {
         cout << "usage: histTest point_cloud1 point_cloud2\n";
         return (-1);
@@ -112,7 +111,7 @@ int main(int argc, char** argv)
     char fname[50];
 
     std::vector< Eigen::Vector3d, Eigen::aligned_allocator< Eigen::Vector3d > >
-        directions = nh.directions;
+    directions = nh.directions;
     cout << "direction = [";
     for (int i = 0; i < directions.size(); i++) {
         cout << directions[i].transpose() << ";";

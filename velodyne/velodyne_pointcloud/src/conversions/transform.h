@@ -38,30 +38,28 @@ typedef velodyne_rawdata::VPointCloud VPointCloud;
 
 // instantiate template for transforming a VPointCloud
 template bool
-  pcl_ros::transformPointCloud<VPoint>(const std::string &,
-                                       const VPointCloud &,
-                                       VPointCloud &,
-                                       const tf::TransformListener &);
+pcl_ros::transformPointCloud<VPoint>(const std::string &,
+                                     const VPointCloud &,
+                                     VPointCloud &,
+                                     const tf::TransformListener &);
 
-namespace velodyne_pointcloud
-{
-  class Transform
-  {
-  public:
+namespace velodyne_pointcloud {
+class Transform {
+public:
 
     Transform(ros::NodeHandle node, ros::NodeHandle private_nh);
     ~Transform() {}
 
-  private:
+private:
 
     void processScan(const velodyne_msgs::VelodyneScan::ConstPtr &scanMsg);
 
     ///Pointer to dynamic reconfigure service srv_
-    boost::shared_ptr<dynamic_reconfigure::Server<velodyne_pointcloud::
-      TransformNodeConfig> > srv_;
+    boost::shared_ptr < dynamic_reconfigure::Server < velodyne_pointcloud::
+    TransformNodeConfig > > srv_;
     void reconfigure_callback(velodyne_pointcloud::TransformNodeConfig &config,
-                  uint32_t level);
-    
+                              uint32_t level);
+
     const std::string tf_prefix_;
     boost::shared_ptr<velodyne_rawdata::RawData> data_;
     message_filters::Subscriber<velodyne_msgs::VelodyneScan> velodyne_scan_;
@@ -71,7 +69,7 @@ namespace velodyne_pointcloud
 
     /// configuration parameters
     typedef struct {
-      std::string frame_id;          ///< target frame ID
+        std::string frame_id;          ///< target frame ID
     } Config;
     Config config_;
 
@@ -80,7 +78,7 @@ namespace velodyne_pointcloud
     // every message.
     VPointCloud inPc_;              ///< input packet point cloud
     VPointCloud tfPc_;              ///< transformed packet point cloud
-  };
+};
 
 } // namespace velodyne_pointcloud
 

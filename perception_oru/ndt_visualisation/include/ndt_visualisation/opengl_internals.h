@@ -36,38 +36,38 @@
 #include <mrpt/utils/utils_defs.h>
 
 #if MRPT_HAS_OPENGL_GLUT
-	#ifdef MRPT_OS_WINDOWS
-		// WINDOWS:
-		#if defined(_MSC_VER)
-			#pragma warning(disable:4505)
-		#endif
-		#include <windows.h>
+#ifdef MRPT_OS_WINDOWS
+// WINDOWS:
+#if defined(_MSC_VER)
+#pragma warning(disable:4505)
+#endif
+#include <windows.h>
 
-		#include <GL/glew.h>
-	#endif	// MRPT_OS_WINDOWS
+#include <GL/glew.h>
+#endif	// MRPT_OS_WINDOWS
 
-	#include <GL/glut.h>
+#include <GL/glut.h>
 
-	/* Jerome Monceaux : bilock@gmail.com
-	 * Add inclusion of otherlibs/freeglut/GL/glut.h
-	 * because GLUT_INIT_STATE is detected as undefined 
-	 * under osx
-	 */
-	#ifdef __APPLE__
-		#include <otherlibs/freeglut/GL/freeglut_std.h>
-	#endif
+/* Jerome Monceaux : bilock@gmail.com
+ * Add inclusion of otherlibs/freeglut/GL/glut.h
+ * because GLUT_INIT_STATE is detected as undefined
+ * under osx
+ */
+#ifdef __APPLE__
+#include <otherlibs/freeglut/GL/freeglut_std.h>
+#endif
 
-	#ifdef HAVE_FREEGLUT_EXT_H
-		#include <GL/freeglut_ext.h>
-	#endif
+#ifdef HAVE_FREEGLUT_EXT_H
+#include <GL/freeglut_ext.h>
+#endif
 
 
-	// gl-ext
-	#ifdef MRPT_OS_WINDOWS
-		#include "glext/glext.h"
-	#else
-		#include <GL/glext.h>
-	#endif
+// gl-ext
+#ifdef MRPT_OS_WINDOWS
+#include "glext/glext.h"
+#else
+#include <GL/glext.h>
+#endif
 
 #endif // MRPT_HAS_OPENGL_GLUT
 

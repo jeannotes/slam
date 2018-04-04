@@ -40,10 +40,8 @@
 #include <opencv2/nonfree/features2d.hpp>
 #include <opencv2/nonfree/nonfree.hpp>
 
-namespace ndt_feature_reg
-{
-class NDTFrameProc
-{
+namespace ndt_feature_reg {
+class NDTFrameProc {
 public:
 //	  bool loadImg(NDTFrame<PointT> &f, const std::string &fileName) const;
 //	  void loadPC(NDTFrame<PointT> &f, const std::string &fileName) const;
@@ -55,8 +53,7 @@ public:
 
 //	  void convertDepthToPC(const cv::Mat &depthImg, pcl::PointCloud<PointT> &pc) const;
 
-    void addFrame (NDTFrame *f)
-    {
+    void addFrame (NDTFrame *f) {
         frames.push_back(f);
     }
 
@@ -69,37 +66,33 @@ public:
 
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr createColoredFeaturePC(NDTFrame &f, pcl::PointXYZRGB color);
 
-    NDTFrameProc(int nb_ransac, double max_inldist_xy, double max_inldist_z): pe(nb_ransac, max_inldist_xy, max_inldist_z)
-    {
+    NDTFrameProc(int nb_ransac, double max_inldist_xy, double max_inldist_z): pe(nb_ransac, max_inldist_xy, max_inldist_z) {
         detector = cv::FeatureDetector::create("SURF");
         extractor = cv::DescriptorExtractor::create("SURF");
         img_scale = 1.;
         trim_factor = 1.;
         non_mean = false;
-	cv::initModule_nonfree();
+        cv::initModule_nonfree();
         cv::initModule_features2d();
 
     }
 
     PoseEstimator pe;
-    typedef Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> EigenTransform;
-    typename std::vector< NDTFrame*,Eigen::aligned_allocator<NDTFrame > > frames;
+    typedef Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> EigenTransform;
+    typename std::vector< NDTFrame*, Eigen::aligned_allocator<NDTFrame > > frames;
     typename std::vector<EigenTransform, Eigen::aligned_allocator<EigenTransform> > transformVector;
 
-    inline void convertMatches(const std::vector<cv::DMatch> &in, std::vector<std::pair<int,int> > &out)
-    {
+    inline void convertMatches(const std::vector<cv::DMatch> &in, std::vector<std::pair<int, int> > &out) {
         out.resize(in.size());
-        for (size_t i = 0; i < in.size(); i++)
-        {
+        for (size_t i = 0; i < in.size(); i++) {
             out[i].first = in[i].queryIdx;
             out[i].second = in[i].trainIdx;
         }
     }
 
-    inline std::vector<std::pair<int,int> > convertMatches(const std::vector<cv::DMatch> &in)
-    {
-        std::vector<std::pair<int,int> > out;
-        convertMatches(in,out);
+    inline std::vector<std::pair<int, int> > convertMatches(const std::vector<cv::DMatch> &in) {
+        std::vector<std::pair<int, int> > out;
+        convertMatches(in, out);
         return out;
     }
 
@@ -108,10 +101,8 @@ public:
     double img_scale;
     double trim_factor;
     bool non_mean;
-    virtual ~NDTFrameProc()
-    {
-        for(size_t i =0; i<frames.size(); i++)
-        {
+    virtual ~NDTFrameProc() {
+        for (size_t i = 0; i < frames.size(); i++) {
             delete frames[i];
         }
         frames.clear();

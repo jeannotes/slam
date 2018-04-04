@@ -20,32 +20,25 @@
 
 using namespace std;
 
-float ranf()           /* ranf() is uniform in 0..1 */
-{
-    return (float)rand()/(float)RAND_MAX;
+float ranf() {         /* ranf() is uniform in 0..1 */
+    return (float)rand() / (float)RAND_MAX;
 }
 
-float box_muller(float m, float s)  /* normal random variate generator */
-{
+float box_muller(float m, float s) { /* normal random variate generator */
     /* mean m, standard deviation s */
     float x1, x2, w, y1;
     static float y2;
     static int use_last = 0;
 
-    if (use_last)	        /* use value from previous call */
-    {
+    if (use_last) {        /* use value from previous call */
         y1 = y2;
         use_last = 0;
-    }
-    else
-    {
-        do
-        {
+    } else {
+        do {
             x1 = 2.0 * ranf() - 1.0;
             x2 = 2.0 * ranf() - 1.0;
             w = x1 * x1 + x2 * x2;
-        }
-        while ( w >= 1.0 );
+        } while ( w >= 1.0 );
 
         w = sqrt( (-2.0 * log( w ) ) / w );
         y1 = x1 * w;
@@ -53,22 +46,21 @@ float box_muller(float m, float s)  /* normal random variate generator */
         use_last = 1;
     }
 
-    return( m + y1 * s );
+    return ( m + y1 * s );
 }
 
 
 bool matchICP(pcl::PointCloud<pcl::PointXYZ> &fixed,  pcl::PointCloud<pcl::PointXYZ> &moving,
-              Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &Tout)
-{
+              Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> &Tout) {
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_in (new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_out (new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PointCloud<pcl::PointXYZ>::ConstPtr f (new pcl::PointCloud<pcl::PointXYZ>(fixed) );
     pcl::PointCloud<pcl::PointXYZ>::ConstPtr m (new pcl::PointCloud<pcl::PointXYZ>(moving) );
 
-    pcl::VoxelGrid<pcl::PointXYZ> gr1,gr2;
-    gr1.setLeafSize(0.1,0.1,0.1);
-    gr2.setLeafSize(0.1,0.1,0.1);
+    pcl::VoxelGrid<pcl::PointXYZ> gr1, gr2;
+    gr1.setLeafSize(0.1, 0.1, 0.1);
+    gr2.setLeafSize(0.1, 0.1, 0.1);
 
     gr1.setInputCloud(m);
     gr2.setInputCloud(f);
@@ -121,21 +113,20 @@ bool matchICP(pcl::PointCloud<pcl::PointXYZ> &fixed,  pcl::PointCloud<pcl::Point
 }
 
 int
-main (int argc, char** argv)
-{
+main (int argc, char** argv) {
     std::ofstream logger ("/home/tsv/ndt_tmp/covariance.m");
     cout.precision(15);
 
     pcl::PointCloud<pcl::PointXYZ> prev, curr, currHere, currHere2;
     char prevName[500], currName[500];
-    Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> prevPose, currPose;
+    Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> prevPose, currPose;
 
     double __res[] = {0.2, 0.4, 1, 2};
-    std::vector<double> resolutions (__res, __res+sizeof(__res)/sizeof(double));
+    std::vector<double> resolutions (__res, __res + sizeof(__res) / sizeof(double));
     lslgeneric::NDTMatcherF2F matcherF2F(false, false, false, resolutions);
     lslgeneric::NDTMatcher matcherP2F;
 
-    Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> Pr, R;
+    Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> Pr, R;
     struct timeval tv_now;
 
     gettimeofday(&tv_now, NULL);
@@ -143,53 +134,49 @@ main (int argc, char** argv)
 
     int N_SAMPLES = 100;
 
-    if(argc != 2)
-    {
-        std::cout<<"Usage: "<<argv[0]<<" configFile\n";
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " configFile\n";
         return -1;
     }
 
-    FILE *fin = fopen(argv[1],"r");
-    double xd,yd,zd, x,y,z,w, ts;
+    FILE *fin = fopen(argv[1], "r");
+    double xd, yd, zd, x, y, z, w, ts;
     string prefix;
     char *line = NULL;
     size_t len;
     bool first = true;
     double randX, randY, randZ, randRoll, randPitch, randYaw;
-    double dev_x = 0.3 ,dev_y=0.3 ,dev_z =0.3 ,dev_roll =0.1,dev_pitch =0.1,dev_yaw=0.1;
+    double dev_x = 0.3 , dev_y = 0.3 , dev_z = 0.3 , dev_roll = 0.1, dev_pitch = 0.1, dev_yaw = 0.1;
 
     int ctr = 0;
 
     //get first line
-    int n = getline(&line,&len,fin);
-    if(n <=0 ) return -1;
+    int n = getline(&line, &len, fin);
+    if (n <= 0 ) return -1;
     prefix = line;
     *(prefix.rbegin()) = '\0';
 
-    while(getline(&line,&len,fin) > 0)
-    {
+    while (getline(&line, &len, fin) > 0) {
 
-        int n = sscanf(line,"%lf %lf %lf %lf %lf %lf %lf %lf",
-                       &ts,&xd,&yd,&zd,&x,&y,&z,&w);
-        if(n != 8)
-        {
-            cout<<"wrong format of pose at : "<<line<<endl;
+        int n = sscanf(line, "%lf %lf %lf %lf %lf %lf %lf %lf",
+                       &ts, &xd, &yd, &zd, &x, &y, &z, &w);
+        if (n != 8) {
+            cout << "wrong format of pose at : " << line << endl;
             break;
         }
 
-        if(first)
-        {
+        if (first) {
             //set previous pose to curent pose
-            prevPose =Eigen::Translation<double,3>(xd,yd,zd)*
-                      Eigen::Quaternion<double>(w,x,y,z);
+            prevPose = Eigen::Translation<double, 3>(xd, yd, zd) *
+                       Eigen::Quaternion<double>(w, x, y, z);
             first = false;
             ctr++;
             continue;
         }
 
 
-        currPose =  Eigen::Translation<double,3>(xd,yd,zd)*
-                    Eigen::Quaternion<double>(w,x,y,z);
+        currPose =  Eigen::Translation<double, 3>(xd, yd, zd) *
+                    Eigen::Quaternion<double>(w, x, y, z);
 
         /*
         r = M_PI*r/180;
@@ -218,37 +205,36 @@ main (int argc, char** argv)
 
 
         //compute ground truth relative pose
-        Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> P = prevPose.inverse()*currPose;
+        Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> P = prevPose.inverse() * currPose;
 
-        cout<<"testing scan "<<ctr-1<<" to "<<ctr<<endl;
+        cout << "testing scan " << ctr - 1 << " to " << ctr << endl;
 #if DEBUG_COVARIANCE
-        cout<<"prev pose    : "<<prevPose.translation().transpose()<<" rpy "<<prevPose.rotation().eulerAngles(0,1,2).transpose()<<endl;
-        cout<<"curr pose    : "<<currPose.translation().transpose()<<" rpy "<<r<<" "<<p<<" "<<y<<endl;
-        cout<<"gt difference: "<<P.translation().transpose()<<" rpy "<<P.rotation().eulerAngles(0,1,2).transpose()<<endl;
+        cout << "prev pose    : " << prevPose.translation().transpose() << " rpy " << prevPose.rotation().eulerAngles(0, 1, 2).transpose() << endl;
+        cout << "curr pose    : " << currPose.translation().transpose() << " rpy " << r << " " << p << " " << y << endl;
+        cout << "gt difference: " << P.translation().transpose() << " rpy " << P.rotation().eulerAngles(0, 1, 2).transpose() << endl;
 #endif
 
-        for( int i=0; i<N_SAMPLES; i++)
-        {
-            cout<<"itr: "<<i<<endl;
+        for ( int i = 0; i < N_SAMPLES; i++) {
+            cout << "itr: " << i << endl;
             Pr.setIdentity();
-            snprintf(prevName,499,"%s%03d_%03d.wrl",prefix.c_str(),ctr-1,i);
-            snprintf(currName,499,"%s%03d_%03d.wrl",prefix.c_str(),ctr,i);
+            snprintf(prevName, 499, "%s%03d_%03d.wrl", prefix.c_str(), ctr - 1, i);
+            snprintf(currName, 499, "%s%03d_%03d.wrl", prefix.c_str(), ctr, i);
             prev = lslgeneric::readVRML(prevName);
             curr = lslgeneric::readVRML(currName);
 
             //draw random numbers
-            randX = box_muller(0,dev_x);
-            randY = box_muller(0,dev_y);
-            randZ = box_muller(0,dev_z);
-            randRoll = box_muller(0,dev_roll);
-            randPitch = box_muller(0,dev_pitch);
-            randYaw = box_muller(0,dev_yaw);
+            randX = box_muller(0, dev_x);
+            randY = box_muller(0, dev_y);
+            randZ = box_muller(0, dev_z);
+            randRoll = box_muller(0, dev_roll);
+            randPitch = box_muller(0, dev_pitch);
+            randYaw = box_muller(0, dev_yaw);
 
-            currPose =  Eigen::Translation<double,3>(xd+randX,yd+randY,zd+randZ)*
-                        Eigen::Quaternion<double>(w,x,y,z)*
-                        Eigen::AngleAxis<double>(randRoll,Eigen::Vector3d::UnitX())*
-                        Eigen::AngleAxis<double>(randPitch,Eigen::Vector3d::UnitY())*
-                        Eigen::AngleAxis<double>(randYaw,Eigen::Vector3d::UnitZ());
+            currPose =  Eigen::Translation<double, 3>(xd + randX, yd + randY, zd + randZ) *
+                        Eigen::Quaternion<double>(w, x, y, z) *
+                        Eigen::AngleAxis<double>(randRoll, Eigen::Vector3d::UnitX()) *
+                        Eigen::AngleAxis<double>(randPitch, Eigen::Vector3d::UnitY()) *
+                        Eigen::AngleAxis<double>(randYaw, Eigen::Vector3d::UnitZ());
             //compute current pose
             /*currPose =Eigen::Translation<double,3>(xd+randX,yd+randY,zd+randZ)*
             Eigen::AngleAxis<double>(r+randRoll,Eigen::Vector3d::UnitX())*
@@ -257,14 +243,14 @@ main (int argc, char** argv)
             */
 
             //compute relative pose
-            Pr = prevPose.inverse()*currPose;
+            Pr = prevPose.inverse() * currPose;
 
 #if DEBUG_COVARIANCE
-            cout<<"curr pose: "<<currPose.translation().transpose()<<" "<<r+randRoll<<" "<<p+randPitch<<" "<<y+randYaw<<endl;
-            cout<<"diff: "<<Pr.translation().transpose()<<" rpy "<<Pr.rotation().eulerAngles(0,1,2).transpose()<<endl;
+            cout << "curr pose: " << currPose.translation().transpose() << " " << r + randRoll << " " << p + randPitch << " " << y + randYaw << endl;
+            cout << "diff: " << Pr.translation().transpose() << " rpy " << Pr.rotation().eulerAngles(0, 1, 2).transpose() << endl;
 #endif
             bool ret;
-            Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> offset;
+            Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> offset;
             /*
             	    //point2NDT
             	    //transform curr scan by Pr
@@ -286,36 +272,36 @@ main (int argc, char** argv)
             */
             //NDT2NDT
             //transform curr scan by Pr
-            currHere = lslgeneric::transformPointCloud(Pr,curr);
-            ret = matcherF2F.match(prev,currHere,R);
+            currHere = lslgeneric::transformPointCloud(Pr, curr);
+            ret = matcherF2F.match(prev, currHere, R);
 #if DEBUG_COVARIANCE
-            currHere2 = lslgeneric::transformPointCloud(R,currHere);
+            currHere2 = lslgeneric::transformPointCloud(R, currHere);
             char fname[50];
-            snprintf(fname,49,"/home/tsv/ndt_tmp/c_%03d.wrl",ctr);
-            FILE *fout = fopen(fname,"w");
-            fprintf(fout,"#VRML V2.0 utf8\n");
-            lslgeneric::writeToVRML(fout,currHere2,Eigen::Vector3d(0,1,0));
-            lslgeneric::writeToVRML(fout,currHere,Eigen::Vector3d(1,0,0));
-            lslgeneric::writeToVRML(fout,prev,Eigen::Vector3d(1,1,1));
+            snprintf(fname, 49, "/home/tsv/ndt_tmp/c_%03d.wrl", ctr);
+            FILE *fout = fopen(fname, "w");
+            fprintf(fout, "#VRML V2.0 utf8\n");
+            lslgeneric::writeToVRML(fout, currHere2, Eigen::Vector3d(0, 1, 0));
+            lslgeneric::writeToVRML(fout, currHere, Eigen::Vector3d(1, 0, 0));
+            lslgeneric::writeToVRML(fout, prev, Eigen::Vector3d(1, 1, 1));
             fclose(fout);
-            cout<<"registration: "<<R.translation().transpose()<<" rpy "<<R.rotation().eulerAngles(0,1,2).transpose()<<endl;
+            cout << "registration: " << R.translation().transpose() << " rpy " << R.rotation().eulerAngles(0, 1, 2).transpose() << endl;
 #endif
             //compute P[-](Pr[+]R)
-            offset = P.inverse()*(R*Pr);
+            offset = P.inverse() * (R * Pr);
             //that's the error! log it.
-            logger<<"ndt2ndt("<<ctr<<","<<i+1<<",:) = ["<<offset.translation().transpose()<<" "<<offset.rotation().eulerAngles(0,1,2).transpose()<<"];\n";
+            logger << "ndt2ndt(" << ctr << "," << i + 1 << ",:) = [" << offset.translation().transpose() << " " << offset.rotation().eulerAngles(0, 1, 2).transpose() << "];\n";
 //	    cout<<offset.translation().transpose()<<" "<<offset.rotation().eulerAngles(0,1,2).transpose()<<endl;
 
         }
 
-        Eigen::Matrix<double,6,6> cov;
+        Eigen::Matrix<double, 6, 6> cov;
 //	matcherP2F.covariance(prev,curr,P,cov);
 //	logger<<"COVpnt2ndt("<<ctr<<",:,:) = ["<<cov.row(0)<<";\n"<<cov.row(1)<<";\n"<<cov.row(2)<<";\n"<<cov.row(3)<<";\n"<<cov.row(4)<<";\n"<<cov.row(5)<<"];\n";
-        matcherF2F.covariance(prev,curr,P,cov);
-        logger<<"COVndt2ndt("<<ctr<<",:,:) = ["<<cov.row(0)<<";\n"<<cov.row(1)<<";\n"<<cov.row(2)<<";\n"<<cov.row(3)<<";\n"<<cov.row(4)<<";\n"<<cov.row(5)<<"];\n";
+        matcherF2F.covariance(prev, curr, P, cov);
+        logger << "COVndt2ndt(" << ctr << ",:,:) = [" << cov.row(0) << ";\n" << cov.row(1) << ";\n" << cov.row(2) << ";\n" << cov.row(3) << ";\n" << cov.row(4) << ";\n" << cov.row(5) << "];\n";
 
-        prevPose =Eigen::Translation<double,3>(xd,yd,zd)*
-                  Eigen::Quaternion<double>(w,x,y,z);
+        prevPose = Eigen::Translation<double, 3>(xd, yd, zd) *
+                   Eigen::Quaternion<double>(w, x, y, z);
         ctr++;
     }
 

@@ -42,8 +42,7 @@
 #include <cstdio>
 #include <Eigen/Core>
 
-namespace lslgeneric
-{
+namespace lslgeneric {
 
 template <typename PointT>
 class AdaptiveOctTree;
@@ -55,8 +54,7 @@ class AdaptiveOctTree;
   * when the number of points in a leaf goes above the MAX_POINTS threshold
   */
 template <typename PointT>
-class OctTree : public SpatialIndex<PointT>
-{
+class OctTree : public SpatialIndex<PointT> {
 protected:
     OctTree* parent_;
     OctTree *children_[8];
@@ -90,14 +88,14 @@ public:
     OctTree();
     ///creates an oct tree node with known center and size
     OctTree(PointT center, double xsize, double ysize,
-            double zsize, NDTCell<PointT>* type, OctTree<PointT> *_parent=NULL, unsigned int _depth=0);
+            double zsize, NDTCell<PointT>* type, OctTree<PointT> *_parent = NULL, unsigned int _depth = 0);
     virtual ~OctTree();
 
     ///use this to set the parameters for the OctTree - will *only* apply to leafs of the current node.
-    void setParameters(double _BIG_CELL_SIZE	=4,
-                       double _SMALL_CELL_SIZE   =0.5 ,
-                       int _MAX_POINTS		=10,
-                       int _MAX_DEPTH		=20
+    void setParameters(double _BIG_CELL_SIZE	= 4,
+                       double _SMALL_CELL_SIZE   = 0.5 ,
+                       int _MAX_POINTS		= 10,
+                       int _MAX_DEPTH		= 20
                       );
 
     ///add a point to the index
@@ -105,8 +103,7 @@ public:
 
     ///returns a pointer to the cell containing the point or NULL if not found
     virtual Cell<PointT>* getCellForPoint(const PointT &point);
-    inline virtual Cell<PointT>* getMyCell()
-    {
+    inline virtual Cell<PointT>* getMyCell() {
         return myCell_;
     }
     virtual OctTree<PointT>* getLeafForPoint(const PointT &point);
@@ -123,16 +120,13 @@ public:
     void print();
 
     ///returns a child at the specified index
-    inline OctTree<PointT>* getChild(int idx)
-    {
-        if(idx<8 && idx>=0)
-        {
+    inline OctTree<PointT>* getChild(int idx) {
+        if (idx < 8 && idx >= 0) {
             return children_[idx];
         }
         return NULL;
     }
-    inline bool isLeaf()
-    {
+    inline bool isLeaf() {
         return leaf_;
     }
 

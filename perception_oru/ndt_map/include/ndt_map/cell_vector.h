@@ -40,14 +40,12 @@
 #include <pcl/kdtree/impl/kdtree_flann.hpp>
 #include <pcl/console/print.h>
 
-namespace lslgeneric
-{
+namespace lslgeneric {
 
 /** \brief A spatial index represented as a grid map
     \details A grid map with delayed allocation of cells.
 */
-class CellVector : public SpatialIndex
-{
+class CellVector : public SpatialIndex {
 public:
     CellVector();
     CellVector(NDTCell* cellPrototype);
@@ -57,7 +55,7 @@ public:
     virtual NDTCell* getCellForPoint(const pcl::PointXYZ &point);
     virtual NDTCell* addPoint(const pcl::PointXYZ &point);
     void addCellPoints(pcl::PointCloud<pcl::PointXYZ> pc, const std::vector<size_t> &indices);
-    
+
     void addCell(NDTCell* cell);
     void addNDTCell(NDTCell* cell);
 

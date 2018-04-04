@@ -6,41 +6,39 @@
 #include <ndt_map/NDTMapMsg.h>
 #include <rviz/message_filter_display.h>
 
-namespace Ogre
-{
-  class SceneNode;
+namespace Ogre {
+class SceneNode;
 }
 
-namespace rviz
-{
-  class ColorProperty;
-  class FloatProperty;
-  class IntProperty;
-  class BoolProperty;
+namespace rviz {
+class ColorProperty;
+class FloatProperty;
+class IntProperty;
+class BoolProperty;
 }
 
-namespace lslgeneric{
+namespace lslgeneric {
 
-  class NDTLineVisual;
+class NDTLineVisual;
 
-  class NDTLineDisplay: public rviz::MessageFilterDisplay<ndt_map::NDTMapMsg>{
+class NDTLineDisplay: public rviz::MessageFilterDisplay<ndt_map::NDTMapMsg> {
     Q_OBJECT
-    public:
+public:
 
     NDTLineDisplay();
     virtual ~NDTLineDisplay();
 
-  protected:
+protected:
     virtual void onInitialize();
 
     virtual void reset();
 
-  private Q_SLOTS:
+private Q_SLOTS:
     void updateColorAndAlpha();
     void updateHistoryLength();
     void updateDrawLines();
 
-  private:
+private:
     void processMessage(const ndt_map::NDTMapMsg::ConstPtr& msg);
 
     std::vector<boost::shared_ptr<NDTLineVisual> > visuals_;
@@ -49,8 +47,8 @@ namespace lslgeneric{
     rviz::FloatProperty* alpha_property_;
     rviz::IntProperty* history_length_property_;
     rviz::BoolProperty* draw_lines_;
-  };
+};
 }
 
-#endif 
+#endif
 

@@ -20,11 +20,10 @@ public:
     class Params {
     public:
         //! Constructor, initiate to reasonable params.
-        /*! 
-     * Same notation/params as in Eliazar, Learning Probabilistic Motion Models for Mobile Robots.
-     */
-        Params()
-        {
+        /*!
+        * Same notation/params as in Eliazar, Learning Probabilistic Motion Models for Mobile Robots.
+        */
+        Params() {
             Cd = 0.001;
             Ct = 0.001;
             Dd = 0.005;
@@ -47,16 +46,14 @@ public:
         double Tt;
 
         //! Return a one-line condensed string of the parameters
-        std::string getDescString() const
-        {
+        std::string getDescString() const {
             std::ostringstream os;
             os << "Dd" << Dd << "Dt" << Dt << "Cd" << Cd << "Ct" << Ct << "Td" << Td << "Tt" << Tt;
             return os.str();
         }
 
         //! Display the parameters.
-        friend std::ostream& operator<<(std::ostream& os, const MotionModel2d::Params& obj)
-        {
+        friend std::ostream& operator<<(std::ostream& os, const MotionModel2d::Params& obj) {
             os << "\nCd      : " << obj.Cd;
             os << "\nCt      : " << obj.Ct;
             os << "\nDd      : " << obj.Dd;
@@ -69,22 +66,18 @@ public:
 
     MotionModel2d() {}
     MotionModel2d(const MotionModel2d::Params& p)
-        : params(p)
-    {
+        : params(p) {
     }
 
-    void setParams(const MotionModel2d::Params& p)
-    {
+    void setParams(const MotionModel2d::Params& p) {
         params = p;
     }
     //! Obtain the covariance for the provided relative incremental pose
-    Eigen::Matrix3d getCovMatrix3(const Eigen::Vector3d& rel) const
-    {
+    Eigen::Matrix3d getCovMatrix3(const Eigen::Vector3d& rel) const {
         return getMeasurementCov(rel);
     }
 
-    Eigen::MatrixXd getCovMatrix6(const Eigen::Vector3d& rel) const
-    {
+    Eigen::MatrixXd getCovMatrix6(const Eigen::Vector3d& rel) const {
         Eigen::MatrixXd cov(6, 6);
         cov.setIdentity();
         Eigen::Matrix3d cov2d = getMeasurementCov(rel);
@@ -104,8 +97,7 @@ public:
         return cov;
     }
 
-    Eigen::MatrixXd getCovMatrix6(const Eigen::Affine3d& rel) const
-    {
+    Eigen::MatrixXd getCovMatrix6(const Eigen::Affine3d& rel) const {
         // Extract the x, y, yaw motion
         Eigen::Vector3d x;
         x(0) = rel.translation()[0];
@@ -114,8 +106,7 @@ public:
         return getCovMatrix6(x);
     }
 
-    Eigen::MatrixXd getCovMatrix6(const Eigen::Affine3d& rel, double varZ, double varRoll, double varPitch) const
-    {
+    Eigen::MatrixXd getCovMatrix6(const Eigen::Affine3d& rel, double varZ, double varRoll, double varPitch) const {
         Eigen::MatrixXd cov = getCovMatrix6(rel);
         cov(2, 2) = varZ;
         cov(3, 3) = varRoll;
@@ -126,8 +117,7 @@ public:
     MotionModel2d::Params params;
 
 private:
-    Eigen::Matrix3d getMeasurementCov(const Eigen::Vector3d& relativePose) const
-    {
+    Eigen::Matrix3d getMeasurementCov(const Eigen::Vector3d& relativePose) const {
         double dist = relativePose.norm();
         double rot = relativePose[2];
         Eigen::Matrix3d R;

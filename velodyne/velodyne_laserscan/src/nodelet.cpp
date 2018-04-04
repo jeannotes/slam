@@ -3,20 +3,18 @@
 #include <nodelet/nodelet.h>
 #include "VelodyneLaserScan.h"
 
-namespace velodyne_laserscan
-{
+namespace velodyne_laserscan {
 
-class LaserScanNodelet: public nodelet::Nodelet
-{
+class LaserScanNodelet: public nodelet::Nodelet {
 public:
-  LaserScanNodelet() {}
-  ~LaserScanNodelet() {}
+    LaserScanNodelet() {}
+    ~LaserScanNodelet() {}
 
 private:
-  virtual void onInit() {
-    node_.reset(new VelodyneLaserScan(getNodeHandle(), getPrivateNodeHandle()));
-  }
-  boost::shared_ptr<VelodyneLaserScan> node_;
+    virtual void onInit() {
+        node_.reset(new VelodyneLaserScan(getNodeHandle(), getPrivateNodeHandle()));
+    }
+    boost::shared_ptr<VelodyneLaserScan> node_;
 };
 
 }

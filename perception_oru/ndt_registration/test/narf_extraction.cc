@@ -27,23 +27,21 @@ bool setUnseenToMaxRange = false;
 // -----Help-----
 // --------------
 void
-printUsage (const char* progName)
-{
-    std::cout << "\n\nUsage: "<<progName<<" [options] <scene.pcd>\n\n"
+printUsage (const char* progName) {
+    std::cout << "\n\nUsage: " << progName << " [options] <scene.pcd>\n\n"
               << "Options:\n"
               << "-------------------------------------------\n"
-              << "-r <float>   angular resolution in degrees (default "<<angular_resolution<<")\n"
-              << "-c <int>     coordinate frame (default "<< (int)coordinate_frame<<")\n"
+              << "-r <float>   angular resolution in degrees (default " << angular_resolution << ")\n"
+              << "-c <int>     coordinate frame (default " << (int)coordinate_frame << ")\n"
               << "-m           Treat all unseen points as maximum range readings\n"
               << "-s <float>   support size for the interest points (diameter of the used sphere - "
-              <<                                                     "default "<<support_size<<")\n"
+              <<                                                     "default " << support_size << ")\n"
               << "-h           this help\n"
               << "\n\n";
 }
 
 void
-setViewerPose (pcl::visualization::PCLVisualizer& viewer, const Eigen::Affine3f& viewer_pose)
-{
+setViewerPose (pcl::visualization::PCLVisualizer& viewer, const Eigen::Affine3f& viewer_pose) {
     Eigen::Vector3f pos_vector = viewer_pose * Eigen::Vector3f (0, 0, 0);
     Eigen::Vector3f look_at_vector = pcl::getRotationOnly (viewer_pose) * Eigen::Vector3f (0, 0, 1) + pos_vector;
     Eigen::Vector3f up_vector = pcl::getRotationOnly (viewer_pose) * Eigen::Vector3f (0, -1, 0);
@@ -63,31 +61,27 @@ setViewerPose (pcl::visualization::PCLVisualizer& viewer, const Eigen::Affine3f&
 // -----Main-----
 // --------------
 int
-main (int argc, char** argv)
-{
+main (int argc, char** argv) {
     // --------------------------------------
     // -----Parse Command Line Arguments-----
     // --------------------------------------
-    if (pcl::console::find_argument (argc, argv, "-h") >= 0)
-    {
+    if (pcl::console::find_argument (argc, argv, "-h") >= 0) {
         printUsage (argv[0]);
         return 0;
     }
-    if (pcl::console::find_argument (argc, argv, "-m") >= 0)
-    {
+    if (pcl::console::find_argument (argc, argv, "-m") >= 0) {
         setUnseenToMaxRange = true;
         cout << "Setting unseen values in range image to maximum range readings.\n";
     }
     int tmp_coordinate_frame;
-    if (pcl::console::parse (argc, argv, "-c", tmp_coordinate_frame) >= 0)
-    {
+    if (pcl::console::parse (argc, argv, "-c", tmp_coordinate_frame) >= 0) {
         coordinate_frame = pcl::RangeImage::CoordinateFrame (tmp_coordinate_frame);
-        cout << "Using coordinate frame "<< (int)coordinate_frame<<".\n";
+        cout << "Using coordinate frame " << (int)coordinate_frame << ".\n";
     }
     if (pcl::console::parse (argc, argv, "-s", support_size) >= 0)
-        cout << "Setting support size to "<<support_size<<".\n";
+        cout << "Setting support size to " << support_size << ".\n";
     if (pcl::console::parse (argc, argv, "-r", angular_resolution) >= 0)
-        cout << "Setting angular resolution to "<<angular_resolution<<"deg.\n";
+        cout << "Setting angular resolution to " << angular_resolution << "deg.\n";
     angular_resolution = pcl::deg2rad (angular_resolution);
 
     // ------------------------------------------------------------------
@@ -98,8 +92,7 @@ main (int argc, char** argv)
     pcl::PointCloud<pcl::PointWithViewpoint> far_ranges;
     Eigen::Affine3f scene_sensor_pose (Eigen::Affine3f::Identity ());
     std::vector<int> pcd_filename_indices = pcl::console::parse_file_extension_argument (argc, argv, "wrl");
-    if (!pcd_filename_indices.empty ())
-    {
+    if (!pcd_filename_indices.empty ()) {
         std::string filename = argv[pcd_filename_indices[0]];
         point_cloud = lslgeneric::readVRML(filename.c_str());
         /*
@@ -114,17 +107,13 @@ main (int argc, char** argv)
                                              point_cloud.sensor_origin_[1],
                                              point_cloud.sensor_origin_[2])) *
                             Eigen::Affine3f (point_cloud.sensor_orientation_);
-        std::string far_ranges_filename = pcl::getFilenameWithoutExtension (filename)+"_far_ranges.pcd";
+        std::string far_ranges_filename = pcl::getFilenameWithoutExtension (filename) + "_far_ranges.pcd";
         if (pcl::io::loadPCDFile (far_ranges_filename.c_str (), far_ranges) == -1)
-            std::cout << "Far ranges file \""<<far_ranges_filename<<"\" does not exists.\n";
-    }
-    else
-    {
+            std::cout << "Far ranges file \"" << far_ranges_filename << "\" does not exists.\n";
+    } else {
         cout << "\nNo *.pcd file given => Genarating example point cloud.\n\n";
-        for (float x=-0.5f; x<=0.5f; x+=0.01f)
-        {
-            for (float y=-0.5f; y<=0.5f; y+=0.01f)
-            {
+        for (float x = -0.5f; x <= 0.5f; x += 0.01f) {
+            for (float y = -0.5f; y <= 0.5f; y += 0.01f) {
                 PointType point;
                 point.x = x;
                 point.y = y;
@@ -182,7 +171,7 @@ main (int argc, char** argv)
 
     pcl::PointCloud<int> keypoint_indices;
     narf_keypoint_detector.compute (keypoint_indices);
-    std::cout << "Found "<<keypoint_indices.points.size ()<<" key points.\n";
+    std::cout << "Found " << keypoint_indices.points.size () << " key points.\n";
 
     // ----------------------------------------------
     // -----Show keypoints in range image widget-----
@@ -197,7 +186,7 @@ main (int argc, char** argv)
     pcl::PointCloud<pcl::PointXYZ>::Ptr keypoints_ptr (new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PointCloud<pcl::PointXYZ>& keypoints = *keypoints_ptr;
     keypoints.points.resize (keypoint_indices.points.size ());
-    for (size_t i=0; i<keypoint_indices.points.size (); ++i)
+    for (size_t i = 0; i < keypoint_indices.points.size (); ++i)
         keypoints.points[i].getVector3fMap () = range_image.points[keypoint_indices.points[i]].getVector3fMap ();
 
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> keypoints_color_handler (keypoints_ptr, 0, 255, 0);
@@ -207,8 +196,7 @@ main (int argc, char** argv)
     //--------------------
     // -----Main loop-----
     //--------------------
-    while (!viewer.wasStopped ()) // && range_image_widget.isShown ())
-    {
+    while (!viewer.wasStopped ()) { // && range_image_widget.isShown ())
         //pcl::visualization::ImageWidgetWX::spinOnce ();  // process GUI events
         viewer.spinOnce (100);
         boost::this_thread::sleep (boost::posix_time::microseconds (100000));

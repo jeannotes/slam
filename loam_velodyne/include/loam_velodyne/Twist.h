@@ -14,16 +14,16 @@ namespace loam {
  */
 class Twist {
 public:
-  Twist()
+    Twist()
         : rot_x(),
           rot_y(),
           rot_z(),
           pos() {};
 
-  Angle rot_x;
-  Angle rot_y;
-  Angle rot_z;
-  Vector3 pos;
+    Angle rot_x;
+    Angle rot_y;
+    Angle rot_z;
+    Vector3 pos;
 };
 
 } // end namespace loam

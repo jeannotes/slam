@@ -22,19 +22,16 @@ bool setUnseenToMaxRange = false;
 // -----Help-----
 // --------------
 void
-printUsage (const char* progName)
-{
-    std::cout << "\n\nUsage: "<<progName<<"moving_cloud.wrl static_cloud.wrl\n\n";
+printUsage (const char* progName) {
+    std::cout << "\n\nUsage: " << progName << "moving_cloud.wrl static_cloud.wrl\n\n";
 }
 
 // --------------
 // -----Main-----
 // --------------
 int
-main (int argc, char** argv)
-{
-    if(argc!=3)
-    {
+main (int argc, char** argv) {
+    if (argc != 3) {
         printUsage(argv[0]);
         return 0;
     }
@@ -77,7 +74,7 @@ main (int argc, char** argv)
 
     pcl::PointCloud<int> keypoint_indices;
     narf_keypoint_detector.compute (keypoint_indices);
-    std::cout << "Found "<<keypoint_indices.points.size ()<<" key points.\n";
+    std::cout << "Found " << keypoint_indices.points.size () << " key points.\n";
 
     // -------------------------------------
     // -----Show keypoints in 3D viewer-----
@@ -85,7 +82,7 @@ main (int argc, char** argv)
     pcl::PointCloud<pcl::PointXYZ>::Ptr keypoints_ptr (new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PointCloud<pcl::PointXYZ>& keypoints = *keypoints_ptr;
     keypoints.points.resize (keypoint_indices.points.size ());
-    for (size_t i=0; i<keypoint_indices.points.size (); ++i)
+    for (size_t i = 0; i < keypoint_indices.points.size (); ++i)
         keypoints.points[i].getVector3fMap () = range_image.points[keypoint_indices.points[i]].getVector3fMap ();
 
     //pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> keypoints_color_handler (keypoints_ptr, 0, 255, 0);

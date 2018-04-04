@@ -2,73 +2,58 @@
 #include <pcl/common/distances.h>
 #include <ndt_map/cell_vector.h>
 
-namespace lslgeneric
-{
+namespace lslgeneric {
 
-CellVector::CellVector():mp(new pcl::PointCloud<pcl::PointXYZ>())
-{
+CellVector::CellVector(): mp(new pcl::PointCloud<pcl::PointXYZ>()) {
     pcl::console::setVerbosityLevel(pcl::console::L_ERROR);
-    protoType= new NDTCell();
+    protoType = new NDTCell();
     treeUpdated = false;
 }
 
-CellVector::CellVector(NDTCell* cellPrototype):mp(new pcl::PointCloud<pcl::PointXYZ>())
-{
+CellVector::CellVector(NDTCell* cellPrototype): mp(new pcl::PointCloud<pcl::PointXYZ>()) {
     protoType = cellPrototype->clone();
     treeUpdated = false;
 }
 
-CellVector::CellVector(const CellVector& other):protoType(NULL)
-{
-    for(unsigned int i =0; i< other.activeCells.size(); i++)
-    {
+CellVector::CellVector(const CellVector& other): protoType(NULL) {
+    for (unsigned int i = 0; i < other.activeCells.size(); i++) {
         NDTCell* r = (other.activeCells[i]->copy());
-        if(r == NULL) continue;
-        for(size_t i=0; i<r->points_.size(); i++)
-        {
+        if (r == NULL) continue;
+        for (size_t i = 0; i < r->points_.size(); i++) {
             this->activeCells.push_back(r->copy());
         }
     }
 }
 
-CellVector::~CellVector()
-{
+CellVector::~CellVector() {
     //go through all cells and delete the non-NULL ones
-    for(unsigned int i=0; i<activeCells.size(); ++i)
-    {
-        if(activeCells[i]!=NULL)
-        {
+    for (unsigned int i = 0; i < activeCells.size(); ++i) {
+        if (activeCells[i] != NULL) {
             delete activeCells[i];
         }
     }
     if (protoType != NULL)
-      delete protoType;
+        delete protoType;
 }
 
-NDTCell* CellVector::getCellForPoint(const pcl::PointXYZ &point)
-{
+NDTCell* CellVector::getCellForPoint(const pcl::PointXYZ &point) {
     NDTCell* ret = NULL;
-    if (treeUpdated)
-    {
+    if (treeUpdated) {
         std::vector<int> id;
         std::vector<float> dist;
         int NCELLS = 1;
         id.reserve(NCELLS);
         dist.reserve(NCELLS);
         const pcl::PointXYZ pt(point);
-        if(!meansTree.nearestKSearch(pt,NCELLS,id,dist)) return ret;
+        if (!meansTree.nearestKSearch(pt, NCELLS, id, dist)) return ret;
 
         ret  = activeCells[id[0]];
-    }
-    else
-    {
+    } else {
         float min_dist = std::numeric_limits<float>::max( );
         typename SpatialIndex::CellVectorItr it = this->begin();
-        while(it!=this->end())
-        {
-            float tmp=pcl::squaredEuclideanDistance((*it)->getCenter(), point);
-            if (tmp < min_dist)
-            {
+        while (it != this->end()) {
+            float tmp = pcl::squaredEuclideanDistance((*it)->getCenter(), point);
+            if (tmp < min_dist) {
                 min_dist = tmp;
                 ret = (*it);
             }
@@ -78,14 +63,12 @@ NDTCell* CellVector::getCellForPoint(const pcl::PointXYZ &point)
     return ret;
 }
 
-NDTCell* CellVector::addPoint(const pcl::PointXYZ &point)
-{
+NDTCell* CellVector::addPoint(const pcl::PointXYZ &point) {
     return NULL;
     // Do nothing...
 }
 
-void CellVector::addCellPoints(pcl::PointCloud<pcl::PointXYZ> pc, const std::vector<size_t> &indices)
-{
+void CellVector::addCellPoints(pcl::PointCloud<pcl::PointXYZ> pc, const std::vector<size_t> &indices) {
     activeCells.push_back(protoType->clone());
     for (size_t i = 0; i < indices.size(); i++) {
         (activeCells.back())->addPoint(pc[indices[i]]); // Add the point to the cell.
@@ -93,70 +76,57 @@ void CellVector::addCellPoints(pcl::PointCloud<pcl::PointXYZ> pc, const std::vec
     treeUpdated = false;
 }
 
-void CellVector::addCell(NDTCell* cell)
-{
+void CellVector::addCell(NDTCell* cell) {
     activeCells.push_back(cell);
 }
 
-void CellVector::addNDTCell(NDTCell* cell)
-{
+void CellVector::addNDTCell(NDTCell* cell) {
     this->addCell(cell);
 }
 
-typename SpatialIndex::CellVectorItr CellVector::begin()
-{
+typename SpatialIndex::CellVectorItr CellVector::begin() {
     //cout<<"active cells "<<activeCells.size()<<endl;
     return activeCells.begin();
 }
 
-typename SpatialIndex::CellVectorConstItr CellVector::begin() const
-{
+typename SpatialIndex::CellVectorConstItr CellVector::begin() const {
     //cout<<"active cells "<<activeCells.size()<<endl;
     return activeCells.begin();
 }
 
-typename SpatialIndex::CellVectorItr CellVector::end()
-{
+typename SpatialIndex::CellVectorItr CellVector::end() {
     return activeCells.end();
 }
 
-typename SpatialIndex::CellVectorConstItr CellVector::end() const
-{
+typename SpatialIndex::CellVectorConstItr CellVector::end() const {
     return activeCells.end();
 }
 
-int CellVector::size()
-{
+int CellVector::size() {
     return activeCells.size();
 }
 
-SpatialIndex* CellVector::clone() const
-{
+SpatialIndex* CellVector::clone() const {
     return new CellVector();
 }
 
-SpatialIndex* CellVector::copy() const
-{
+SpatialIndex* CellVector::copy() const {
     //std::cout<<"COPY CELL VECTOR\n";
     //assert(false); // This needs to be updated!
     CellVector *ret = new CellVector();
-    for(unsigned int i =0; i< activeCells.size(); i++)
-    {
+    for (unsigned int i = 0; i < activeCells.size(); i++) {
         NDTCell* r = (activeCells[i]->copy());
-        if(r == NULL) continue;
-        for(size_t i=0; i<r->points_.size(); i++)
-        {
+        if (r == NULL) continue;
+        for (size_t i = 0; i < r->points_.size(); i++) {
             ret->activeCells.push_back(r->copy());
         }
     }
     return ret;
 }
 
-void CellVector::getNeighbors(const pcl::PointXYZ &point, const double &radius, std::vector<NDTCell*> &cells)
-{
+void CellVector::getNeighbors(const pcl::PointXYZ &point, const double &radius, std::vector<NDTCell*> &cells) {
 
-    if (treeUpdated)
-    {
+    if (treeUpdated) {
         std::vector<int> id;
         std::vector<float> dist;
         int NCELLS = 4;
@@ -164,43 +134,36 @@ void CellVector::getNeighbors(const pcl::PointXYZ &point, const double &radius, 
         dist.reserve(NCELLS);
         const pcl::PointXYZ pt(point);
 
-        if(!meansTree.nearestKSearch(pt,NCELLS,id,dist)) return;
+        if (!meansTree.nearestKSearch(pt, NCELLS, id, dist)) return;
 
-        for(int i=0; i<NCELLS; i++)
-        {
+        for (int i = 0; i < NCELLS; i++) {
             NDTCell* tmp = activeCells[id[i]];
             if (tmp != NULL)
                 cells.push_back(tmp);
         }
-    }
-    else
-    {
-        float radius_sqr = radius*radius;
+    } else {
+        float radius_sqr = radius * radius;
         typename SpatialIndex::CellVectorItr it = this->begin();
-        while(it!=this->end())
-        {
-            float tmp=pcl::squaredEuclideanDistance((*it)->getCenter(), point);
-            if (tmp < radius_sqr)
-            {
+        while (it != this->end()) {
+            float tmp = pcl::squaredEuclideanDistance((*it)->getCenter(), point);
+            if (tmp < radius_sqr) {
                 cells.push_back(*it);
             }
         }
     }
 }
 
-void CellVector::initKDTree()
-{
+void CellVector::initKDTree() {
 
     NDTCell* ndcell = NULL;
     pcl::PointXYZ curr;
     Eigen::Vector3d m;
     pcl::PointCloud<pcl::PointXYZ> mc;
 
-    for(size_t i=0; i<activeCells.size(); i++)
-    {
+    for (size_t i = 0; i < activeCells.size(); i++) {
         ndcell = (activeCells[i]);
-        if(ndcell == NULL) continue;
-        if(!ndcell->hasGaussian_) continue;
+        if (ndcell == NULL) continue;
+        if (!ndcell->hasGaussian_) continue;
         m = ndcell->getMean();
         curr.x = m(0);
         curr.y = m(1);
@@ -208,8 +171,7 @@ void CellVector::initKDTree()
         mc.push_back(curr);
     }
 
-    if(mc.points.size() > 0)
-    {
+    if (mc.points.size() > 0) {
         *mp = mc;
         meansTree.setInputCloud(mp);
     }
@@ -217,49 +179,39 @@ void CellVector::initKDTree()
     //++++++++++++++++++treeUpdated = true;
 }
 
-void CellVector::setCellType(NDTCell *type)
-{
-    if(type!=NULL)
-    {
+void CellVector::setCellType(NDTCell *type) {
+    if (type != NULL) {
         protoType = type->clone();
     }
 }
 
-NDTCell* CellVector::getClosestNDTCell(const pcl::PointXYZ &point)
-{
+NDTCell* CellVector::getClosestNDTCell(const pcl::PointXYZ &point) {
     return getCellForPoint(point);
 }
 
-std::vector<NDTCell*> CellVector::getClosestNDTCells(const pcl::PointXYZ &point, double &radius)
-{
+std::vector<NDTCell*> CellVector::getClosestNDTCells(const pcl::PointXYZ &point, double &radius) {
     std::vector<NDTCell*> ret;
     getNeighbors(point, radius, ret);
     return ret;
 }
 
-NDTCell* CellVector::getCellIdx(unsigned int idx) const
-{
+NDTCell* CellVector::getCellIdx(unsigned int idx) const {
     if (idx >= activeCells.size())
         return NULL;
     return activeCells[idx];
 }
 
-void CellVector::cleanCellsAboveSize(double size)
-{
+void CellVector::cleanCellsAboveSize(double size) {
     //clean cells with variance more then x meters in any direction
     Eigen::Vector3d evals;
     lslgeneric::SpatialIndex::CellVectorItr it = this->begin();
     lslgeneric::SpatialIndex::CellVectorItr it_tmp;
-    while(it!=this->end())
-    {
+    while (it != this->end()) {
         lslgeneric::NDTCell *ndcell = (*it);
-        if(ndcell != NULL)
-        {
-            if(ndcell->hasGaussian_)
-            {
+        if (ndcell != NULL) {
+            if (ndcell->hasGaussian_) {
                 evals = ndcell->getEvals();
-                if(sqrt(evals(2)) < size)
-                {
+                if (sqrt(evals(2)) < size) {
                     it++;
                     continue;
                 }
@@ -277,35 +229,25 @@ void CellVector::cleanCellsAboveSize(double size)
     }
 
 }
-int CellVector::loadFromJFF(FILE * jffin)
-{
+int CellVector::loadFromJFF(FILE * jffin) {
     NDTCell prototype_;
-    if(fread(&prototype_, sizeof(NDTCell), 1, jffin) <= 0)
-    {
+    if (fread(&prototype_, sizeof(NDTCell), 1, jffin) <= 0) {
         JFFERR("reading prototype_ failed");
     }
     protoType = prototype_.clone();
     // load all cells
-    while (1)
-    {
-        if(prototype_.loadFromJFF(jffin) < 0)
-        {
-            if(feof(jffin))
-            {
+    while (1) {
+        if (prototype_.loadFromJFF(jffin) < 0) {
+            if (feof(jffin)) {
                 break;
-            }
-            else
-            {
+            } else {
                 JFFERR("loading cell failed");
             }
         }
 
-        if(!feof(jffin))
-        {
+        if (!feof(jffin)) {
             // std::cout << prototype_.getOccupancy() << std::endl; /* for debugging */
-        }
-        else
-        {
+        } else {
             break;
         }
         //initialize cell

@@ -38,14 +38,12 @@
 #include <ndt_map/spatial_index.h>
 #include <ndt_map/ndt_cell.h>
 
-namespace lslgeneric
-{
+namespace lslgeneric {
 
 /** \brief A spatial index represented as a grid map
     \details A grid map with delayed allocation of cells.
 */
-class LazyGrid : public SpatialIndex
-{
+class LazyGrid : public SpatialIndex {
 public:
     LazyGrid(double cellSize);
     LazyGrid(double cellSizeX_, double cellSizeY_, double cellSizeZ_);
@@ -82,40 +80,40 @@ public:
     virtual void setSize(const double &sx, const double &sy, const double &sz);
     bool insertCell(NDTCell cell);
 
-    virtual NDTCell* getClosestNDTCell(const pcl::PointXYZ &pt, bool checkForGaussian=true);
-    virtual std::vector<NDTCell*> getClosestNDTCells(const pcl::PointXYZ &pt, int &n_neigh, bool checkForGaussian=true);
+    virtual NDTCell* getClosestNDTCell(const pcl::PointXYZ &pt, bool checkForGaussian = true);
+    virtual std::vector<NDTCell*> getClosestNDTCells(const pcl::PointXYZ &pt, int &n_neigh, bool checkForGaussian = true);
     virtual std::vector<NDTCell*> getClosestCells(const pcl::PointXYZ &pt);
 
-    virtual inline void getCellAt(int indX, int indY, int indZ, NDTCell* &cell){
-	if(indX < sizeX && indY < sizeY && indZ < sizeZ && indX >=0 && indY >=0 && indZ >=0){ 
-          cell = dataArray[indX][indY][indZ];
+    virtual inline void getCellAt(int indX, int indY, int indZ, NDTCell* &cell) {
+        if (indX < sizeX && indY < sizeY && indZ < sizeZ && indX >= 0 && indY >= 0 && indZ >= 0) {
+            cell = dataArray[indX][indY][indZ];
         } else {
-          cell = NULL;
+            cell = NULL;
         }
     }
-  
-    virtual inline void getCellAt(const pcl::PointXYZ& pt, NDTCell* &cell){
-       int indX,indY,indZ;
-       this->getIndexForPoint(pt,indX,indY,indZ);
-       this->getCellAt(indX,indY,indZ,cell);
+
+    virtual inline void getCellAt(const pcl::PointXYZ& pt, NDTCell* &cell) {
+        int indX, indY, indZ;
+        this->getIndexForPoint(pt, indX, indY, indZ);
+        this->getCellAt(indX, indY, indZ, cell);
     }
 
 
-  ///automatically allocate the cell if needed (checks that the indexes etc. are correct).
-  virtual void getCellAtAllocate(const pcl::PointXYZ& pt, NDTCell* &cell);
+    ///automatically allocate the cell if needed (checks that the indexes etc. are correct).
+    virtual void getCellAtAllocate(const pcl::PointXYZ& pt, NDTCell* &cell);
 
     //FIXME: these two are now not needed anymore
-    virtual inline void getNDTCellAt(int indX, int indY, int indZ, NDTCell* &cell){
-			if(indX < sizeX && indY < sizeY && indZ < sizeZ && indX >=0 && indY >=0 && indZ >=0){
-					cell = (dataArray[indX][indY][indZ]);
-			}else{
-				cell = NULL;
-			}
+    virtual inline void getNDTCellAt(int indX, int indY, int indZ, NDTCell* &cell) {
+        if (indX < sizeX && indY < sizeY && indZ < sizeZ && indX >= 0 && indY >= 0 && indZ >= 0) {
+            cell = (dataArray[indX][indY][indZ]);
+        } else {
+            cell = NULL;
+        }
     }
-    virtual inline void getNDTCellAt(const pcl::PointXYZ& pt, NDTCell* &cell){
-			int indX,indY,indZ;
-			this->getIndexForPoint(pt,indX,indY,indZ);
-			this->getNDTCellAt(indX,indY,indZ,cell);
+    virtual inline void getNDTCellAt(const pcl::PointXYZ& pt, NDTCell* &cell) {
+        int indX, indY, indZ;
+        this->getIndexForPoint(pt, indX, indY, indZ);
+        this->getNDTCellAt(indX, indY, indZ, cell);
     }
 
     void getCellSize(double &cx, double &cy, double &cz);
@@ -123,16 +121,14 @@ public:
     void getGridSizeInMeters(double &cx, double &cy, double &cz);
     void getCenter(double &cx, double &cy, double &cz);
     virtual void getIndexForPoint(const pcl::PointXYZ& pt, int &idx, int &idy, int &idz);
-    NDTCell* getProtoType()
-    {
+    NDTCell* getProtoType() {
         return protoType;
     }
 
     virtual void initialize();
     virtual void initializeAll() ;
 
-    NDTCell ****getDataArrayPtr()
-    {
+    NDTCell ****getDataArrayPtr() {
         return dataArray;
     }
 
@@ -141,9 +137,9 @@ public:
     bool traceLine(const Eigen::Vector3d &origin, const pcl::PointXYZ &endpoint, const Eigen::Vector3d &diff, const double& maxz, std::vector<NDTCell*> &cells);
     bool traceLineWithEndpoint(const Eigen::Vector3d &origin, const pcl::PointXYZ &endpoint, const Eigen::Vector3d &diff, const double& maxz, std::vector<NDTCell*> &cells, Eigen::Vector3d &final_point);
     bool isInside(const pcl::PointXYZ& pt) {
-			int indX,indY,indZ;
-			this->getIndexForPoint(pt,indX,indY,indZ);
-			return(indX < sizeX && indY < sizeY && indZ < sizeZ && indX >=0 && indY >=0 && indZ >=0);
+        int indX, indY, indZ;
+        this->getIndexForPoint(pt, indX, indY, indZ);
+        return (indX < sizeX && indY < sizeY && indZ < sizeZ && indX >= 0 && indY >= 0 && indZ >= 0);
     }
 protected:
     bool initialized;
@@ -156,9 +152,9 @@ protected:
     double sizeXmeters, sizeYmeters, sizeZmeters;
     double cellSizeX, cellSizeY, cellSizeZ;
     double centerX, centerY, centerZ;
-    int sizeX,sizeY,sizeZ;
+    int sizeX, sizeY, sizeZ;
 
-    virtual bool checkCellforNDT(int indX, int indY, int indZ, bool checkForGaussian=true);
+    virtual bool checkCellforNDT(int indX, int indY, int indZ, bool checkForGaussian = true);
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };

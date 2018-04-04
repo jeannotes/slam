@@ -38,10 +38,8 @@
 //#include <ndt_feature_reg/NDTFrame.hh>
 #include <pcl/point_types.h>
 
-namespace ndt_feature_reg
-{
-template<class T> std::string toString (const T& x)
-{
+namespace ndt_feature_reg {
+template<class T> std::string toString (const T& x) {
     std::ostringstream o;
 
     if (!(o << x))
@@ -50,18 +48,14 @@ template<class T> std::string toString (const T& x)
     return o.str ();
 }
 
-inline void scaleKeyPointSize(std::vector<cv::KeyPoint> &keypoints, const float &factor)
-{
-    for( std::vector<cv::KeyPoint>::iterator i = keypoints.begin(), ie = keypoints.end(); i != ie; ++i )
-    {
+inline void scaleKeyPointSize(std::vector<cv::KeyPoint> &keypoints, const float &factor) {
+    for ( std::vector<cv::KeyPoint>::iterator i = keypoints.begin(), ie = keypoints.end(); i != ie; ++i ) {
         i->size *= factor;
     }
 }
 
-inline void scaleKeyPointPosition(std::vector<cv::KeyPoint> &keypoints, const float &factor)
-{
-    for( std::vector<cv::KeyPoint>::iterator i = keypoints.begin(), ie = keypoints.end(); i != ie; ++i )
-    {
+inline void scaleKeyPointPosition(std::vector<cv::KeyPoint> &keypoints, const float &factor) {
+    for ( std::vector<cv::KeyPoint>::iterator i = keypoints.begin(), ie = keypoints.end(); i != ie; ++i ) {
         i->pt.x *= factor;
         i->pt.y *= factor;
     }

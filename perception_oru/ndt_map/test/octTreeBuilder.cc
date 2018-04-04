@@ -11,8 +11,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 static int ctr = 0;
 
-void octCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
-{
+void octCallback(const sensor_msgs::PointCloud2ConstPtr& msg) {
     //build the oct tree and save to disk, update counter
     //    pcl::PointCloud
     pcl::PointCloud<pcl::PointXYZ> cloud;
@@ -44,8 +43,7 @@ void octCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
     fclose(fout);
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
 
     ros::init(argc, argv, "oct_builder");
     ros::NodeHandle n;

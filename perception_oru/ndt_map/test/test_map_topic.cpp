@@ -14,8 +14,8 @@
 #include <cstring>
 #include <string>
 
-int main(int argc, char** argv){
-    ros::init(argc,argv,"map_topic");
+int main(int argc, char** argv) {
+    ros::init(argc, argv, "map_topic");
     ros::NodeHandle nh;
     ros::Publisher map_pub = nh.advertise<ndt_map::NDTMapMsg>("dummy_map_pub", 1000);
     ros::Rate loop_rate(1);
@@ -25,9 +25,9 @@ int main(int argc, char** argv){
     ROS_INFO("loading from jff...\n");
     if (nd.loadFromJFF("basement_04m.1.jff") < 0)
         ROS_INFO("loading from jff failed\n");
-    
-    lslgeneric::toMessage(&nd,msg,"base");
-    while (ros::ok()){
+
+    lslgeneric::toMessage(&nd, msg, "base");
+    while (ros::ok()) {
         map_pub.publish(msg);
         ros::spinOnce();
         loop_rate.sleep();

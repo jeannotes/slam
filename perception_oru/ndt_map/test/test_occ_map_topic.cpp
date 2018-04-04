@@ -14,8 +14,7 @@
 #include <cstring>
 #include <string>
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     ros::init(argc, argv, "occ_map_topic");
     ros::NodeHandle nh;
     ros::Publisher map_pub = nh.advertise<nav_msgs::OccupancyGrid>("dummy_occ_map_pub", 1000);

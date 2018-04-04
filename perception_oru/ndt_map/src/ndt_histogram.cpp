@@ -5,9 +5,8 @@
 namespace lslgeneric {
 
 NDTHistogram::NDTHistogram(int linear_classes,
-    int flat_classes,
-    int spherical_classes)
-{
+                           int flat_classes,
+                           int spherical_classes) {
     N_LINE_BINS = linear_classes;
     N_FLAT_BINS = flat_classes;
     N_SPHERE_BINS = spherical_classes;
@@ -36,8 +35,7 @@ NDTHistogram::NDTHistogram(int linear_classes,
     inited = true;
 }
 
-NDTHistogram::NDTHistogram(const NDTHistogram& other)
-{
+NDTHistogram::NDTHistogram(const NDTHistogram& other) {
 
     histogramBinsLine = other.histogramBinsLine;
     histogramBinsFlat = other.histogramBinsFlat;
@@ -64,10 +62,9 @@ NDTHistogram::NDTHistogram(const NDTHistogram& other)
 }
 
 NDTHistogram::NDTHistogram(NDTMap& map,
-    int linear_classes,
-    int flat_classes,
-    int spherical_classes)
-{
+                           int linear_classes,
+                           int flat_classes,
+                           int spherical_classes) {
 
     N_LINE_BINS = linear_classes;
     N_FLAT_BINS = flat_classes;
@@ -100,8 +97,7 @@ NDTHistogram::NDTHistogram(NDTMap& map,
     inited = true;
 }
 
-void NDTHistogram::computeDirections()
-{
+void NDTHistogram::computeDirections() {
 
     double dlong = M_PI * (3 - sqrt(5)); /* ~2.39996323 */
     double dz = 2.0 / N_FLAT_BINS;
@@ -119,9 +115,8 @@ void NDTHistogram::computeDirections()
 }
 
 void NDTHistogram::constructHistogram(NDTMap& map,
-    double linear_factor,
-    double flat_factor)
-{
+                                      double linear_factor,
+                                      double flat_factor) {
 
     SpatialIndex* si = map.getMyIndex();
     if (si == NULL)
@@ -188,8 +183,7 @@ void NDTHistogram::constructHistogram(NDTMap& map,
     }
 }
 
-void NDTHistogram::incrementLineBin(double d)
-{
+void NDTHistogram::incrementLineBin(double d) {
     histogramBinsLine[0]++;
     if (d < D1)
         dist_histogramBinsLine[0][0]++;
@@ -199,8 +193,7 @@ void NDTHistogram::incrementLineBin(double d)
         dist_histogramBinsLine[1][0]++;
 }
 
-void NDTHistogram::incrementFlatBin(Eigen::Vector3d& normal, double d)
-{
+void NDTHistogram::incrementFlatBin(Eigen::Vector3d& normal, double d) {
     //std::cout<<"n "<<normal.transpose()<<std::endl;
     normal.normalize();
     //bins are in 3D. go through directions, find smallest difference
@@ -226,8 +219,7 @@ void NDTHistogram::incrementFlatBin(Eigen::Vector3d& normal, double d)
     }
 }
 
-void NDTHistogram::incrementSphereBin(double d)
-{
+void NDTHistogram::incrementSphereBin(double d) {
     histogramBinsSphere[0]++;
     if (d < D1) {
         int id = floor(((double)d * N_SPHERE_BINS) / (double)D1);
@@ -240,8 +232,7 @@ void NDTHistogram::incrementSphereBin(double d)
     }
 }
 
-pcl::PointCloud<pcl::PointXYZ> NDTHistogram::getDominantDirections(int nDirections)
-{
+pcl::PointCloud<pcl::PointXYZ> NDTHistogram::getDominantDirections(int nDirections) {
 
     pcl::PointCloud<pcl::PointXYZ> ret;
     std::vector<bool> dominated(directions.size(), false);
@@ -267,10 +258,10 @@ pcl::PointCloud<pcl::PointXYZ> NDTHistogram::getDominantDirections(int nDirectio
             found = !dominated[idMax];
             //check if any of the already found directions are "duals"
             /* for(int j=0; j<ret.points.size() && found; j++) {
-           Eigen::Vector3d v(ret.points[j].x,ret.points[j].y,ret.points[j].z);
-           v = v + directions[idMax];
-           found = found && (v.norm() > NORM_MIN);
-           }*/
+            Eigen::Vector3d v(ret.points[j].x,ret.points[j].y,ret.points[j].z);
+            v = v + directions[idMax];
+            found = found && (v.norm() > NORM_MIN);
+            }*/
             //suppress this max and neighbours --- independent of the value of found, this is necessarry
             dominated[idMax] = true;
             if (idMax - 1 >= 0)
@@ -297,8 +288,7 @@ pcl::PointCloud<pcl::PointXYZ> NDTHistogram::getDominantDirections(int nDirectio
     return ret;
 }
 
-void NDTHistogram::bestFitToHistogram(NDTHistogram& target, Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T, bool bound_transform)
-{
+void NDTHistogram::bestFitToHistogram(NDTHistogram& target, Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T, bool bound_transform) {
 
     //find the top N dominant directions
     int N = 3;
@@ -398,49 +388,49 @@ void NDTHistogram::bestFitToHistogram(NDTHistogram& target, Eigen::Transform<dou
 
                                 }
                                 good2 = sqrt(good2);
-                */
+                    */
 
                     /*
-                //don't use them for finding but just for verifying
-                useMine.points.push_back(dominantBinsMine[c1]);
-                useTarget.points.push_back(dominantBinsTarget[c2]);
-                //calculate goodness of fit
-                //			    mineNew = transformPointCloud(localT,useMine);
+                    //don't use them for finding but just for verifying
+                    useMine.points.push_back(dominantBinsMine[c1]);
+                    useTarget.points.push_back(dominantBinsTarget[c2]);
+                    //calculate goodness of fit
+                    //			    mineNew = transformPointCloud(localT,useMine);
 
-                //now also considering last orientation....
-                //			    closedFormSolution(useMine, useTarget, localT2);
-                mineNew2 = transformPointCloud(localT2,useMine);
+                    //now also considering last orientation....
+                    //			    closedFormSolution(useMine, useTarget, localT2);
+                    mineNew2 = transformPointCloud(localT2,useMine);
 
-                //			    double good = 0, scale = 0;
-                //			    for(int i=0; i<mineNew.points.size(); i++) {
-                //				double factor = (mineNew.points[i].intensity+useTarget.points[i].intensity);
-                //				good += factor*sqrt( pow(mineNew.points[i].x-useTarget.points[i].x,2) +
-                //					pow(mineNew.points[i].y-useTarget.points[i].y,2) +
-                //					pow(mineNew.points[i].z-useTarget.points[i].z,2));
-                //				scale += factor;
-                //			    }
-                //			    good = good/scale;
+                    //			    double good = 0, scale = 0;
+                    //			    for(int i=0; i<mineNew.points.size(); i++) {
+                    //				double factor = (mineNew.points[i].intensity+useTarget.points[i].intensity);
+                    //				good += factor*sqrt( pow(mineNew.points[i].x-useTarget.points[i].x,2) +
+                    //					pow(mineNew.points[i].y-useTarget.points[i].y,2) +
+                    //					pow(mineNew.points[i].z-useTarget.points[i].z,2));
+                    //				scale += factor;
+                    //			    }
+                    //			    good = good/scale;
 
 
-                double good2 = 0, scale2 = 0;
-                for(int i=0; i<mineNew2.points.size(); i++) {
-                double factor = (mineNew2.points[i].intensity+useTarget.points[i].intensity);
-                good2 += factor*sqrt( pow(mineNew2.points[i].x-useTarget.points[i].x,2) +
-                pow(mineNew2.points[i].y-useTarget.points[i].y,2) +
-                pow(mineNew2.points[i].z-useTarget.points[i].z,2));
-                scale2 += factor;
-                }
-                good2 = good2/scale2;
-                */
+                    double good2 = 0, scale2 = 0;
+                    for(int i=0; i<mineNew2.points.size(); i++) {
+                    double factor = (mineNew2.points[i].intensity+useTarget.points[i].intensity);
+                    good2 += factor*sqrt( pow(mineNew2.points[i].x-useTarget.points[i].x,2) +
+                    pow(mineNew2.points[i].y-useTarget.points[i].y,2) +
+                    pow(mineNew2.points[i].z-useTarget.points[i].z,2));
+                    scale2 += factor;
+                    }
+                    good2 = good2/scale2;
+                    */
 
                     //			    std::cout<<"combo "<<a1<<" "<<b1<<" "<<" -- "
                     //				<<a2<<" "<<b2<<" "<<" fit = "<<good2<<std::endl;
                     /*if(good < best) {
-                  std::cout<<"local minimum at combo "<<a1<<" "<<b1<<" "<<c1<<" -- "
-                  <<a2<<" "<<b2<<" "<<c2<<" fit = "<<good<<std::endl;
-                  best = good;
-                  T = localT;
-                  }*/
+                    std::cout<<"local minimum at combo "<<a1<<" "<<b1<<" "<<c1<<" -- "
+                    <<a2<<" "<<b2<<" "<<c2<<" fit = "<<good<<std::endl;
+                    best = good;
+                    T = localT;
+                    }*/
                     Eigen::Quaternion<double> id, errorQ;
                     id.setIdentity();
                     errorQ = localT2.rotation();
@@ -485,8 +475,7 @@ void NDTHistogram::bestFitToHistogram(NDTHistogram& target, Eigen::Transform<dou
     }
 }
 
-void NDTHistogram::closedFormSolution(pcl::PointCloud<pcl::PointXYZ>& src, pcl::PointCloud<pcl::PointXYZ>& tgt, Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T)
-{
+void NDTHistogram::closedFormSolution(pcl::PointCloud<pcl::PointXYZ>& src, pcl::PointCloud<pcl::PointXYZ>& tgt, Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T) {
     T.setIdentity();
     Eigen::Matrix3d H; // = (cloud_src_demean * cloud_tgt_demean.transpose ()).topLeftCorner<3, 3>();
     Eigen::MatrixXd P1, P2; //temporary points for sets 1 and 2
@@ -523,8 +512,7 @@ void NDTHistogram::closedFormSolution(pcl::PointCloud<pcl::PointXYZ>& src, pcl::
     T = R;
 }
 
-void NDTHistogram::printHistogram(bool bMatlab)
-{
+void NDTHistogram::printHistogram(bool bMatlab) {
     if (bMatlab) {
         //prints in a format suitable for matlab plotting
         std::cout << "L=[ ";
@@ -561,7 +549,7 @@ void NDTHistogram::printHistogram(bool bMatlab)
         	for(unsigned int i=0; i<directions.size(); i++) {
         	std::cout<<directions[i].transpose()<<"; ";
         	}
-      */
+        */
 
     } else {
         std::cout << "L: ";
@@ -582,8 +570,7 @@ void NDTHistogram::printHistogram(bool bMatlab)
     }
 }
 
-double NDTHistogram::getSimilarity(NDTHistogram& other)
-{
+double NDTHistogram::getSimilarity(NDTHistogram& other) {
 
     Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> T;
 
@@ -592,8 +579,7 @@ double NDTHistogram::getSimilarity(NDTHistogram& other)
     return this->getSimilarity(other, T);
 }
 
-double NDTHistogram::getSimilarity(NDTHistogram& other, Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T)
-{
+double NDTHistogram::getSimilarity(NDTHistogram& other, Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T) {
     double score[3];
     double N_THIS[3], N_OTHER[3];
     for (unsigned int r = 0; r < 3; r++) {

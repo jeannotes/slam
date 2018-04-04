@@ -41,10 +41,8 @@
 #include <opencv2/nonfree/nonfree.hpp>
 #include <ndt_feature_reg/ndt_frame_proc.h>
 
-namespace ndt_feature_reg
-{
-class ExpNDTFrameProc : public ndt_feature_reg::NDTFrameProc
-{
+namespace ndt_feature_reg {
+class ExpNDTFrameProc : public ndt_feature_reg::NDTFrameProc {
 public:
 
     using NDTFrameProc::pe;
@@ -55,22 +53,19 @@ public:
     using NDTFrameProc::non_mean;
     using NDTFrameProc::frames;
     using NDTFrameProc::transformVector;
-    
-    typedef Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> EigenTransform;
-   
+
+    typedef Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> EigenTransform;
+
 
     void trimNbFrames (size_t maxNbFrames);
     void addFrameIncremental (NDTFrame *f, bool skipMatching, bool ndtEstimateDI = false,
                               bool match_full = false, bool match_no_association = false);
-    
-    ExpNDTFrameProc(int nb_ransac, double max_inldist_xy, double max_inldist_z):NDTFrameProc(nb_ransac,max_inldist_xy,max_inldist_z) 
-    {
+
+    ExpNDTFrameProc(int nb_ransac, double max_inldist_xy, double max_inldist_z): NDTFrameProc(nb_ransac, max_inldist_xy, max_inldist_z) {
     }
-    
-    virtual ~ExpNDTFrameProc()
-    {
-        for(size_t i =0; i<frames.size(); i++)
-        {
+
+    virtual ~ExpNDTFrameProc() {
+        for (size_t i = 0; i < frames.size(); i++) {
             delete frames[i];
         }
         frames.clear();

@@ -17,8 +17,7 @@ class map_converter {
     std::vector<std::vector<int>> map;
 
 public:
-    map_converter(int argc, char** argv)
-    {
+    map_converter(int argc, char** argv) {
         boost::program_options::options_description desc("Allowed options");
         desc.add_options()("help", "produce help message")("ndt-file", boost::program_options::value<std::string>(&ndt_map_name), "location of the ndt map you want to conver")("ndt-resolution", boost::program_options::value<double>(&ndt_resolution)->default_value(1.), "resolution of the map")("occ-file", boost::program_options::value<std::string>(&occ_map_name), "name of new occupancy map (do not put extension)")("occ-resolution", boost::program_options::value<double>(&occ_resolution)->default_value(1.), "desired resolution")("lik_tr", boost::program_options::value<double>(&lik_tr)->default_value(0.01), "likelihood treshold the lower value the more conservative map");
         boost::program_options::variables_map vm;
@@ -41,8 +40,7 @@ public:
     }
 
 private:
-    int LoadMap()
-    {
+    int LoadMap() {
         FILE* jffin;
         jffin = fopen(ndt_map_name.c_str(), "r+b");
         mapGrid = new lslgeneric::LazyGrid(ndt_resolution);
@@ -53,8 +51,7 @@ private:
         return 0;
     }
 
-    void BuildMap()
-    {
+    void BuildMap() {
         double xs, ys, zs;
         double xc, yc, zc;
         double minx, miny, maxx, maxy;
@@ -98,8 +95,7 @@ private:
         }
     }
 
-    void SaveMap()
-    {
+    void SaveMap() {
         std::cout << "saving map" << std::endl;
         std::string png_map_file = occ_map_name;
         png_map_file += ".png";
@@ -123,8 +119,7 @@ private:
             std::cout << "Unable to open file";
     }
 
-    void saveYAMLFile()
-    {
+    void saveYAMLFile() {
         double xs, ys, zs;
         double xc, yc, zc;
         double cenx, ceny;
@@ -150,7 +145,6 @@ private:
     }
 };
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     map_converter mc(argc, argv);
 }

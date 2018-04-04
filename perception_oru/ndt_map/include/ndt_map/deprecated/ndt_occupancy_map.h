@@ -51,41 +51,35 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-namespace lslgeneric
-{
+namespace lslgeneric {
 
 /** \brief Implements an NDT based spatial index
     \details This is an interface to a SpatialIndex (custom defined)
 	that contains NDT cells. Provides methods to create from a PointCloud
 */
 template <typename PointT>
-class NDTOccupancyMap
-{
+class NDTOccupancyMap {
 public:
 
-    NDTOccupancyMap()
-    {
+    NDTOccupancyMap() {
         index_ = NULL;
     }
     /** default constructor. The SpatialIndex sent as a paramter
     is used as a factory every time that loadPointCloud is called.
     it can/should be deallocated outside the class after the destruction of the NDTMap
     */
-    NDTOccupancyMap(SpatialIndex<PointT> *idx, float _resolution)
-    {
+    NDTOccupancyMap(SpatialIndex<PointT> *idx, float _resolution) {
         //std::cout<<"STORE INDEX PROTOTYPE\n";
         index_ = idx;
         resolution = _resolution;
         //this is used to prevent memory de-allocation of the *si
         //si was allocated outside the NDT class and should be deallocated outside
-        isFirstLoad_=true;
+        isFirstLoad_ = true;
     }
 
-    NDTOccupancyMap(const NDTOccupancyMap& other)
-    {
+    NDTOccupancyMap(const NDTOccupancyMap& other) {
         //std::cout<<"COPY MAP\n";
-        if(other.index_ != NULL)
-        {
+        if (other.index_ != NULL) {
             //std::cout<<"COPY INDEX\n";
             this->index_ = index_->copy();
             isFirstLoad_ = false;
@@ -93,11 +87,9 @@ public:
         this->resolution = other.resolution;
     }
 
-    virtual ~NDTOccupancyMap()
-    {
+    virtual ~NDTOccupancyMap() {
         //std::cout<<"DELETE MAP\n";
-        if(index_ !=NULL && !isFirstLoad_)
-        {
+        if (index_ != NULL && !isFirstLoad_) {
             //std::cout<<"DELETE INDEX\n";
             delete index_;
         }
@@ -121,7 +113,7 @@ public:
     void loadPointCloud(const pcl::PointCloud<PointT> &pc, const std::vector<std::vector<size_t> > &indices);
     void loadDepthImage(const cv::Mat& depthImage, DepthCamera<PointT> &cameraParams);
     pcl::PointCloud<PointT> loadDepthImageFeatures(const cv::Mat& depthImage, std::vector<cv::KeyPoint> &keypoints,
-            size_t &supportSize, double maxVar, DepthCamera<PointT> &cameraParams, bool estimateParamsDI=false, bool nonMean = false);
+            size_t &supportSize, double maxVar, DepthCamera<PointT> &cameraParams, bool estimateParamsDI = false, bool nonMean = false);
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     void computeNDTCells(int cellupdatemode = CELL_UPDATE_MODE_SAMPLE_VARIANCE_WITH_RESET);
@@ -129,8 +121,7 @@ public:
     virtual void writeToVRML(FILE* fout);
     virtual void writeToVRML(FILE* fout, Eigen::Vector3d col);
 
-    inline SpatialIndex<PointT>* getMyIndex() const
-    {
+    inline SpatialIndex<PointT>* getMyIndex() const {
         return index_;
     }
     /// return the spatial index used as a string
@@ -146,7 +137,7 @@ public:
     ///return the cell using a specific index (not available for all spatialindexes), will return NULL if the idx is not valid.
     NDTCell<PointT>* getCellIdx(unsigned int idx);
 
-    std::vector<NDTCell<PointT>*> pseudoTransformNDT(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T);
+    std::vector<NDTCell<PointT>*> pseudoTransformNDT(Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> T);
 
     /**
     * Returns all computed cells from the map

@@ -20,10 +20,8 @@
 
 using namespace std;
 
-int main (int argc, char** argv)
-{
-    if(argc < 2)
-    {
+int main (int argc, char** argv) {
+    if (argc < 2) {
         cout << "[ USAGE ] jffSaveTest cloud\n";
         exit(1);
     }

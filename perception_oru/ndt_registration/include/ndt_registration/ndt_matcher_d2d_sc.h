@@ -36,63 +36,59 @@
 #define NDTMATCHERD2DSC_HH
 
 #include <ndt_registration/ndt_matcher_d2d.h>
-namespace lslgeneric
-{
+namespace lslgeneric {
 /**
  * This class extends the NDT / NDT registration to also incorporate a soft constraint using an egomotion estimate
  */
-class NDTMatcherD2DSC : public lslgeneric::NDTMatcherD2D
-{
+class NDTMatcherD2DSC : public lslgeneric::NDTMatcherD2D {
 public:
-    NDTMatcherD2DSC() : NDTMatcherD2D() 
-    {
-      nb_match_calls = 0;
-      nb_success_reg = 0;
-      only_xy_motion = false;
-      lock_zrp_motion = false;
+    NDTMatcherD2DSC() : NDTMatcherD2D() {
+        nb_match_calls = 0;
+        nb_success_reg = 0;
+        only_xy_motion = false;
+        lock_zrp_motion = false;
     }
 
     NDTMatcherD2DSC(bool _isIrregularGrid,
-                    bool useDefaultGridResolutions, std::vector<double> _resolutions) : NDTMatcherD2D(_isIrregularGrid,useDefaultGridResolutions,_resolutions)
-    {
-      nb_match_calls = 0;
-      nb_success_reg = 0;
-      only_xy_motion = false;
-      lock_zrp_motion = false;
+                    bool useDefaultGridResolutions, std::vector<double> _resolutions) : NDTMatcherD2D(_isIrregularGrid, useDefaultGridResolutions, _resolutions) {
+        nb_match_calls = 0;
+        nb_success_reg = 0;
+        only_xy_motion = false;
+        lock_zrp_motion = false;
     }
 
 
-  /**
-     * Registers a point cloud to an NDT structure.
-     * \param  fixed
-     *   Reference data.
-     * \param  moving
-     *   The output transformation registers this point cloud to \c fixed.
-     * \param  T
-     *   This is an input/output parameter. The initial value of \c T
-     *   gives the initial pose estimate of \c moving. When the
-     *   algorithm terminates, \c T holds the registration result.
-     * \param Tcov
-     *   Covariance of the input pose parameter. This will be used to form
-     *   an additional cost in the objective.
-     */
+    /**
+       * Registers a point cloud to an NDT structure.
+       * \param  fixed
+       *   Reference data.
+       * \param  moving
+       *   The output transformation registers this point cloud to \c fixed.
+       * \param  T
+       *   This is an input/output parameter. The initial value of \c T
+       *   gives the initial pose estimate of \c moving. When the
+       *   algorithm terminates, \c T holds the registration result.
+       * \param Tcov
+       *   Covariance of the input pose parameter. This will be used to form
+       *   an additional cost in the objective.
+       */
     bool match( NDTMap& target,
                 NDTMap& source,
-                Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T,
+                Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T,
                 const Eigen::MatrixXd& Tcov);
 
     //perform line search to find the best descent rate (Mohre&Thuente)
-    double lineSearchMTSC(Eigen::Matrix<double,6,1> &increment,
+    double lineSearchMTSC(Eigen::Matrix<double, 6, 1> &increment,
                           std::vector<NDTCell*> &sourceNDT,
                           NDTMap &targetNDT,
-                          const Eigen::Matrix<double,6,1> &localpose,
+                          const Eigen::Matrix<double, 6, 1> &localpose,
                           const Eigen::MatrixXd &Q,
-                          const Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &T);
+                          const Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> &T);
 
 
 
-  bool only_xy_motion;
-  bool lock_zrp_motion;
+    bool only_xy_motion;
+    bool lock_zrp_motion;
 
 protected:
 

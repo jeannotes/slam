@@ -46,14 +46,12 @@
 #include <pcl/point_types.h>
 #include "nanoflann.hpp"
 
-namespace nanoflann
-{
+namespace nanoflann {
 
 // Adapter class to give to nanoflann the same "look and fell" of pcl::KdTreeFLANN.
 // limited to squared distance between 3D points
 template <typename PointT>
-class KdTreeFLANN
-{
+class KdTreeFLANN {
 public:
 
     typedef boost::shared_ptr<KdTreeFLANN<PointT> > Ptr;
@@ -74,7 +72,9 @@ public:
 
     void  setSortedResults (bool sorted);
 
-    inline Ptr makeShared () { return Ptr (new KdTreeFLANN<PointT> (*this)); }
+    inline Ptr makeShared () {
+        return Ptr (new KdTreeFLANN<PointT> (*this));
+    }
 
     void setInputCloud (const PointCloudPtr &cloud, const IndicesConstPtr &indices = IndicesConstPtr ());
 
@@ -88,18 +88,19 @@ private:
 
     nanoflann::SearchParams _params;
 
-    struct PointCloud_Adaptor
-    {
-      inline size_t kdtree_get_point_count() const;
-      inline float kdtree_get_pt(const size_t idx, int dim) const;
-      template <class BBOX> bool kdtree_get_bbox(BBOX&) const { return false; }
-      PointCloudConstPtr pcl;
-      IndicesConstPtr indices;
+    struct PointCloud_Adaptor {
+        inline size_t kdtree_get_point_count() const;
+        inline float kdtree_get_pt(const size_t idx, int dim) const;
+        template <class BBOX> bool kdtree_get_bbox(BBOX&) const {
+            return false;
+        }
+        PointCloudConstPtr pcl;
+        IndicesConstPtr indices;
     };
 
-    typedef nanoflann::KDTreeSingleIndexAdaptor<
-      nanoflann::SO3_Adaptor<float, PointCloud_Adaptor > ,
-      PointCloud_Adaptor, 3, int> KDTreeFlann_PCL_SO3;
+    typedef nanoflann::KDTreeSingleIndexAdaptor <
+    nanoflann::SO3_Adaptor<float, PointCloud_Adaptor > ,
+              PointCloud_Adaptor, 3, int > KDTreeFlann_PCL_SO3;
 
     PointCloud_Adaptor _adaptor;
 
@@ -111,27 +112,23 @@ private:
 
 template<typename PointT> inline
 KdTreeFLANN<PointT>::KdTreeFLANN(bool sorted):
-    _kdtree(3,_adaptor)
-{
+    _kdtree(3, _adaptor) {
     _params.sorted = sorted;
 }
 
 template<typename PointT> inline
-void KdTreeFLANN<PointT>::setEpsilon(float eps)
-{
+void KdTreeFLANN<PointT>::setEpsilon(float eps) {
     _params.eps = eps;
 }
 
 template<typename PointT> inline
-void KdTreeFLANN<PointT>::setSortedResults(bool sorted)
-{
+void KdTreeFLANN<PointT>::setSortedResults(bool sorted) {
     _params.sorted = sorted;
 }
 
 template<typename PointT> inline
 void KdTreeFLANN<PointT>::setInputCloud(const KdTreeFLANN::PointCloudPtr &cloud,
-                                        const IndicesConstPtr &indices)
-{
+                                        const IndicesConstPtr &indices) {
     _adaptor.pcl = cloud;
     _adaptor.indices = indices;
     _kdtree.buildIndex();
@@ -139,13 +136,12 @@ void KdTreeFLANN<PointT>::setInputCloud(const KdTreeFLANN::PointCloudPtr &cloud,
 
 template<typename PointT> inline
 int KdTreeFLANN<PointT>::nearestKSearch(const PointT &point, int num_closest,
-                                std::vector<int> &k_indices,
-                                std::vector<float> &k_sqr_distances) const
-{
+                                        std::vector<int> &k_indices,
+                                        std::vector<float> &k_sqr_distances) const {
     k_indices.resize(num_closest);
     k_sqr_distances.resize(num_closest);
 
-    nanoflann::KNNResultSet<float,int> resultSet(num_closest);
+    nanoflann::KNNResultSet<float, int> resultSet(num_closest);
     resultSet.init( k_indices.data(), k_sqr_distances.data());
     _kdtree.findNeighbors(resultSet, point.data, nanoflann::SearchParams() );
     return resultSet.size();
@@ -153,9 +149,8 @@ int KdTreeFLANN<PointT>::nearestKSearch(const PointT &point, int num_closest,
 
 template<typename PointT> inline
 int KdTreeFLANN<PointT>::radiusSearch(const PointT &point, double radius,
-                              std::vector<int> &k_indices,
-                              std::vector<float> &k_sqr_distances) const
-{
+                                      std::vector<int> &k_indices,
+                                      std::vector<float> &k_sqr_distances) const {
     static std::vector<std::pair<int, float> > indices_dist;
     indices_dist.reserve( 128 );
 
@@ -167,7 +162,7 @@ int KdTreeFLANN<PointT>::radiusSearch(const PointT &point, double radius,
 
     k_indices.resize(nFound);
     k_sqr_distances.resize(nFound);
-    for(int i=0; i<nFound; i++ ){
+    for (int i = 0; i < nFound; i++ ) {
         k_indices[i]       = indices_dist[i].first;
         k_sqr_distances[i] = indices_dist[i].second;
     }
@@ -176,17 +171,17 @@ int KdTreeFLANN<PointT>::radiusSearch(const PointT &point, double radius,
 
 template<typename PointT> inline
 size_t KdTreeFLANN<PointT>::PointCloud_Adaptor::kdtree_get_point_count() const {
-    if( indices ) return indices->size();
-    if( pcl)  return pcl->points.size();
+    if ( indices ) return indices->size();
+    if ( pcl)  return pcl->points.size();
     return 0;
 }
 
 template<typename PointT> inline
-float KdTreeFLANN<PointT>::PointCloud_Adaptor::kdtree_get_pt(const size_t idx, int dim) const{
+float KdTreeFLANN<PointT>::PointCloud_Adaptor::kdtree_get_pt(const size_t idx, int dim) const {
     const PointT& p = ( indices ) ? pcl->points[(*indices)[idx]] : pcl->points[idx];
-    if (dim==0) return p.x;
-    else if (dim==1) return p.y;
-    else if (dim==2) return p.z;
+    if (dim == 0) return p.x;
+    else if (dim == 1) return p.y;
+    else if (dim == 2) return p.z;
     else return 0.0;
 }
 

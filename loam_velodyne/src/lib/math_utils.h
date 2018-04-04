@@ -15,9 +15,8 @@ namespace loam {
  * @param radians The radian angle to convert.
  * @return The angle in degrees.
  */
-inline double rad2deg(double radians)
-{
-  return radians * 180.0 / M_PI;
+inline double rad2deg(double radians) {
+    return radians * 180.0 / M_PI;
 }
 
 
@@ -27,9 +26,8 @@ inline double rad2deg(double radians)
  * @param radians The radian angle to convert.
  * @return The angle in degrees.
  */
-inline float rad2deg(float radians)
-{
-  return (float) (radians * 180.0 / M_PI);
+inline float rad2deg(float radians) {
+    return (float) (radians * 180.0 / M_PI);
 }
 
 
@@ -39,9 +37,8 @@ inline float rad2deg(float radians)
  * @param degrees The degree angle to convert.
  * @return The radian angle.
  */
-inline double deg2rad(double degrees)
-{
-  return degrees * M_PI / 180.0;
+inline double deg2rad(double degrees) {
+    return degrees * M_PI / 180.0;
 }
 
 
@@ -51,9 +48,8 @@ inline double deg2rad(double degrees)
  * @param degrees The degree angle to convert.
  * @return The radian angle.
  */
-inline float deg2rad(float degrees)
-{
-  return (float) (degrees * M_PI / 180.0);
+inline float deg2rad(float degrees) {
+    return (float) (degrees * M_PI / 180.0);
 }
 
 
@@ -66,13 +62,12 @@ inline float deg2rad(float degrees)
  * @return The squared difference between point a and b.
  */
 template <typename PointT>
-inline float calcSquaredDiff(const PointT& a, const PointT& b)
-{
-  float diffX = a.x - b.x;
-  float diffY = a.y - b.y;
-  float diffZ = a.z - b.z;
+inline float calcSquaredDiff(const PointT& a, const PointT& b) {
+    float diffX = a.x - b.x;
+    float diffY = a.y - b.y;
+    float diffZ = a.z - b.z;
 
-  return diffX * diffX + diffY * diffY + diffZ * diffZ;
+    return diffX * diffX + diffY * diffY + diffZ * diffZ;
 }
 
 
@@ -85,13 +80,12 @@ inline float calcSquaredDiff(const PointT& a, const PointT& b)
  * @return The squared difference between point a and b.
  */
 template <typename PointT>
-inline float calcSquaredDiff(const PointT& a, const PointT& b, const float& wb)
-{
-  float diffX = a.x - b.x * wb;
-  float diffY = a.y - b.y * wb;
-  float diffZ = a.z - b.z * wb;
+inline float calcSquaredDiff(const PointT& a, const PointT& b, const float& wb) {
+    float diffX = a.x - b.x * wb;
+    float diffY = a.y - b.y * wb;
+    float diffZ = a.z - b.z * wb;
 
-  return diffX * diffX + diffY * diffY + diffZ * diffZ;
+    return diffX * diffX + diffY * diffY + diffZ * diffZ;
 }
 
 
@@ -101,9 +95,8 @@ inline float calcSquaredDiff(const PointT& a, const PointT& b, const float& wb)
  * @return The distance to the point.
  */
 template <typename PointT>
-inline float calcPointDistance(const PointT& p)
-{
-  return std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+inline float calcPointDistance(const PointT& p) {
+    return std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
 }
 
 
@@ -114,9 +107,8 @@ inline float calcPointDistance(const PointT& p)
  * @return The squared distance to the point.
  */
 template <typename PointT>
-inline float calcSquaredPointDistance(const PointT& p)
-{
-  return p.x * p.x + p.y * p.y + p.z * p.z;
+inline float calcSquaredPointDistance(const PointT& p) {
+    return p.x * p.x + p.y * p.y + p.z * p.z;
 }
 
 
@@ -126,11 +118,10 @@ inline float calcSquaredPointDistance(const PointT& p)
  * @param v the vector to rotate
  * @param ang the rotation angle
  */
-inline void rotX(Vector3& v, const Angle& ang)
-{
-  float y = v.y();
-  v.y() = ang.cos() * y - ang.sin() * v.z();
-  v.z() = ang.sin() * y + ang.cos() * v.z();
+inline void rotX(Vector3& v, const Angle& ang) {
+    float y = v.y();
+    v.y() = ang.cos() * y - ang.sin() * v.z();
+    v.z() = ang.sin() * y + ang.cos() * v.z();
 }
 
 /** \brief Rotate the given point by the specified angle around the x-axis.
@@ -139,11 +130,10 @@ inline void rotX(Vector3& v, const Angle& ang)
  * @param ang the rotation angle
  */
 template <typename PointT>
-inline void rotX(PointT& p, const Angle& ang)
-{
-  float y = p.y;
-  p.y = ang.cos() * y - ang.sin() * p.z;
-  p.z = ang.sin() * y + ang.cos() * p.z;
+inline void rotX(PointT& p, const Angle& ang) {
+    float y = p.y;
+    p.y = ang.cos() * y - ang.sin() * p.z;
+    p.z = ang.sin() * y + ang.cos() * p.z;
 }
 
 
@@ -153,11 +143,10 @@ inline void rotX(PointT& p, const Angle& ang)
  * @param v the vector to rotate
  * @param ang the rotation angle
  */
-inline void rotY(Vector3& v, const Angle& ang)
-{
-  float x = v.x();
-  v.x() = ang.cos() * x + ang.sin() * v.z();
-  v.z() = ang.cos() * v.z() - ang.sin() * x;
+inline void rotY(Vector3& v, const Angle& ang) {
+    float x = v.x();
+    v.x() = ang.cos() * x + ang.sin() * v.z();
+    v.z() = ang.cos() * v.z() - ang.sin() * x;
 }
 
 /** \brief Rotate the given point by the specified angle around the y-axis.
@@ -166,11 +155,10 @@ inline void rotY(Vector3& v, const Angle& ang)
  * @param ang the rotation angle
  */
 template <typename PointT>
-inline void rotY(PointT& p, const Angle& ang)
-{
-  float x = p.x;
-  p.x = ang.cos() * x + ang.sin() * p.z;
-  p.z = ang.cos() * p.z - ang.sin() * x;
+inline void rotY(PointT& p, const Angle& ang) {
+    float x = p.x;
+    p.x = ang.cos() * x + ang.sin() * p.z;
+    p.z = ang.cos() * p.z - ang.sin() * x;
 }
 
 
@@ -180,11 +168,10 @@ inline void rotY(PointT& p, const Angle& ang)
  * @param v the vector to rotate
  * @param ang the rotation angle
  */
-inline void rotZ(Vector3& v, const Angle& ang)
-{
-  float x = v.x();
-  v.x() = ang.cos() * x - ang.sin() * v.y();
-  v.y() = ang.sin() * x + ang.cos() * v.y();
+inline void rotZ(Vector3& v, const Angle& ang) {
+    float x = v.x();
+    v.x() = ang.cos() * x - ang.sin() * v.y();
+    v.y() = ang.sin() * x + ang.cos() * v.y();
 }
 
 /** \brief Rotate the given point by the specified angle around the z-axis.
@@ -193,11 +180,10 @@ inline void rotZ(Vector3& v, const Angle& ang)
  * @param ang the rotation angle
  */
 template <typename PointT>
-inline void rotZ(PointT& p, const Angle& ang)
-{
-  float x = p.x;
-  p.x = ang.cos() * x - ang.sin() * p.y;
-  p.y = ang.sin() * x + ang.cos() * p.y;
+inline void rotZ(PointT& p, const Angle& ang) {
+    float x = p.x;
+    p.x = ang.cos() * x - ang.sin() * p.y;
+    p.y = ang.sin() * x + ang.cos() * p.y;
 }
 
 
@@ -212,11 +198,10 @@ inline void rotZ(PointT& p, const Angle& ang)
 inline void rotateZXY(Vector3& v,
                       const Angle& angZ,
                       const Angle& angX,
-                      const Angle& angY)
-{
-  rotZ(v, angZ);
-  rotX(v, angX);
-  rotY(v, angY);
+                      const Angle& angY) {
+    rotZ(v, angZ);
+    rotX(v, angX);
+    rotY(v, angY);
 }
 
 /** \brief Rotate the given point by the specified angles around the z-, x- respectively y-axis.
@@ -230,11 +215,10 @@ template <typename PointT>
 inline void rotateZXY(PointT& p,
                       const Angle& angZ,
                       const Angle& angX,
-                      const Angle& angY)
-{
-  rotZ(p, angZ);
-  rotX(p, angX);
-  rotY(p, angY);
+                      const Angle& angY) {
+    rotZ(p, angZ);
+    rotX(p, angX);
+    rotY(p, angY);
 }
 
 
@@ -249,11 +233,10 @@ inline void rotateZXY(PointT& p,
 inline void rotateYXZ(Vector3& v,
                       const Angle& angY,
                       const Angle& angX,
-                      const Angle& angZ)
-{
-  rotY(v, angY);
-  rotX(v, angX);
-  rotZ(v, angZ);
+                      const Angle& angZ) {
+    rotY(v, angY);
+    rotX(v, angX);
+    rotZ(v, angZ);
 }
 
 /** \brief Rotate the given point by the specified angles around the y-, x- respectively z-axis.
@@ -267,11 +250,10 @@ template <typename PointT>
 inline void rotateYXZ(PointT& p,
                       const Angle& angY,
                       const Angle& angX,
-                      const Angle& angZ)
-{
-  rotY(p, angY);
-  rotX(p, angX);
-  rotZ(p, angZ);
+                      const Angle& angZ) {
+    rotY(p, angY);
+    rotX(p, angX);
+    rotZ(p, angZ);
 }
 
 } // end namespace loam

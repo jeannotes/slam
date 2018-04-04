@@ -28,8 +28,7 @@ using namespace std;
 using namespace lslgeneric;
 namespace po = boost::program_options;
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     cout << "--------------------------------------------------" << endl;
     cout << "Small test program of the frame matching between 2" << endl;
     cout << "pair of depth + std (RGB) images. Each image pair " << endl;
@@ -71,8 +70,7 @@ int main(int argc, char** argv)
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
 
-    if (vm.count("help"))
-    {
+    if (vm.count("help")) {
         cout << desc << "\n";
         return 1;
     }
@@ -82,8 +80,7 @@ int main(int argc, char** argv)
     bool skip_matching = vm.count("skip_matching");
     if (debug)
         cout << "scale : " << scale << endl;
-    if (!(vm.count("depth1") && vm.count("depth2")))
-    {
+    if (!(vm.count("depth1") && vm.count("depth2"))) {
         cout << "Check depth data input - quitting\n";
         return 1;
     }
@@ -104,7 +101,7 @@ int main(int argc, char** argv)
 
     // Load the files.
     //pcl::PCDReader reader;
-    double t0,t1,t2,t3;
+    double t0, t1, t2, t3;
 
     if (debug)
         cout << "loading imgs : " << std1_name << " and " << std2_name << endl;
@@ -135,20 +132,20 @@ int main(int argc, char** argv)
     t1 = getDoubleTime();
 
     bool isFloat = (frame1->depth_img.depth() == CV_32F);
-    cameraParams = DepthCamera<pcl::PointXYZ>(fx,fy,cx,cy,dist,ds*scale,isFloat);
+    cameraParams = DepthCamera<pcl::PointXYZ>(fx, fy, cx, cy, dist, ds * scale, isFloat);
     cameraParams.setupDepthPointCloudLookUpTable(frame1->depth_img.size());
 
     frame1->cameraParams = cameraParams;
     frame2->cameraParams = cameraParams;
     t2 = getDoubleTime();
-    cout << "load: " << t1-t0 << endl;
-    cout << "lookup: " << t2-t1 << endl;
+    cout << "load: " << t1 - t0 << endl;
+    cout << "lookup: " << t2 - t1 << endl;
 
     t1 = getDoubleTime();
-    proc.addFrameIncremental(frame1,skip_matching);
-    proc.addFrameIncremental(frame2,skip_matching);
+    proc.addFrameIncremental(frame1, skip_matching);
+    proc.addFrameIncremental(frame2, skip_matching);
     t2 = getDoubleTime();
-    cout<<"add frames: "<<t2-t1 <<endl;
+    cout << "add frames: " << t2 - t1 << endl;
 
     /*
      proc.addFrame(frame1);
@@ -164,8 +161,7 @@ int main(int argc, char** argv)
     viewer.showFeaturePC();
     viewer.showMatches(proc.pe.inliers);
 
-    while (!viewer.wasStopped ())
-    {
+    while (!viewer.wasStopped ()) {
         viewer.spinOnce();
         boost::this_thread::sleep (boost::posix_time::microseconds (100000));
     }

@@ -92,10 +92,9 @@ bool matchICP(pcl::PointCloud<pcl::PointXYZ> &fixed,  pcl::PointCloud<pcl::Point
 */
 
 int
-main (int argc, char** argv)
-{
+main (int argc, char** argv) {
 
-    double roll=0,pitch=0,yaw=0,zoffset=0;
+    double roll = 0, pitch = 0, yaw = 0, zoffset = 0;
 
     pcl::PointCloud<pcl::PointXYZ> cloud, cloud_offset, cloud_OFF;
     pcl::PCDReader reader;
@@ -104,17 +103,16 @@ main (int argc, char** argv)
     FILE *fout;
     //double __res[] = {0.5};
     double __res[] = {0.5, 1, 2, 4};
-    std::vector<double> resolutions (__res, __res+sizeof(__res)/sizeof(double));
-    lslgeneric::NDTMatcherP2D<pcl::PointXYZ,pcl::PointXYZ> matcherP2D(resolutions);
+    std::vector<double> resolutions (__res, __res + sizeof(__res) / sizeof(double));
+    lslgeneric::NDTMatcherP2D<pcl::PointXYZ, pcl::PointXYZ> matcherP2D(resolutions);
 
-    struct timeval tv_start,tv_end,tv_reg_start,tv_reg_end;
+    struct timeval tv_start, tv_end, tv_reg_start, tv_reg_end;
 
-    Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> Tin, Tout, Tout2;
+    Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> Tin, Tout, Tout2;
     Tout.setIdentity();
-    if(argc == 3)
-    {
+    if (argc == 3) {
 
-        gettimeofday(&tv_start,NULL);
+        gettimeofday(&tv_start, NULL);
         //we do a single scan to scan registration
         //reader.read(argv[1],cloud);
         //reader.read(argv[2],cloud_offset);
@@ -136,27 +134,27 @@ main (int argc, char** argv)
         	lslgeneric::writeToVRML<pcl::PointXYZ>(fout,cloud_offset,Eigen::Vector3d(1,0,0));
         	fclose(fout);
         */
-        lslgeneric::NDTMatcherD2D<pcl::PointXYZ,pcl::PointXYZ> matcherD2D(false, false, resolutions);
-        bool ret = matcherD2D.match2D(cloud,cloud_offset,Tout);
+        lslgeneric::NDTMatcherD2D<pcl::PointXYZ, pcl::PointXYZ> matcherD2D(false, false, resolutions);
+        bool ret = matcherD2D.match2D(cloud, cloud_offset, Tout);
 
-        snprintf(fname,49,"c_offset.wrl");
-        fout = fopen(fname,"w");
-        fprintf(fout,"#VRML V2.0 utf8\n");
-        lslgeneric::writeToVRML<pcl::PointXYZ>(fout,cloud,Eigen::Vector3d(1,0,0));
-        lslgeneric::writeToVRML<pcl::PointXYZ>(fout,cloud_offset,Eigen::Vector3d(1,1,1));
+        snprintf(fname, 49, "c_offset.wrl");
+        fout = fopen(fname, "w");
+        fprintf(fout, "#VRML V2.0 utf8\n");
+        lslgeneric::writeToVRML<pcl::PointXYZ>(fout, cloud, Eigen::Vector3d(1, 0, 0));
+        lslgeneric::writeToVRML<pcl::PointXYZ>(fout, cloud_offset, Eigen::Vector3d(1, 1, 1));
 
-        lslgeneric::transformPointCloudInPlace<pcl::PointXYZ>(Tout,cloud_offset);
-        std::cout<<Tout.matrix()<<std::endl;
-        lslgeneric::writeToVRML<pcl::PointXYZ>(fout,cloud_offset,Eigen::Vector3d(0,1,0));
+        lslgeneric::transformPointCloudInPlace<pcl::PointXYZ>(Tout, cloud_offset);
+        std::cout << Tout.matrix() << std::endl;
+        lslgeneric::writeToVRML<pcl::PointXYZ>(fout, cloud_offset, Eigen::Vector3d(0, 1, 0));
         fclose(fout);
 
         return 0;
         /**/
         Eigen::Vector3d sensor_origin;
-        sensor_origin<<0,0,0;
+        sensor_origin << 0, 0, 0;
         lslgeneric::NDTMap<pcl::PointXYZ> sourceNDT(new lslgeneric::LazyGrid<pcl::PointXYZ>(0.5));
         //sourceNDT.loadPointCloud(cloud);
-        sourceNDT.addPointCloud(sensor_origin,cloud);
+        sourceNDT.addPointCloud(sensor_origin, cloud);
         sourceNDT.computeNDTCells();
         Tin.setIdentity();
 
@@ -164,28 +162,28 @@ main (int argc, char** argv)
         targetNDT.loadPointCloud(cloud_offset);
         targetNDT.computeNDTCells();
 
-        matcherD2D.match2D(sourceNDT,targetNDT,Tout);
-        snprintf(fname,49,"c_offset.wrl");
-        fout = fopen(fname,"w");
-        fprintf(fout,"#VRML V2.0 utf8\n");
-        lslgeneric::writeToVRML<pcl::PointXYZ>(fout,cloud,Eigen::Vector3d(1,0,0));
-        lslgeneric::writeToVRML<pcl::PointXYZ>(fout,cloud_offset,Eigen::Vector3d(1,1,1));
-        lslgeneric::transformPointCloudInPlace<pcl::PointXYZ>(Tout,cloud_offset);
-        std::cout<<Tout.matrix()<<std::endl;
-        lslgeneric::writeToVRML<pcl::PointXYZ>(fout,cloud_offset,Eigen::Vector3d(0,1,0));
+        matcherD2D.match2D(sourceNDT, targetNDT, Tout);
+        snprintf(fname, 49, "c_offset.wrl");
+        fout = fopen(fname, "w");
+        fprintf(fout, "#VRML V2.0 utf8\n");
+        lslgeneric::writeToVRML<pcl::PointXYZ>(fout, cloud, Eigen::Vector3d(1, 0, 0));
+        lslgeneric::writeToVRML<pcl::PointXYZ>(fout, cloud_offset, Eigen::Vector3d(1, 1, 1));
+        lslgeneric::transformPointCloudInPlace<pcl::PointXYZ>(Tout, cloud_offset);
+        std::cout << Tout.matrix() << std::endl;
+        lslgeneric::writeToVRML<pcl::PointXYZ>(fout, cloud_offset, Eigen::Vector3d(0, 1, 0));
         fclose(fout);
     }
 }
 #if 0
 std::vector<lslgeneric::NDTCell<pcl::PointXYZ>*> source = sourceNDT.pseudoTransformNDT(Tin);
-int N_X=40;
-int N_Y=40;
+int N_X = 40;
+int N_Y = 40;
 double xmin = -1, ymin = -1, yawmin = -0.5;
 double dx = 0.05, dy = 0.05, dyaw = 0.01;
 //Eigen::MatrixXd H1(N_X,N_Y), H2(N_X,N_Y);
-Eigen::MatrixXd scores(N_X,N_Y);
-Eigen::MatrixXd scores2(N_X,N_Y);
-Eigen::MatrixXd gX(N_X,N_Y), gY(N_X,N_Y);
+Eigen::MatrixXd scores(N_X, N_Y);
+Eigen::MatrixXd scores2(N_X, N_Y);
+Eigen::MatrixXd gX(N_X, N_Y), gY(N_X, N_Y);
 scores.setZero();
 gX.setZero();
 gY.setZero();
@@ -194,34 +192,32 @@ std::vector<double> et;
 std::vector<double> er;
 #pragma omp parallel
 {
-    lslgeneric::NDTMatcherD2D<pcl::PointXYZ,pcl::PointXYZ> matcherD2DLocal(false, false, resolutions);
+    lslgeneric::NDTMatcherD2D<pcl::PointXYZ, pcl::PointXYZ> matcherD2DLocal(false, false, resolutions);
     #pragma omp for
-    for(int i=0; i<N_X; i++)   //xoffset=xmin;xoffset<xmin+N_X*dx;xoffset+=dx) {
-    {
-        double xoffset = xmin+i*dx;
-        for(int q=0; q<N_Y; q++)   //yoffset=ymin;yoffset<ymin+N_Y*dy;yoffset+=dy) {
-        {
-            double yoffset = ymin +q*dy;
+    for (int i = 0; i < N_X; i++) { //xoffset=xmin;xoffset<xmin+N_X*dx;xoffset+=dx) {
+        double xoffset = xmin + i * dx;
+        for (int q = 0; q < N_Y; q++) { //yoffset=ymin;yoffset<ymin+N_Y*dy;yoffset+=dy) {
+            double yoffset = ymin + q * dy;
 //		for(int j=0; j<N_Y; j++) { //yoffset=ymin;yoffset<ymin+N_Y*dy;yoffset+=dy) {
 //		    double yawoffset = yawmin +j*dyaw;
 //		    double xoffset = -0.5, yoffset=0.3, yawoffset=-0.2;
-            double yawoffset=0;
-            Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> Tloc =
-                Eigen::Translation<double,3>(xoffset,yoffset,0)*
-                Eigen::AngleAxis<double>(0,Eigen::Vector3d::UnitX()) *
-                Eigen::AngleAxis<double>(0,Eigen::Vector3d::UnitY()) *
-                Eigen::AngleAxis<double>(yawoffset,Eigen::Vector3d::UnitZ()) ;
+            double yawoffset = 0;
+            Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> Tloc =
+                Eigen::Translation<double, 3>(xoffset, yoffset, 0) *
+                Eigen::AngleAxis<double>(0, Eigen::Vector3d::UnitX()) *
+                Eigen::AngleAxis<double>(0, Eigen::Vector3d::UnitY()) *
+                Eigen::AngleAxis<double>(yawoffset, Eigen::Vector3d::UnitZ()) ;
 
-            Eigen::Vector3d so = Tloc*sensor_origin;
-            pcl::PointCloud<pcl::PointXYZ> cloudL = lslgeneric::transformPointCloud<pcl::PointXYZ>(Tloc,cloud_offset);
+            Eigen::Vector3d so = Tloc * sensor_origin;
+            pcl::PointCloud<pcl::PointXYZ> cloudL = lslgeneric::transformPointCloud<pcl::PointXYZ>(Tloc, cloud_offset);
             lslgeneric::NDTMap<pcl::PointXYZ> targetNDT(new lslgeneric::LazyGrid<pcl::PointXYZ>(0.5));
             //targetNDT.loadPointCloud(cloudL);
-            targetNDT.addPointCloud(so,cloudL);
+            targetNDT.addPointCloud(so, cloudL);
             targetNDT.computeNDTCells();
             //matcherD2DLocal.match(sourceNDT,targetNDT,Tout);
             //Tout = Tloc*Tout;
-            scores2(i,q) = matcherD2DLocal.scoreNDT_OM(sourceNDT,targetNDT);
-            scores(i,q) = matcherD2DLocal.scoreNDT( source, targetNDT);
+            scores2(i, q) = matcherD2DLocal.scoreNDT_OM(sourceNDT, targetNDT);
+            scores(i, q) = matcherD2DLocal.scoreNDT( source, targetNDT);
             //std::cout<<"score: "<<d<<std::endl;
             /*
             		    lslgeneric::transformPointCloudInPlace<pcl::PointXYZ>(Tout,cloudL);
@@ -269,8 +265,8 @@ std::vector<double> er;
 }
 
 //	    cout<<"N_SUCC = "<<N_SUCC<<std::endl;
-std::cout<< " S = ["<<scores<<"];\n";
-std::cout<< " S2 = ["<<scores2<<"];\n";
+std::cout << " S = [" << scores << "];\n";
+std::cout << " S2 = [" << scores2 << "];\n";
 //	std::cout<< " gX = ["<<gX<<"];\n";
 //	std::cout<< " gY = ["<<gY<<"];\n";
 //	std::cout<< " H1 = ["<<H1<<"];\n";
@@ -293,55 +289,51 @@ return 0;
 //	bool ret = matcherP2D.match(cloud,cloud_offset,Tout2);
 
 //	lslgeneric::NDTMatcherD2D<pcl::PointXYZ,pcl::PointXYZ> matcherD2D(false, false, resolutions);
-gettimeofday(&tv_reg_start,NULL);
-ret = matcherD2D.match(cloud,cloud_offset,Tout);
+gettimeofday(&tv_reg_start, NULL);
+ret = matcherD2D.match(cloud, cloud_offset, Tout);
 //bool ret = matcherD2D.match(targetNDT,sourceNDT,Tout);
 //bool ret = matcherD2D.match(sourceNDT,targetNDT,Tout);
-gettimeofday(&tv_reg_end,NULL);
+gettimeofday(&tv_reg_end, NULL);
 
-lslgeneric::transformPointCloudInPlace<pcl::PointXYZ>(Tout,cloud_offset);
+lslgeneric::transformPointCloudInPlace<pcl::PointXYZ>(Tout, cloud_offset);
 //	cout<<"translation "<<Tout.translation().transpose()<<endl;
 //	cout<<"euler: "<<Tout.rotation().eulerAngles(0,1,2).transpose()<<endl;
 
 // cloud_offset += cloud;
-snprintf(fname,49,"c_offset.pcd");
+snprintf(fname, 49, "c_offset.pcd");
 // writer.write(fname, cloud_offset);
 
 
-snprintf(fname,49,"c_offset.wrl");
-fout = fopen(fname,"w");
-fprintf(fout,"#VRML V2.0 utf8\n");
-lslgeneric::writeToVRML<pcl::PointXYZ>(fout,cloud,Eigen::Vector3d(0,1,0));
-lslgeneric::writeToVRML<pcl::PointXYZ>(fout,cloud_offset,Eigen::Vector3d(1,0,0));
+snprintf(fname, 49, "c_offset.wrl");
+fout = fopen(fname, "w");
+fprintf(fout, "#VRML V2.0 utf8\n");
+lslgeneric::writeToVRML<pcl::PointXYZ>(fout, cloud, Eigen::Vector3d(0, 1, 0));
+lslgeneric::writeToVRML<pcl::PointXYZ>(fout, cloud_offset, Eigen::Vector3d(1, 0, 0));
 fclose(fout);
 
 //	cout<<"initial registration done, saved into file c_offset.pcd\n";
 //	cout<<"make sure to check that initial registration was successful!\n";
 
-gettimeofday(&tv_end,NULL);
-double tim = (tv_end.tv_sec-tv_start.tv_sec)*1000.+(tv_end.tv_usec-tv_start.tv_usec)/1000.;
-double tim2 = (tv_reg_end.tv_sec-tv_reg_start.tv_sec)*1000.+(tv_reg_end.tv_usec-tv_reg_start.tv_usec)/1000.;
+gettimeofday(&tv_end, NULL);
+double tim = (tv_end.tv_sec - tv_start.tv_sec) * 1000. + (tv_end.tv_usec - tv_start.tv_usec) / 1000.;
+double tim2 = (tv_reg_end.tv_sec - tv_reg_start.tv_sec) * 1000. + (tv_reg_end.tv_usec - tv_reg_start.tv_usec) / 1000.;
 
 //	cout<<"OVERALL TIME: "<<tim<<" REG TIME "<<tim2<<endl;
 return 0;
 }
 #if 0
-if(!(argc == 2 || succ))
-{
-    cout<<"usage: ./test_ndt point_cloud1 [point_cloud2]\n";
+if (!(argc == 2 || succ)) {
+    cout << "usage: ./test_ndt point_cloud1 [point_cloud2]\n";
     return -1;
 }
 
 cloud = lslgeneric::readVRML(argv[1]);
 
-        char fname[50];
-        FILE *fout;
-        if(!succ)
-{
+char fname[50];
+FILE *fout;
+if (!succ) {
     cloud_offset = cloud;
-}
-else
-{
+} else {
     cloud_offset = cloud_OFF;
 }
 
@@ -356,20 +348,17 @@ std::vector<double> et;
 std::vector<double> er;
 
 roll = 0;
-       pitch =0;
-              yaw = 40*M_PI/180;
-                    xoffset = -2;
-                              yoffset = -1.;
-                                        zoffset =0;
-                                                //for(roll = -2*M_PI/5;roll<M_PI/2;roll+=M_PI/5) {
-                                                //for(pitch = -2*M_PI/5;pitch<M_PI/2;pitch+=M_PI/5) {
-                                                for(yaw = -30*M_PI/180; yaw<=35*M_PI/180; yaw+=10*M_PI/180)
-{
-    logger2<<"%";
-    for(xoffset=-1.5; xoffset<=1.5; xoffset+=0.5)
-    {
-        for(yoffset=-1.5; yoffset<=1.5; yoffset+=0.5)
-        {
+pitch = 0;
+yaw = 40 * M_PI / 180;
+xoffset = -2;
+yoffset = -1.;
+zoffset = 0;
+//for(roll = -2*M_PI/5;roll<M_PI/2;roll+=M_PI/5) {
+//for(pitch = -2*M_PI/5;pitch<M_PI/2;pitch+=M_PI/5) {
+for (yaw = -30 * M_PI / 180; yaw <= 35 * M_PI / 180; yaw += 10 * M_PI / 180) {
+    logger2 << "%";
+    for (xoffset = -1.5; xoffset <= 1.5; xoffset += 0.5) {
+        for (yoffset = -1.5; yoffset <= 1.5; yoffset += 0.5) {
             /*
             for(yaw = -5*M_PI/180;yaw<=15*M_PI/180;yaw+=10*M_PI/180) {
             for(xoffset=-0.1;xoffset<=0.5;xoffset+=0.5) {
@@ -378,27 +367,24 @@ roll = 0;
             //for(zoffset = -1;zoffset<1;zoffset+=0.5) {
 
 
-            Tin =  Eigen::Translation<double,3>(xoffset,yoffset,zoffset)*
-                   Eigen::AngleAxis<double>(roll,Eigen::Vector3d::UnitX()) *
-                   Eigen::AngleAxis<double>(pitch,Eigen::Vector3d::UnitY()) *
-                   Eigen::AngleAxis<double>(yaw,Eigen::Vector3d::UnitZ()) ;
+            Tin =  Eigen::Translation<double, 3>(xoffset, yoffset, zoffset) *
+                   Eigen::AngleAxis<double>(roll, Eigen::Vector3d::UnitX()) *
+                   Eigen::AngleAxis<double>(pitch, Eigen::Vector3d::UnitY()) *
+                   Eigen::AngleAxis<double>(yaw, Eigen::Vector3d::UnitZ()) ;
 
             //cout<<"translation \n"<<Tin.translation().transpose()<<endl;
             //cout<<"rotation \n"<<Tin.rotation()<<endl;
 
-            cout<<roll<<" "<<pitch<<" "<<yaw<<" "<<xoffset<<" "<<yoffset<<" "<<zoffset<<endl;
-            logger<<roll<<" "<<pitch<<" "<<yaw<<" "<<xoffset<<" "<<yoffset<<" "<<zoffset<<endl;
+            cout << roll << " " << pitch << " " << yaw << " " << xoffset << " " << yoffset << " " << zoffset << endl;
+            logger << roll << " " << pitch << " " << yaw << " " << xoffset << " " << yoffset << " " << zoffset << endl;
 
-            Eigen::Vector3d out = Tin.rotation().eulerAngles(0,1,2);
+            Eigen::Vector3d out = Tin.rotation().eulerAngles(0, 1, 2);
             //cout<<"euler: "<<out<<endl;
 
-            if(!succ)
-            {
-                cloud_offset = lslgeneric::transformPointCloud(Tin,cloud);
-            }
-            else
-            {
-                cloud_offset = lslgeneric::transformPointCloud(Tin,cloud_OFF);
+            if (!succ) {
+                cloud_offset = lslgeneric::transformPointCloud(Tin, cloud);
+            } else {
+                cloud_offset = lslgeneric::transformPointCloud(Tin, cloud_OFF);
             }
 
             /*snprintf(fname,49,"/home/tsv/ndt_tmp/cloud_init%05d.wrl",ctr);
@@ -408,28 +394,25 @@ roll = 0;
             lslgeneric::writeToVRML(fout,cloud,Eigen::Vector3d(0,1,0));
             fclose(fout);
             */
-            gettimeofday(&tv_start,NULL);
+            gettimeofday(&tv_start, NULL);
             //bool ret = matcherP2F.match(cloud,cloud_offset,Tout);
-            bool ret = matcherF2F.match(cloud,cloud_offset,Tout);
+            bool ret = matcherF2F.match(cloud, cloud_offset, Tout);
             //bool ret = matchICP(cloud,cloud_offset,Tout);
-            gettimeofday(&tv_end,NULL);
+            gettimeofday(&tv_end, NULL);
 
-            double tim = (tv_end.tv_sec-tv_start.tv_sec)*1000.+(tv_end.tv_usec-tv_start.tv_usec)/1000.;
-            logger<<"TIME: "<<tim<<endl;
-            C_TIME+=tim;
+            double tim = (tv_end.tv_sec - tv_start.tv_sec) * 1000. + (tv_end.tv_usec - tv_start.tv_usec) / 1000.;
+            logger << "TIME: " << tim << endl;
+            C_TIME += tim;
 
-            if(!ret)
-            {
-                logger<<">>>>>>> NO SOLUTION <<<<<<<<<\n";
-                cout<<"NO SOLUTION\n";
-                logger2<<"N ";
+            if (!ret) {
+                logger << ">>>>>>> NO SOLUTION <<<<<<<<<\n";
+                cout << "NO SOLUTION\n";
+                logger2 << "N ";
                 N_FAIL++;
                 times.push_back(tim);
                 et.push_back(Tout.translation().norm());
-                er.push_back(Tout.rotation().eulerAngles(0,1,2).norm());
-            }
-            else
-            {
+                er.push_back(Tout.rotation().eulerAngles(0, 1, 2).norm());
+            } else {
                 /*logger<<"Input Transform: "<<endl;
                 logger<<"translation "<<Tin.translation()<<endl;
                 logger<<"rotation "<<Tin.rotation()<<endl;
@@ -437,13 +420,13 @@ roll = 0;
                 logger<<"rotation "<<Tout.rotation()<<endl;
                 */
                 //lslgeneric::transformPointCloudInPlace(Tout,cloud_offset);
-                Eigen::Vector3d out = Tout.rotation().eulerAngles(0,1,2);
-                logger<<"OUT: "<<out.transpose()<<endl;
+                Eigen::Vector3d out = Tout.rotation().eulerAngles(0, 1, 2);
+                logger << "OUT: " << out.transpose() << endl;
                 //cout<<"OUT: "<<out<<endl;
-                logger<<"translation "<<Tout.translation().transpose()<<endl;
+                logger << "translation " << Tout.translation().transpose() << endl;
                 //cout<<"translation "<<Tout.translation()<<endl;
-                snprintf(fname,49,"/home/tsv/ndt_tmp/cloud_offset%05d.wrl",ctr);
-                lslgeneric::transformPointCloudInPlace(Tout,cloud_offset);
+                snprintf(fname, 49, "/home/tsv/ndt_tmp/cloud_offset%05d.wrl", ctr);
+                lslgeneric::transformPointCloudInPlace(Tout, cloud_offset);
 
                 /*fout = fopen(fname,"w");
                 fprintf(fout,"#VRML V2.0 utf8\n");
@@ -453,36 +436,31 @@ roll = 0;
                 */
                 ctr++;
 
-                Tout = Tin*Tout;
-                logger<<"E translation "<<Tout.translation().transpose()
-                <<" (norm) "<<Tout.translation().norm()<<endl;
-                logger<<"E rotation "<<Tout.rotation().eulerAngles(0,1,2).transpose()
-                <<" (norm) "<<Tout.rotation().eulerAngles(0,1,2).norm()<<endl;
+                Tout = Tin * Tout;
+                logger << "E translation " << Tout.translation().transpose()
+                       << " (norm) " << Tout.translation().norm() << endl;
+                logger << "E rotation " << Tout.rotation().eulerAngles(0, 1, 2).transpose()
+                       << " (norm) " << Tout.rotation().eulerAngles(0, 1, 2).norm() << endl;
 
                 times.push_back(tim);
                 et.push_back(Tout.translation().norm());
-                er.push_back(Tout.rotation().eulerAngles(0,1,2).norm());
+                er.push_back(Tout.rotation().eulerAngles(0, 1, 2).norm());
 
-                if(Tout.translation().norm() < 0.2 && Tout.rotation().eulerAngles(0,1,2).norm() < 0.087)
-                {
-                    logger<<"OK\n";
-                    logger2<<"O ";
-                    cout<<"OK\n";
+                if (Tout.translation().norm() < 0.2 && Tout.rotation().eulerAngles(0, 1, 2).norm() < 0.087) {
+                    logger << "OK\n";
+                    logger2 << "O ";
+                    cout << "OK\n";
                     N_SUCC++;
                     success.push_back(0);
-                }
-                else if(Tout.translation().norm() < 1 && Tout.rotation().eulerAngles(0,1,2).norm() < 0.15)
-                {
-                    logger<<"ACK\n";
-                    logger2<<"A ";
-                    cout<<"ACK\n";
+                } else if (Tout.translation().norm() < 1 && Tout.rotation().eulerAngles(0, 1, 2).norm() < 0.15) {
+                    logger << "ACK\n";
+                    logger2 << "A ";
+                    cout << "ACK\n";
                     success.push_back(1);
-                }
-                else
-                {
-                    logger<<"FAIL\n";
-                    logger2<<"F ";
-                    cout<<"FAIL\n";
+                } else {
+                    logger << "FAIL\n";
+                    logger2 << "F ";
+                    cout << "FAIL\n";
                     N_FAIL++;
                     success.push_back(2);
                 }
@@ -492,55 +470,51 @@ roll = 0;
                 //cout<<"E rotation "<<Tout.rotation()<<endl;
             }
             N_TRIALS++;
-            logger <<"-------------------------------------------\n";
+            logger << "-------------------------------------------\n";
         }
     }
-    logger2<<"\n";
+    logger2 << "\n";
     logger2.flush();
 
 
 }
 //}}}}}
 
-cout<<"Trials:  "<<N_TRIALS<<endl;
-cout<<"Success: "<<N_SUCC<<"  Rate = "<<(double)N_SUCC/(double)N_TRIALS<<endl;
-cout<<"Success + Acc : "<<N_TRIALS-N_FAIL<<"  Rate = "<<1-(double)N_FAIL/(double)N_TRIALS<<endl;
-cout<<"Fail:    "<<N_FAIL<<endl;
-cout<<"Runtime  "<<C_TIME/N_TRIALS<<endl;
+cout << "Trials:  " << N_TRIALS << endl;
+cout << "Success: " << N_SUCC << "  Rate = " << (double)N_SUCC / (double)N_TRIALS << endl;
+cout << "Success + Acc : " << N_TRIALS - N_FAIL << "  Rate = " << 1 - (double)N_FAIL / (double)N_TRIALS << endl;
+cout << "Fail:    " << N_FAIL << endl;
+cout << "Runtime  " << C_TIME / N_TRIALS << endl;
 
-logger2<<"Trials:  "<<N_TRIALS<<endl;
-logger2<<"Success: "<<N_SUCC<<"  Rate = "<<(double)N_SUCC/(double)N_TRIALS<<endl;
-logger2<<"Success + Acc : "<<N_TRIALS-N_FAIL<<"  Rate = "<<1-(double)N_FAIL/(double)N_TRIALS<<endl;
-logger2<<"Fail:    "<<N_FAIL<<endl;
-logger2<<"Runtime  "<<C_TIME/N_TRIALS<<endl;
+logger2 << "Trials:  " << N_TRIALS << endl;
+logger2 << "Success: " << N_SUCC << "  Rate = " << (double)N_SUCC / (double)N_TRIALS << endl;
+logger2 << "Success + Acc : " << N_TRIALS - N_FAIL << "  Rate = " << 1 - (double)N_FAIL / (double)N_TRIALS << endl;
+logger2 << "Fail:    " << N_FAIL << endl;
+logger2 << "Runtime  " << C_TIME / N_TRIALS << endl;
 
-logger2<<"Times = [";
-for(int i=0; i<times.size(); i++)
-{
-    logger2<<times[i]<<" ";
+logger2 << "Times = [";
+for (int i = 0; i < times.size(); i++) {
+    logger2 << times[i] << " ";
 }
-logger2<<"];\n";
+logger2 << "];\n";
 
-logger2<<"ER = [";
-for(int i=0; i<er.size(); i++)
-{
-    logger2<<er[i]<<" ";
+logger2 << "ER = [";
+for (int i = 0; i < er.size(); i++) {
+    logger2 << er[i] << " ";
 }
-logger2<<"];\n";
+logger2 << "];\n";
 
-logger2<<"ET = [";
-for(int i=0; i<et.size(); i++)
-{
-    logger2<<et[i]<<" ";
+logger2 << "ET = [";
+for (int i = 0; i < et.size(); i++) {
+    logger2 << et[i] << " ";
 }
-logger2<<"];\n";
+logger2 << "];\n";
 
-logger2<<"Succ = [";
-for(int i=0; i<success.size(); i++)
-{
-    logger2<<success[i]<<" ";
+logger2 << "Succ = [";
+for (int i = 0; i < success.size(); i++) {
+    logger2 << success[i] << " ";
 }
-logger2<<"];\n";
+logger2 << "];\n";
 
 return (0);
 #endif
