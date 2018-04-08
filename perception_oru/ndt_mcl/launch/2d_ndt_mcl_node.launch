@@ -21,10 +21,11 @@
 		<param name="initial_pose_x" value="0.0" />
 		<param name="initial_pose_y" value="0.0" />
 		<param name="initial_pose_yaw" value="0.0" />
-
-		<param name="save_output_map" value="false" />
+		<!-- save_output_map originally is false,   /-->
+		<param name="save_output_map" value="true" />
 		<param name="output_map_file_name" value="$(find ndt_mcl)/maps/ndt_mapper_output.ndmap" />
 		<param name="map_resolution" value="0.2" />
-		<param name="bagfile_name" value="$(find ndt_mcl)/data/localization.bag"/>
+		<!-- param name="bagfile_name" value="$(find ndt_mcl)/data/localization.bag"/-->
+		<param name="bagfile_name" value="$(find ndt_mcl)/data/mapping.bag"/>
 	</node>   
 </launch>

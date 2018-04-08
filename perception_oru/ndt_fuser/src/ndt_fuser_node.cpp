@@ -286,14 +286,15 @@ public:
             if (initPoseFromGT || initPoseFromTF) {
                 // check if initial pose was set already
                 if (!initPoseSet) {
-                    ROS_WARN("skipping frame, init pose not acquired yet!");
+//                    ROS_WARN("skipping frame, init pose not acquired yet!");
                     m.unlock();
                     return;
                 }
             }
-            ROS_INFO("Init pose is (%lf,%lf,%lf)", pose_.translation()(0),
-                     pose_.translation()(1),
-                     pose_.rotation().eulerAngles(0, 1, 2)(0));
+//            ROS_INFO("Init pose is (%lf,%lf,%lf)", 
+//            			pose_.translation()(0), 
+//           	 		pose_.translation()(1), 
+//            			pose_.rotation().eulerAngles(0, 1, 2)(0));
             fuser->initialize(pose_, cloud);
             nb_added_clouds_++;
         } else {
