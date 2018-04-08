@@ -44,7 +44,7 @@ public:
         std::string schaiba;
         schaiba.resize(500);
         if (!transformer.canTransform(fixed_link, frame_name, stamp, &schaiba)) {
-            fprintf(stderr, "WTF:%s\n", schaiba.c_str());
+            //fprintf(stderr, "WTF:%s\n", schaiba.c_str());
             return false;
         }
 
@@ -54,14 +54,13 @@ public:
         return true;
     }
 
-
     /**
     * Read next message
     * Returns the message and corresponding pose
     * Returns false if it was not possible to read the message or pose
     * True otherwise
     */
-    bool getNextMessage(MessageType &msg_out,  tf::Transform &sensor_pose) {
+    bool getNextMessage(MessageType &msg_out, tf::Transform &sensor_pose) {
         if (I == view->end()) {
             fprintf(stderr, "End of measurement file Reached!!\n");
             return false;

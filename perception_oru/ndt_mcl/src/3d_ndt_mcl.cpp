@@ -80,7 +80,7 @@ void NDTMCL3D::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Po
         }
         varP /= pf.size();
         varP = sqrt(varP);
-        fprintf(stderr, "Var P=%lf (Npf=%d, Nm=%d) (t_pred = %.3lf t_pseudo=%.3lf)", varP, pf.size(), Nn, t_pred, t_pseudo);
+        //fprintf(stderr, "Var P=%lf (Npf=%d, Nm=%d) (t_pred = %.3lf t_pseudo=%.3lf)", varP, pf.size(), Nn, t_pred, t_pseudo);
         if (varP > /*0.006*/SIR_varP_threshold || sinceSIR > /*25*/SIR_max_iters_wo_resampling) {
             fprintf(stderr, "-SIR- ");
             sinceSIR = 0;
@@ -264,7 +264,7 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
         }
         varP /= pf.size();
         varP = sqrt(varP);
-        fprintf(stderr, "Var P=%lf (Npf=%d, Nm=%d) (t_pred = %.3lf t_pseudo=%.3lf)", varP, pf.size(), Nn, t_pred, t_pseudo);
+        //fprintf(stderr, "Var P=%lf (Npf=%d, Nm=%d) (t_pred = %.3lf t_pseudo=%.3lf)", varP, pf.size(), Nn, t_pred, t_pseudo);
         if (varP > /*0.006*/SIR_varP_threshold || sinceSIR > /*25*/SIR_max_iters_wo_resampling) {
             fprintf(stderr, "-SIR- ");
             sinceSIR = 0;

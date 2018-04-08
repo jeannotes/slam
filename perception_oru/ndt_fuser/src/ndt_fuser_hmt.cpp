@@ -1,7 +1,7 @@
 #include <ndt_fuser/ndt_fuser_hmt.h>
 
 namespace lslgeneric {
-void NDTFuserHMT::initialize(Eigen::Affine3d initPos, pcl::PointCloud< pcl::PointXYZ >& cloud, bool preLoad) {
+void NDTFuserHMT::initialize(Eigen::Affine3d initPos, pcl::PointCloud<pcl::PointXYZ> &cloud, bool preLoad) {
     ///Set the cloud to sensor frame with respect to base
     lslgeneric::transformPointCloudInPlace(sensor_pose, cloud);
     lslgeneric::transformPointCloudInPlace(initPos, cloud);
@@ -13,7 +13,7 @@ void NDTFuserHMT::initialize(Eigen::Affine3d initPos, pcl::PointCloud< pcl::Poin
                                         Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2),
                                         map_size_x, map_size_y, map_size_z, sensor_range, hmt_map_dir, true);
         if (preLoad) {
-            lslgeneric::NDTMapHMT* map_hmt = dynamic_cast< lslgeneric::NDTMapHMT* >(map);
+            lslgeneric::NDTMapHMT *map_hmt = dynamic_cast<lslgeneric::NDTMapHMT*> (map);
             std::cout << "Trying to pre-load maps at " << initPos.translation() << std::endl;
             map_hmt->tryLoadPosition(initPos.translation());
         }
@@ -52,10 +52,10 @@ void NDTFuserHMT::initialize(Eigen::Affine3d initPos, pcl::PointCloud< pcl::Poin
 }
 
 /**
-     *
-     *
-     */
-Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud< pcl::PointXYZ >& cloud) {
+ *
+ *
+ */
+Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud) {
     if (!isInit) {
         fprintf(stderr, "NDT-FuserHMT: Call Initialize first!!\n");
         return Tnow;
@@ -128,11 +128,11 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud< pc
         }
         mapLow.initialize(cx, cy, cz, 3 * map_size_x, 3 * map_size_y, map_size_z);
 
-        std::vector< lslgeneric::NDTCell* > ndts;
+        std::vector<lslgeneric::NDTCell*> ndts;
         ndts = map->getAllCells(); //this copies cells?
 
         for (int i = 0; i < ndts.size(); i++) {
-            NDTCell* cell = ndts[i];
+            NDTCell *cell = ndts[i];
             if (cell != NULL) {
                 if (cell->hasGaussian_) {
                     Eigen::Vector3d m = cell->getMean();
@@ -144,7 +144,7 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud< pc
             delete cell;
         }
         //do match
-        if (matcher2D.match(mapLow, ndlocalLow, Tinit, true)) {
+        if (matcher2D.match( mapLow, ndlocalLow, Tinit, true)) {
             //if success, set Tmotion to result
             t2 = getDoubleTime();
             //std::cout<<"success: new initial guess! t= "<<t2-t1<<std::endl;
@@ -155,10 +155,11 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud< pc
 
     if (be2D) {
         t2 = getDoubleTime();
-        if (matcher2D.match(*map, ndlocal, Tinit, true) || fuseIncomplete) {
+        if (matcher2D.match( *map, ndlocal, Tinit, true) || fuseIncomplete) {
             t3 = getDoubleTime();
             Eigen::Affine3d diff = (Tnow * Tmotion).inverse() * Tinit;
-            if ((diff.translation().norm() > max_translation_norm || diff.rotation().eulerAngles(0, 1, 2).norm() > max_rotation_norm) && checkConsistency) {
+            if ((diff.translation().norm() > max_translation_norm ||
+                    diff.rotation().eulerAngles(0, 1, 2).norm() > max_rotation_norm) && checkConsistency) {
                 fprintf(stderr, "****  NDTFuserHMT -- ALMOST DEFINATELY A REGISTRATION FAILURE *****\n");
                 Tnow = Tnow * Tmotion;
             } else {
@@ -166,7 +167,8 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud< pc
                 lslgeneric::transformPointCloudInPlace(Tnow, cloud);
                 Eigen::Affine3d spose = Tnow * sensor_pose;
                 Eigen::Affine3d diff_fuse = Tlast_fuse.inverse() * Tnow;
-                if (diff_fuse.translation().norm() > translation_fuse_delta || diff_fuse.rotation().eulerAngles(0, 1, 2).norm() > rotation_fuse_delta) {
+                if (diff_fuse.translation().norm() > translation_fuse_delta ||
+                        diff_fuse.rotation().eulerAngles(0, 1, 2).norm() > rotation_fuse_delta) {
                     //std::cout<<"F: "<<spose.translation().transpose()<<" "<<spose.rotation().eulerAngles(0,1,2).transpose()<<std::endl;
                     t4 = getDoubleTime();
                     //TSV: originally this!
@@ -221,7 +223,7 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud< pc
             }
 
             Eigen::MatrixXd global_cov = local_cov;
-            global_cov.block< 3, 3 >(0, 0) = global_cov_pos;
+            global_cov.block<3, 3>(0, 0) = global_cov_pos;
 
             // // Include global constraints? -> roll, pitch and z (height).
             // // Force initialization to be only yaw. Set roll, pitch and height to zero + put in a covariance with relative low variance in height, roll and pitch...
@@ -232,18 +234,19 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud< pc
             //   Eigen::AngleAxis<double>(0.,Eigen::Vector3d::UnitY()) *
             //   Eigen::AngleAxis<double>(yaw,Eigen::Vector3d::UnitZ()) ;
 
-            matcherSC.only_xy_motion = false; //true;
+            matcherSC.only_xy_motion = false;//true;
             //              matcherSC.lock_zrp_motion = true;
             match_ret = matcherSC.match(*map, ndlocal, Tinit, global_cov);
             std::cout << matcherSC.nb_match_calls << " successes : " << matcherSC.nb_success_reg << std::endl;
         } else {
-            match_ret = matcher.match(*map, ndlocal, Tinit, true);
+            match_ret = matcher.match( *map, ndlocal, Tinit, true);
         }
         if (match_ret || fuseIncomplete) {
             t3 = getDoubleTime();
             Eigen::Affine3d diff = (Tnow * Tmotion).inverse() * Tinit;
 
-            if ((diff.translation().norm() > max_translation_norm || diff.rotation().eulerAngles(0, 1, 2).norm() > max_rotation_norm) && checkConsistency) {
+            if ((diff.translation().norm() > max_translation_norm ||
+                    diff.rotation().eulerAngles(0, 1, 2).norm() > max_rotation_norm) && checkConsistency) {
                 fprintf(stderr, "****  NDTFuserHMT -- ALMOST DEFINATELY A REGISTRATION FAILURE *****\n");
                 Tnow = Tnow * Tmotion;
                 //save offending map:
@@ -255,7 +258,8 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud< pc
                 lslgeneric::transformPointCloudInPlace(Tnow, cloud);
                 Eigen::Affine3d spose = Tnow * sensor_pose;
                 Eigen::Affine3d diff_fuse = Tlast_fuse.inverse() * Tnow;
-                if (diff_fuse.translation().norm() > translation_fuse_delta || diff_fuse.rotation().eulerAngles(0, 1, 2).norm() > rotation_fuse_delta) {
+                if (diff_fuse.translation().norm() > translation_fuse_delta ||
+                        diff_fuse.rotation().eulerAngles(0, 1, 2).norm() > rotation_fuse_delta) {
                     //std::cout<<"F: "<<spose.translation().transpose()<<" "<<spose.rotation().eulerAngles(0,1,2).transpose()<<std::endl;
                     t4 = getDoubleTime();
                     map->addPointCloudMeanUpdate(spose.translation(), cloud, localMapSize, 1e5, 1250, map_size_z / 2, 0.06);

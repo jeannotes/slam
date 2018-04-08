@@ -4,7 +4,7 @@
 
 std::string turtle_name;
 
-void poseCallback(const turtlesim::PoseConstPtr &msg){
+void poseCallback(const turtlesim::PoseConstPtr &msg) {
     static tf::TransformBroadcaster br;
     tf::Transform transform;
     transform.setOrigin(tf::Vector3(msg->x, msg->y, 0.0));
@@ -14,9 +14,9 @@ void poseCallback(const turtlesim::PoseConstPtr &msg){
     br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", turtle_name));
 }
 
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
     ros::init(argc, argv, "my_tf_broadcaster");
-    if (argc != 2){
+    if (argc != 2) {
         ROS_ERROR("need turtle name as argument");
         return -1;
     }

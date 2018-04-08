@@ -3,8 +3,7 @@
 #include <tf/transform_listener.h>
 #include <turtlesim/Spawn.h>
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     ros::init(argc, argv, "my_tf_listener");
 
     ros::NodeHandle node;
@@ -23,7 +22,7 @@ int main(int argc, char** argv)
         tf::StampedTransform transform;
         try {
             listener.lookupTransform("/turtle2", "/turtle1",
-                ros::Time(0), transform);
+                                     ros::Time(0), transform);
         } catch (tf::TransformException& ex) {
             ROS_ERROR("%s", ex.what());
             ros::Duration(1.0).sleep();

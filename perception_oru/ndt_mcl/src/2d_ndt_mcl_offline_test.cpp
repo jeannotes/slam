@@ -17,7 +17,7 @@
 *
 */
 
-#define USE_VISUALIZATION_DEBUG ///< Enable / Disable visualization
+#define USE_VISUALIZATION_DEBUG 1 //< Enable / Disable visualization
 
 #ifdef USE_VISUALIZATION_DEBUG
 #include <ndt_visualisation/ndt_viz.h>
@@ -100,7 +100,7 @@ void callback(const sensor_msgs::LaserScan &scan, tf::Transform odo_pose, tf::Tr
 
     double time_now = getDoubleTime();
     double looptime = time_end - time_now;
-    fprintf(stderr, "Lt( %.1lfms %.1lfHz seq:%d) -", looptime * 1000, 1.0 / looptime, scan.header.seq);
+    //fprintf(stderr, "Lt( %.1lfms %.1lfHz seq:%d) -", looptime * 1000, 1.0 / looptime, scan.header.seq);
 
     if (has_sensor_offset_set == false) return;
 
@@ -152,8 +152,6 @@ void callback(const sensor_msgs::LaserScan &scan, tf::Transform odo_pose, tf::Tr
     float lpy = L * sin(alpha);
     float lpa = offa;
 
-
-
     ///Laser scan to PointCloud transformed with respect to the base
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
     for (int j = 0; j < N; j++) {
@@ -174,11 +172,11 @@ void callback(const sensor_msgs::LaserScan &scan, tf::Transform odo_pose, tf::Tr
 
     Eigen::Vector3d dm = ndtmcl->getMean(); ///<Maximum aposteriori estimate of the pose
     Eigen::Matrix3d cov = ndtmcl->pf.getDistributionVariances(); ///distribution variances
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
     time_end = getDoubleTime();
-    fprintf(stderr, "Time elapsed %.1lfms (%lf %lf %lf) \n", time_end - time_now, dm[0], dm[1], dm[2]);
+    //fprintf(stderr, "Time elapsed %.1lfms (%lf %lf %lf) \n", time_end - time_now, dm[0], dm[1], dm[2]);
     isFirstLoad = false;
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
 
     //If visualization desired
 #ifdef USE_VISUALIZATION_DEBUG
@@ -194,8 +192,8 @@ void callback(const sensor_msgs::LaserScan &scan, tf::Transform odo_pose, tf::Tr
     }
 
     ndt_viz.addTrajectoryPoint(dm[0], dm[1], 0.5, 1.0, 0, 0);
-    ndt_viz.addTrajectoryPoint(Tgt.translation()(0), Tgt.translation()(1), 0.5, 1.0, 1.0, 1.0);
-    ndt_viz.addTrajectoryPoint(Todo.translation()(0), Todo.translation()(1), 0.5, 0.0, 1.0, 0.0);
+    //ndt_viz.addTrajectoryPoint(Tgt.translation()(0), Tgt.translation()(1), 0.5, 1.0, 1.0, 1.0);
+    //ndt_viz.addTrajectoryPoint(Todo.translation()(0), Todo.translation()(1), 0.5, 0.0, 1.0, 0.0);
 
     ndt_viz.win3D->setCameraPointingToPoint(dm[0], dm[1], 3.0);
     ndt_viz.repaint();
@@ -301,6 +299,7 @@ int main(int argc, char **argv) {
 #endif
     ///Loop while we have data in the bag
     while (!reader.bagEnd() && ros::ok()) {
+		ROS_ERROR("F2");
         sensor_msgs::LaserScan s;
         tf::Transform odo_pose;
         bool hasOdo = false;
@@ -315,7 +314,6 @@ int main(int argc, char **argv) {
         if (reader.getTf(tf_state_topic, s.header.stamp, state_pose)) {
             hasState = true;
         }
-
         ///If we have the data then lets run the localization
         if (hasState && hasOdo) {
             callback(s, odo_pose, state_pose);

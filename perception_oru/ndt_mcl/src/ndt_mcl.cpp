@@ -88,7 +88,7 @@ void NDTMCL::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Poin
 
     if (forceSIR) {
 
-        fprintf(stderr, "forceSIR(%d) ", forceSIR);
+        //fprintf(stderr, "forceSIR(%d) ", forceSIR);
         pf.SIRUpdate();
     } else {
 
@@ -98,9 +98,9 @@ void NDTMCL::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Poin
         }
         varP /= pf.NumOfParticles;
         varP = sqrt(varP);
-        fprintf(stderr, "Var P=%lf (Npf=%d, Nm=%d)", varP, pf.NumOfParticles, Nn);
+        //fprintf(stderr, "Var P=%lf (Npf=%d, Nm=%d)", varP, pf.NumOfParticles, Nn);
         if (varP > 0.006 || sinceSIR > 25) {
-            fprintf(stderr, "-SIR- ");
+            //fprintf(stderr, "-SIR- ");
             sinceSIR = 0;
             pf.SIRUpdate();
         } else {

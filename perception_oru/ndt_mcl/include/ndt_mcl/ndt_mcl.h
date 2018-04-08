@@ -22,7 +22,7 @@
 class NDTMCL {
 public:
     lslgeneric::NDTMap map; 		///<This is my map
-    mcl::CParticleFilter pf; 						///<This is the particle filter
+    mcl::CParticleFilter pf; 		///<This is the particle filter
     double resolution;
     int counter;
     double zfilt_min;
