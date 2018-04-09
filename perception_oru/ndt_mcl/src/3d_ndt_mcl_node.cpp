@@ -85,8 +85,6 @@ private:
     std::string tf_base_link, tf_sensor_link, points_topic, odometry_topic;
 public:
     NDTMCL3DNode(ros::NodeHandle param_nh) {
-
-
         //////////////////////////////////////////////////////////
         /// Prepare Pose offsets
         //////////////////////////////////////////////////////////

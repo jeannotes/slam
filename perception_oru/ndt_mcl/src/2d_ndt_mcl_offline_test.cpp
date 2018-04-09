@@ -117,10 +117,7 @@ void callback(const sensor_msgs::LaserScan &scan, tf::Transform odo_pose, tf::Tr
     y = odo_pose.getOrigin().y();
 
     int N = (scan.angle_max - scan.angle_min) / scan.angle_increment; ///< number of scan lines
-
-    /////
-    /// Pose conversions
-    ////
+    // Pose conversions
 
     Eigen::Affine3d T = getAsAffine(x, y, yaw);
     Eigen::Affine3d Tgt = getAsAffine(gx, gy, gyaw);
@@ -131,7 +128,7 @@ void callback(const sensor_msgs::LaserScan &scan, tf::Transform odo_pose, tf::Tr
     if (isFirstLoad) {
         fprintf(stderr, "Initializing to (%lf, %lf, %lf)\n", gx, gy, gyaw);
         ///Initialize the filter with 1m^2 variance in position and 20deg in heading
-        ndtmcl->initializeFilter(gx, gy, gyaw, 1.0, 1.0, 20.0 * M_PI / 180.0, 450);
+        ndtmcl->initializeFilter(gx, gy, gyaw, 1.0, 1.0, 20.0 * M_PI / 180.0, 400);
         Told = T;
         Todo = Tgt;
     }
@@ -165,9 +162,7 @@ void callback(const sensor_msgs::LaserScan &scan, tf::Transform odo_pose, tf::Tr
             cloud->push_back(pt);
         }
     }
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /// Now we have the differential motion and pointcloud -- Lets do MCL
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Now we have the differential motion and pointcloud -- Lets do MCL
     ndtmcl->updateAndPredict(Tmotion, *cloud); ///< does the prediction, update and resampling steps (see ndt_mcl.hpp)
 
     Eigen::Vector3d dm = ndtmcl->getMean(); ///<Maximum aposteriori estimate of the pose
@@ -176,7 +171,7 @@ void callback(const sensor_msgs::LaserScan &scan, tf::Transform odo_pose, tf::Tr
     time_end = getDoubleTime();
     //fprintf(stderr, "Time elapsed %.1lfms (%lf %lf %lf) \n", time_end - time_now, dm[0], dm[1], dm[2]);
     isFirstLoad = false;
-    //
+
 
     //If visualization desired
 #ifdef USE_VISUALIZATION_DEBUG
@@ -192,7 +187,7 @@ void callback(const sensor_msgs::LaserScan &scan, tf::Transform odo_pose, tf::Tr
     }
 
     ndt_viz.addTrajectoryPoint(dm[0], dm[1], 0.5, 1.0, 0, 0);
-    //ndt_viz.addTrajectoryPoint(Tgt.translation()(0), Tgt.translation()(1), 0.5, 1.0, 1.0, 1.0);
+    ndt_viz.addTrajectoryPoint(Tgt.translation()(0), Tgt.translation()(1), 0.5, 0, 0, 1.0);
     //ndt_viz.addTrajectoryPoint(Todo.translation()(0), Todo.translation()(1), 0.5, 0.0, 1.0, 0.0);
 
     ndt_viz.win3D->setCameraPointingToPoint(dm[0], dm[1], 3.0);
@@ -318,7 +313,7 @@ int main(int argc, char **argv) {
             callback(s, odo_pose, state_pose);
         }
 #ifdef USE_VISUALIZATION_DEBUG
-//                ndt_viz.win3D->process_events();
+//      ndt_viz.win3D->process_events();
 #endif
     }
 

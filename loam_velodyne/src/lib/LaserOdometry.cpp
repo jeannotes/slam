@@ -77,8 +77,6 @@ LaserOdometry::LaserOdometry(const float& scanPeriod,
     _laserOdometryTrans.child_frame_id_ = "/laser_odom";
 }
 
-
-
 bool LaserOdometry::setup(ros::NodeHandle &node,
                           ros::NodeHandle &privateNode) {
     // fetch laser odometry params
@@ -135,13 +133,11 @@ bool LaserOdometry::setup(ros::NodeHandle &node,
         }
     }
 
-
     // advertise laser odometry topics
     _pubLaserCloudCornerLast = node.advertise<sensor_msgs::PointCloud2>("/laser_cloud_corner_last", 2);
     _pubLaserCloudSurfLast   = node.advertise<sensor_msgs::PointCloud2>("/laser_cloud_surf_last", 2);
     _pubLaserCloudFullRes    = node.advertise<sensor_msgs::PointCloud2>("/velodyne_cloud_3", 2);
     _pubLaserOdometry        = node.advertise<nav_msgs::Odometry>("/laser_odom_to_init", 5);
-
 
     // subscribe to scan registration topics
     _subCornerPointsSharp = node.subscribe<sensor_msgs::PointCloud2>
@@ -165,8 +161,6 @@ bool LaserOdometry::setup(ros::NodeHandle &node,
     return true;
 }
 
-
-
 void LaserOdometry::transformToStart(const pcl::PointXYZI& pi, pcl::PointXYZI& po) {
     float s = 10 * (pi.intensity - int(pi.intensity));
 
@@ -180,8 +174,6 @@ void LaserOdometry::transformToStart(const pcl::PointXYZI& pi, pcl::PointXYZI& p
     Angle rz = -s * _transform.rot_z.rad();
     rotateZXY(po, rz, rx, ry);
 }
-
-
 
 size_t LaserOdometry::transformToEnd(pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud) {
     size_t cloudSize = cloud->points.size();
@@ -212,8 +204,6 @@ size_t LaserOdometry::transformToEnd(pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud
 
     return cloudSize;
 }
-
-
 
 void LaserOdometry::pluginIMURotation(const Angle& bcx, const Angle& bcy, const Angle& bcz,
                                       const Angle& blx, const Angle& bly, const Angle& blz,

@@ -331,7 +331,7 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan) {
 
     //Number of scans
     int N = (scan->angle_max - scan->angle_min) / scan->angle_increment;
-	// Pose conversions
+    // Pose conversions
     Eigen::Affine3d T = getAsAffine(x, y, yaw);
     Eigen::Affine3d Tgt = getAsAffine(gx, gy, gyaw);
 
@@ -389,7 +389,7 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan) {
             cloud->push_back(pt);
         }
     }
-	// Now we have the sensor origin and pointcloud -- Lets do MCL
+    // Now we have the sensor origin and pointcloud -- Lets do MCL
     ndtmcl->updateAndPredict(Tmotion, *cloud); ///<predicts, updates and resamples if necessary (ndt_mcl.hpp)
 
     Eigen::Vector3d dm = ndtmcl->getMean(); ///Maximum aposteriori pose
@@ -397,7 +397,7 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan) {
     time_end = getDoubleTime();
     //fprintf(stderr, "Time elapsed %.1lfms (%lf %lf %lf) \n", time_end - time_now, dm[0], dm[1], dm[2]);
     isFirstLoad = false;
-    
+
     sendROSOdoMessage(dm, cov, scan->header.stamp); ///Spit out the pose estimate
 
     if (counter % 50 == 0) {
@@ -409,8 +409,8 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan) {
     if (counter % 500 == 0) {
         ndt_viz.clear();
         ndt_viz.plotNDTSAccordingToOccupancy(-1, &ndtmcl->map);
-		ndt_viz.displayParticles();
-		ndt_viz.displayTrajectory();
+        ndt_viz.displayParticles();
+        ndt_viz.displayTrajectory();
     }
     ndt_viz.clearParticles();
     for (int i = 0; i < ndtmcl->pf.NumOfParticles; i++) {
@@ -418,11 +418,11 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan) {
     }
 
     ndt_viz.addTrajectoryPoint(dm[0], dm[1], 0.5, 1.0, 0, 0);
-    ndt_viz.addTrajectoryPoint(Tgt.translation()(0), Tgt.translation()(1), 0.5, 1.0, 1.0, 1.0);
-    ndt_viz.addTrajectoryPoint(Todo.translation()(0), Todo.translation()(1), 0.5, 0.0, 1.0, 0.0);
+    //ndt_viz.addTrajectoryPoint(Tgt.translation()(0), Tgt.translation()(1), 0.5, 1.0, 1.0, 1.0);
+    //ndt_viz.addTrajectoryPoint(Todo.translation()(0), Todo.translation()(1), 0.5, 0.0, 1.0, 0.0);
 
-    //ndt_viz.displayParticles();
-    //ndt_viz.displayTrajectory();
+    ndt_viz.displayParticles();
+    ndt_viz.displayTrajectory();
     ndt_viz.win3D->setCameraPointingToPoint(dm[0], dm[1], 3.0);
     ndt_viz.repaint();
 
@@ -516,7 +516,7 @@ int main(int argc, char **argv) {
     //////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////
     ros::Subscriber scansub = nh.subscribe(input_laser_topic, 1, callback);
-
+    ndt_viz.win3D->start_main_loop_own_thread();
     ndtmap_pub = nh.advertise<visualization_msgs::MarkerArray>( "NDTMAP", 0 );
 
     initial_pose_sub_ = nh.subscribe("initialpose", 1, initialPoseReceived);

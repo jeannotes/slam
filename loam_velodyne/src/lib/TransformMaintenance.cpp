@@ -74,8 +74,6 @@ bool TransformMaintenance::setup(ros::NodeHandle &node, ros::NodeHandle &private
     return true;
 }
 
-
-
 void TransformMaintenance::transformAssociateToMap() {
     float x1 = cos(_transformSum[1]) * (_transformBefMapped[3] - _transformSum[3])
                - sin(_transformSum[1]) * (_transformBefMapped[5] - _transformSum[5]);
@@ -171,8 +169,6 @@ void TransformMaintenance::transformAssociateToMap() {
     _transformMapped[5] = _transformAftMapped[5]
                           - (-sin(_transformMapped[1]) * x2 + cos(_transformMapped[1]) * z2);
 }
-
-
 
 void TransformMaintenance::laserOdometryHandler(const nav_msgs::Odometry::ConstPtr& laserOdometry) {
     double roll, pitch, yaw;

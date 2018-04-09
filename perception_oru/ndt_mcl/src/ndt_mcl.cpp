@@ -4,7 +4,6 @@ void NDTMCL::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Poin
     Eigen::Vector3d tr = Tmotion.translation();
     Eigen::Vector3d rot = Tmotion.rotation().eulerAngles(0, 1, 2);
 
-
     /** Arla Motion model
       if(rot[2]<(0.5 * M_PI/180.0) && tr[0]>=0){
       pf.predict(mcl::pose(tr[0],tr[1],rot[2]), mcl::pose(tr[0]*0.2 + 0.005,tr[1]*0.1+ 0.005,rot[2]*0.2+0.001));
@@ -26,7 +25,6 @@ void NDTMCL::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Poin
        if(cloud.points[i].z > zfilt_min ) cl_f.push_back(cloud.points[i]);
        }
 
-
        fprintf(stderr,"2D scan = %d Points\n",cl_z.size());
 
      */
@@ -35,7 +33,7 @@ void NDTMCL::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Poin
     //local_map.computeNDTCells();
     local_map.computeNDTCells(CELL_UPDATE_MODE_STUDENT_T);
     int Nn = 0;
-    //			#pragma omp parallel for
+    // #pragma omp parallel for
     for (int i = 0; i < pf.NumOfParticles; i++) {
         Eigen::Affine3d T = getAsAffine(i);
 
@@ -84,7 +82,6 @@ void NDTMCL::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Poin
     }
 
     pf.normalize();
-
 
     if (forceSIR) {
 

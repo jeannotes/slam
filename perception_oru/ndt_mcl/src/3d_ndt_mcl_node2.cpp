@@ -528,8 +528,8 @@ public:
         return true;
     }
 
-
-    // Access the scans directly. This to better handle the time offsets / perform interpolation. Anyway it is useful to have better access to the points.
+    // Access the scans directly. This to better handle the time offsets
+    // perform interpolation. Anyway it is useful to have better access to the points.
     void scan_callback(const velodyne_msgs::VelodyneScan::ConstPtr &scanMsg) {
         mcl_m.lock();
 
@@ -859,11 +859,7 @@ public:
         }
         // m.unlock();
     }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 };
-
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "NDT-MCL");
