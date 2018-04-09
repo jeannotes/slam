@@ -19,7 +19,6 @@
 
 #define USE_VISUALIZATION_DEBUG 1 ///< Enable / Disable visualization
 
-
 #ifdef USE_VISUALIZATION_DEBUG
 #include <ndt_visualisation/ndt_viz.h>
 #endif
@@ -172,11 +171,6 @@ void initialPoseReceived(const geometry_msgs::PoseWithCovarianceStampedConstPtr&
     hasNewInitialPose = true;
 }
 
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
  * Convert x,y,yaw to Eigen::Affine3d
  */
@@ -191,17 +185,10 @@ Eigen::Affine3d getAsAffine(float x, float y, float yaw ) {
     return T;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Update measurement
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Globals
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Update measurement
+// Globals
 NDTMCL *ndtmcl;
-///Laser sensor offset
+//Laser sensor offset
 float offx = 0;
 float offy = 0;
 float offa = 0;
@@ -292,12 +279,6 @@ bool sendROSOdoMessage(Eigen::Vector3d mean, Eigen::Matrix3d cov, ros::Time ts) 
     return true;
 }
 
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
 double time_end;
 std::string tf_odo_topic =   "odom_base_link";
 std::string tf_state_topic = "base_link";
@@ -314,8 +295,6 @@ double getDoubleTime() {
 void callback(const sensor_msgs::LaserScan::ConstPtr& scan) {
     static int counter = 0;
     counter++;
-	
-	ROS_ERROR("F1");
 
     static tf::TransformListener tf_listener;
     double time_now = getDoubleTime();
@@ -325,10 +304,10 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan) {
     if (has_sensor_offset_set == false) return;
     double gx, gy, gyaw, x, y, yaw;
 
-    ///Get state information
+    //Get state information
     tf::StampedTransform transform;
     tf_listener.waitForTransform("world", tf_state_topic, scan->header.stamp, ros::Duration(1.0));
-    ///Ground truth --- Not generally available so should be changed to the manual initialization
+    //Ground truth --- Not generally available so should be changed to the manual initialization
     try {
         tf_listener.lookupTransform("world", tf_state_topic, scan->header.stamp, transform);
         gyaw = tf::getYaw(transform.getRotation());
@@ -339,7 +318,7 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan) {
         return;
     }
 
-    ///Odometry
+    //Odometry
     try {
         tf_listener.lookupTransform("world", tf_odo_topic, scan->header.stamp, transform);
         yaw = tf::getYaw(transform.getRotation());
@@ -350,13 +329,9 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan) {
         return;
     }
 
-
-    ///Number of scans
+    //Number of scans
     int N = (scan->angle_max - scan->angle_min) / scan->angle_increment;
-    /////
-    /// Pose conversions
-    ////
-
+	// Pose conversions
     Eigen::Affine3d T = getAsAffine(x, y, yaw);
     Eigen::Affine3d Tgt = getAsAffine(gx, gy, gyaw);
 
@@ -368,14 +343,14 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan) {
 
     if (isFirstLoad || hasNewInitialPose) {
         fprintf(stderr, "Initializing to (%lf, %lf, %lf)\n", gx, gy, gyaw);
-        /// Initialize the particle filter
+        // Initialize the particle filter
         ndtmcl->initializeFilter(gx, gy, gyaw, 0.2, 0.2, 2.0 * M_PI / 180.0, 150);
         Told = T;
         Todo = Tgt;
         hasNewInitialPose = false;
     }
 
-    ///Calculate the differential motion from the last frame
+    //Calculate the differential motion from the last frame
     Eigen::Affine3d Tmotion = Told.inverse() * T;
     Todo = Todo * Tmotion; ///< just integrates odometry for the visualization
 
@@ -390,18 +365,18 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan) {
 
     Told = T;
 
-    ///Calculate the laser pose with respect to the base
+    //Calculate the laser pose with respect to the base
     float dy = offy;
     float dx = offx;
     float alpha = atan2(dy, dx);
     float L = sqrt(dx * dx + dy * dy);
 
-    ///Laser pose in base frame
+    //Laser pose in base frame
     float lpx = L * cos(alpha);
     float lpy = L * sin(alpha);
     float lpa = offa;
 
-    ///Laser scan to PointCloud expressed in the base frame
+    //Laser scan to PointCloud expressed in the base frame
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
     for (int j = 0; j < N; j++) {
         double r  = scan->ranges[j];
@@ -414,19 +389,15 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan) {
             cloud->push_back(pt);
         }
     }
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /// Now we have the sensor origin and pointcloud -- Lets do MCL
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Now we have the sensor origin and pointcloud -- Lets do MCL
     ndtmcl->updateAndPredict(Tmotion, *cloud); ///<predicts, updates and resamples if necessary (ndt_mcl.hpp)
 
     Eigen::Vector3d dm = ndtmcl->getMean(); ///Maximum aposteriori pose
     Eigen::Matrix3d cov = ndtmcl->pf.getDistributionVariances(); ///Pose covariance
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     time_end = getDoubleTime();
     //fprintf(stderr, "Time elapsed %.1lfms (%lf %lf %lf) \n", time_end - time_now, dm[0], dm[1], dm[2]);
     isFirstLoad = false;
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+    
     sendROSOdoMessage(dm, cov, scan->header.stamp); ///Spit out the pose estimate
 
     if (counter % 50 == 0) {
@@ -440,7 +411,6 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan) {
         ndt_viz.plotNDTSAccordingToOccupancy(-1, &ndtmcl->map);
 		ndt_viz.displayParticles();
 		ndt_viz.displayTrajectory();
-
     }
     ndt_viz.clearParticles();
     for (int i = 0; i < ndtmcl->pf.NumOfParticles; i++) {
@@ -458,7 +428,6 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan) {
 
 #endif
 }
-
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "NDT-MCL");

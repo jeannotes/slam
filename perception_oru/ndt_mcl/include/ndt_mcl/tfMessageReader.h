@@ -90,7 +90,6 @@ public:
 
         readUntilTime(ts + ros::Duration(2.0));
 
-
         if (gotMessage) {
             std::string schaiba;
             schaiba.resize(200);

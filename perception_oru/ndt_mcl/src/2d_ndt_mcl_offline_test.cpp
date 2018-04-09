@@ -299,7 +299,6 @@ int main(int argc, char **argv) {
 #endif
     ///Loop while we have data in the bag
     while (!reader.bagEnd() && ros::ok()) {
-		ROS_ERROR("F2");
         sensor_msgs::LaserScan s;
         tf::Transform odo_pose;
         bool hasOdo = false;
@@ -314,7 +313,7 @@ int main(int argc, char **argv) {
         if (reader.getTf(tf_state_topic, s.header.stamp, state_pose)) {
             hasState = true;
         }
-        ///If we have the data then lets run the localization
+        //If we have the data then lets run the localization
         if (hasState && hasOdo) {
             callback(s, odo_pose, state_pose);
         }
