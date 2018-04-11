@@ -1,0 +1,24 @@
+<!-- -->
+<launch>
+
+  <!-- send table.xml to param server -->
+  <arg name="use_gnss" default="0" />
+  <arg name="queue_size" default="10" />
+  <arg name="sync" default="false" />
+  <arg name="localizer" default="velodyne" />
+  
+  <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="screen">
+    <param name="use_gnss" value="$(arg use_gnss)" />
+    <param name="tf_x" value="0" />
+    <param name="tf_y" value="0" />
+    <param name="tf_z" value="0" />
+    <param name="tf_roll" value="0" />
+    <param name="tf_pitch" value="0" />
+    <param name="tf_yaw" value="0" />
+    <param name="queue_size" value="$(arg queue_size)"/>
+    <param name="localizer" value="$(arg localizer)"/>
+    <remap from="/points_raw" to="/velodyne_points"/>
+    <remap from="/points_map" to="/cloud_pcd"/>
+  </node>
+  
+</launch>
