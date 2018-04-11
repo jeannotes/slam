@@ -146,7 +146,7 @@ main (int argc, char** argv) {
     size_t len;
     bool first = true;
     double randX, randY, randZ, randRoll, randPitch, randYaw;
-    double dev_x = 0.3 , dev_y = 0.3 , dev_z = 0.3 , dev_roll = 0.1, dev_pitch = 0.1, dev_yaw = 0.1;
+    double dev_x = 0.3, dev_y = 0.3, dev_z = 0.3, dev_roll = 0.1, dev_pitch = 0.1, dev_yaw = 0.1;
 
     int ctr = 0;
 

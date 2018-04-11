@@ -93,7 +93,7 @@ public:
 
     ///use this to set the parameters for the OctTree - will *only* apply to leafs of the current node.
     void setParameters(double _BIG_CELL_SIZE	= 4,
-                       double _SMALL_CELL_SIZE   = 0.5 ,
+                       double _SMALL_CELL_SIZE   = 0.5,
                        int _MAX_POINTS		= 10,
                        int _MAX_DEPTH		= 20
                       );

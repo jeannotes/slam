@@ -260,8 +260,8 @@ public:
         param_nh.param<std::string>("map_file_name", mapName, std::string("basement.ndmap"));
         param_nh.param<bool>("save_output_map", saveMap, true);
         param_nh.param<std::string>("output_map_file_name", output_map_name, std::string("ndt_mapper_output.ndmap"));
-        param_nh.param<double>("map_resolution", resolution , 0.2);
-        param_nh.param<double>("subsample_level", subsample_level , 1);
+        param_nh.param<double>("map_resolution", resolution, 0.2);
+        param_nh.param<double>("subsample_level", subsample_level, 1);
 
         fprintf(stderr, "USING RESOLUTION %lf\n", resolution);
 
@@ -475,7 +475,7 @@ public:
         Todo_old = Todo;
         Tcum = initPoseT;
 
-        ndtmcl->initializeFilter(tr[0], tr[1], tr[2], rot[0], rot[1], rot[2], 0.5, 0.5, 0.1, 2.0 * M_PI / 180.0, 2.0 * M_PI / 180.0 , 2.0 * M_PI / 180.0, this->numParticles);
+        ndtmcl->initializeFilter(tr[0], tr[1], tr[2], rot[0], rot[1], rot[2], 0.5, 0.5, 0.1, 2.0 * M_PI / 180.0, 2.0 * M_PI / 180.0, 2.0 * M_PI / 180.0, this->numParticles);
         //        ndtmcl->initializeFilter(tr[0], tr[1],tr[2],rot[0],rot[1],rot[2],0.005, 0.005, 0.001, 0.02*M_PI/180.0, 0.02*M_PI/180.0 ,0.02*M_PI/180.0, this->numParticles);
         ndt_viz.plotNDTSAccordingToOccupancy(-1, &ndtmcl->map);
         isFirstLoad = false;

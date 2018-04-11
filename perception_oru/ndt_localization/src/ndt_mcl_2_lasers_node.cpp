@@ -124,7 +124,7 @@ class particle_filter_wrap {
         q_map_odo.setRPY( 0, 0, Tmap_odo.rotation().eulerAngles(0, 1, 2)(2) );
         tf_map_odo.setRotation( q_map_odo );
         // /// broadcast TF
-        br_mapOdom.sendTransform(tf::StampedTransform(tf_map_odo, ts + ros::Duration(0.3) , "map_n", "odom"));
+        br_mapOdom.sendTransform(tf::StampedTransform(tf_map_odo, ts + ros::Duration(0.3), "map_n", "odom"));
 
 
 
@@ -207,7 +207,7 @@ class particle_filter_wrap {
         q_map_odo.setRPY( 0, 0, Tmap_odo.rotation().eulerAngles(0, 1, 2)(2) );
         tf_map_odo.setRotation( q_map_odo );
         // /// broadcast TF
-        br_mapOdom.sendTransform(tf::StampedTransform(tf_map_odo, ts + ros::Duration(0.3) , "map", "odom"));
+        br_mapOdom.sendTransform(tf::StampedTransform(tf_map_odo, ts + ros::Duration(0.3), "map", "odom"));
 
         return O;
     }
@@ -340,7 +340,7 @@ class particle_filter_wrap {
         }
         //ROS_INFO_STREAM("test 1 "<<msg->header.stamp);
         //tf_listener.waitForTransform(odomTF, "/base_link" , front->header.stamp,ros::Duration(1.0));
-        tf_listener.waitForTransform(odomTF, "/base_link" , front->header.stamp, ros::Duration(0.1));
+        tf_listener.waitForTransform(odomTF, "/base_link", front->header.stamp, ros::Duration(0.1));
         //ROS_INFO("test 2");
         try {
             tf_listener.lookupTransform(odomTF, "/base_link", front->header.stamp, transform);

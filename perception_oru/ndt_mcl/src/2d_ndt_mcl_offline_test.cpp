@@ -243,7 +243,7 @@ int main(int argc, char **argv) {
     paramHandle.param<bool>("save_output_map", saveMap, true);
     paramHandle.param<std::string>("output_map_file_name", output_map_name, std::string("ndt_mapper_output.ndmap"));
 
-    paramHandle.param<double>("map_resolution", resolution , 0.2);
+    paramHandle.param<double>("map_resolution", resolution, 0.2);
     bool forceSIR = false;
     paramHandle.param<bool>("forceSIR", forceSIR, false);
 

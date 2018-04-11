@@ -99,7 +99,7 @@ private:
     };
 
     typedef nanoflann::KDTreeSingleIndexAdaptor <
-    nanoflann::SO3_Adaptor<float, PointCloud_Adaptor > ,
+    nanoflann::SO3_Adaptor<float, PointCloud_Adaptor >,
               PointCloud_Adaptor, 3, int > KDTreeFlann_PCL_SO3;
 
     PointCloud_Adaptor _adaptor;

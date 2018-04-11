@@ -158,7 +158,7 @@ SDFTrackerNode::advertiseTopic(const std::string topic) {
         depth_publisher_ = n_.advertise<sensor_msgs::Image>(advertise_topic, 10);
     } else {
         if (topic.compare(std::string("default")) == 0) advertise_topic = "/" + camera_name_ + "/depth/image_denoised";
-        depth_publisher_ = n_.advertise<sensor_msgs::Image>( advertise_topic , 10);
+        depth_publisher_ = n_.advertise<sensor_msgs::Image>( advertise_topic, 10);
     }
 
     heartbeat_depth_ = nh_.createTimer(ros::Duration(1.0), &SDFTrackerNode::publishDepthDenoisedImage, this);

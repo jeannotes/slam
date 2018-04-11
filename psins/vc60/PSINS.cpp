@@ -115,7 +115,7 @@ CQuat::CQuat(CMat3 &Cnb) {
 CVect3 CQuat::operator-(CQuat &quat) {
     CQuat dq;
 
-    dq = quat*~(*this);
+    dq = quat * ~(*this);
     if (dq.q0 < 0) {
         dq.q0 = -dq.q0, dq.q1 = -dq.q1, dq.q2 = -dq.q2, dq.q3 = -dq.q3;
     }

@@ -340,7 +340,7 @@ double NDTMatcherD2DSC::lineSearchMTSC(Eigen::Matrix<double, 6, 1> &increment,
 
 bool NDTMatcherD2DSC::match( NDTMap& targetNDT,
                              NDTMap& sourceNDT,
-                             Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T ,
+                             Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T,
                              const Eigen::MatrixXd& Tcov) {
 
     //locals

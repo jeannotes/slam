@@ -4,7 +4,7 @@ namespace lslgeneric {
 
 template <typename PointT>
 void OctTree<PointT>::setParameters(double _BIG_CELL_SIZE	,
-                                    double _SMALL_CELL_SIZE     ,
+                                    double _SMALL_CELL_SIZE,
                                     int _MAX_POINTS		,
                                     int _MAX_DEPTH
                                    ) {

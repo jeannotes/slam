@@ -178,7 +178,7 @@ public:
     virtual void addPointCloudMeanUpdate(const Eigen::Vector3d &origin,
                                          const pcl::PointCloud<pcl::PointXYZ> &pc,
                                          const Eigen::Vector3d &localmapsize,
-                                         unsigned int maxnumpoints = 1e9, float occupancy_limit = 255 , double maxz = 100.0, double sensor_noise = 0.25);
+                                         unsigned int maxnumpoints = 1e9, float occupancy_limit = 255, double maxz = 100.0, double sensor_noise = 0.25);
 
 
     /**

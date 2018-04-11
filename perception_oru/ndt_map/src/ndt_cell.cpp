@@ -10,7 +10,7 @@ double NDTCell::EVAL_ROUGH_THR;
 double NDTCell::EVEC_INCLINED_THR;
 double NDTCell::EVAL_FACTOR;
 
-void NDTCell::setParameters(double _EVAL_ROUGH_THR   ,
+void NDTCell::setParameters(double _EVAL_ROUGH_THR,
                             double _EVEC_INCLINED_THR,
                             double _EVAL_FACTOR
                            ) {

@@ -39,7 +39,7 @@ void NDTMatcherD2D_2D::init(bool _isIrregularGrid,
 
 bool NDTMatcherD2D_2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
                               pcl::PointCloud<pcl::PointXYZ>& source,
-                              Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T ,
+                              Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T,
                               bool useInitialGuess) {
 
     struct timeval tv_start, tv_end;
@@ -133,7 +133,7 @@ bool NDTMatcherD2D_2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
 
 bool NDTMatcherD2D_2D::match( NDTMap& targetNDT,
                               NDTMap& sourceNDT,
-                              Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T ,
+                              Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T,
                               bool useInitialGuess) {
 
     //locals

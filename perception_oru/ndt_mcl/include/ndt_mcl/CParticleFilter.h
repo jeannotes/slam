@@ -306,8 +306,7 @@ public:
                 a -= 2.0 * M_PI;
                 cnt++;
                 //if(cnt%10000==0) fprintf(stderr,"Loopping alot a=%.2f cnt=%d\n",a,cnt);
-            }
-        else if (a < -M_PI) while (a < -M_PI) {
+            } else if (a < -M_PI) while (a < -M_PI) {
                 a += 2.0 * M_PI;
                 cnt++;
                 //if(cnt%10000==0) fprintf(stderr,"Loopping alot a=%.2f cnt=%d\n",a,cnt);

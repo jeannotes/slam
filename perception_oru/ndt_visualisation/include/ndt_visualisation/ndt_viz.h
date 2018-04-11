@@ -62,7 +62,7 @@ public:
     }
 
     void addTrajectoryPoint(float x, float y, float z, float R = 1.0, float G = 1.0, float B = 1.0) {
-        gl_points.push_back(x, y, z, R , G, B);
+        gl_points.push_back(x, y, z, R, G, B);
     }
     void displayTrajectory() {
         win3D->addObject(&gl_points);
@@ -72,7 +72,7 @@ public:
         gl_particles.clear();
     }
     void addParticle(float x, float y, float z, float R = 1.0, float G = 1.0, float B = 1.0) {
-        gl_particles.push_back(x, y, z, R , G, B);
+        gl_particles.push_back(x, y, z, R, G, B);
     }
     void displayParticles() {
         win3D->addObject(&gl_particles);

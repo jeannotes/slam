@@ -559,7 +559,7 @@ int LazyGrid::loadFromJFF(FILE * jffin) {
     return 0;
 }
 
-bool LazyGrid::traceLine(const Eigen::Vector3d &origin, const pcl::PointXYZ &endpoint, const Eigen::Vector3d &diff_ ,
+bool LazyGrid::traceLine(const Eigen::Vector3d &origin, const pcl::PointXYZ &endpoint, const Eigen::Vector3d &diff_,
                          const double& maxz, std::vector<NDTCell*> &cells) {
     if (endpoint.z > maxz) {
         return false;
@@ -621,7 +621,7 @@ bool LazyGrid::traceLine(const Eigen::Vector3d &origin, const pcl::PointXYZ &end
 
 }
 
-bool LazyGrid::traceLineWithEndpoint(const Eigen::Vector3d &origin, const pcl::PointXYZ &endpoint, const Eigen::Vector3d &diff_ , const double& maxz, std::vector<NDTCell*> &cells, Eigen::Vector3d &final_point) {
+bool LazyGrid::traceLineWithEndpoint(const Eigen::Vector3d &origin, const pcl::PointXYZ &endpoint, const Eigen::Vector3d &diff_, const double& maxz, std::vector<NDTCell*> &cells, Eigen::Vector3d &final_point) {
     if (endpoint.z > maxz) {
         return false;
     }

@@ -215,10 +215,10 @@ Eigen::Matrix4d
 SDFTracker::Twist(const Vector6d &xi) {
     Eigen::Matrix4d M;
 
-    M << 0.0  , -xi(2),  xi(1), xi(3),
-    xi(2), 0.0   , -xi(0), xi(4),
-    -xi(1), xi(0) , 0.0   , xi(5),
-    0.0,   0.0   , 0.0   , 0.0  ;
+    M << 0.0, -xi(2),  xi(1), xi(3),
+    xi(2), 0.0, -xi(0), xi(4),
+    -xi(1), xi(0), 0.0, xi(5),
+    0.0,   0.0, 0.0, 0.0  ;
 
     return M;
 };
@@ -753,7 +753,7 @@ SDFTracker::FuseDepth(void) {
             float* previousW = &myGrid_[x][y][1];
             for (int z = 0; z < parameters_.ZSize; ++z) {
                 //define a ray and point it into the center of a node
-                Eigen::Vector4d ray((x - parameters_.XSize / 2)*parameters_.resolution, (y - parameters_.YSize / 2)*parameters_.resolution , (z - parameters_.ZSize / 2)*parameters_.resolution, 1);
+                Eigen::Vector4d ray((x - parameters_.XSize / 2)*parameters_.resolution, (y - parameters_.YSize / 2)*parameters_.resolution, (z - parameters_.ZSize / 2)*parameters_.resolution, 1);
                 ray = worldToCam * ray;
                 if (ray(2) - camera(2) < 0) continue;
 
@@ -781,7 +781,7 @@ SDFTracker::FuseDepth(void) {
                         previousD[z * 2] = (previousD[z * 2] * previousW[z * 2] + float(D) * W) /
                                            (previousW[z * 2] + W);
 
-                        previousW[z * 2] = std::min(previousW[z * 2] + W , float(parameters_.Wmax));
+                        previousW[z * 2] = std::min(previousW[z * 2] + W, float(parameters_.Wmax));
 
                     }//within visible region
                 }//within bounds
@@ -893,7 +893,7 @@ SDFTracker::FusePoints() {
                 float W = ((D - 1e-6) < parameters_.Dmax) ? 1.0f : Wslope * D - Wslope * parameters_.Dmin;
 
                 previousD[0] = (previousD[0] * previousW[0] + float(D) * W) / (previousW[0] + W);
-                previousW[0] = std::min(previousW[0] + W , float(parameters_.Wmax));
+                previousW[0] = std::min(previousW[0] + W, float(parameters_.Wmax));
 
             } else hit = true;
             scaling_prev = scaling;
@@ -944,7 +944,7 @@ SDFTracker::FuseDepth(const cv::Mat& depth) {
             float* previousW = &myGrid_[x][y][1];
             for (int z = 0; z < parameters_.ZSize; ++z) {
                 //define a ray and point it into the center of a node
-                Eigen::Vector4d ray((x - parameters_.XSize / 2)*parameters_.resolution, (y - parameters_.YSize / 2)*parameters_.resolution , (z - parameters_.ZSize / 2)*parameters_.resolution, 1);
+                Eigen::Vector4d ray((x - parameters_.XSize / 2)*parameters_.resolution, (y - parameters_.YSize / 2)*parameters_.resolution, (z - parameters_.ZSize / 2)*parameters_.resolution, 1);
                 ray = worldToCam * ray;
                 if (ray(2) - camera(2) < 0) continue;
 
@@ -974,7 +974,7 @@ SDFTracker::FuseDepth(const cv::Mat& depth) {
                         previousD[z * 2] = (previousD[z * 2] * previousW[z * 2] + float(D) * W) /
                                            (previousW[z * 2] + W);
 
-                        previousW[z * 2] = std::min(previousW[z * 2] + W , float(parameters_.Wmax));
+                        previousW[z * 2] = std::min(previousW[z * 2] + W, float(parameters_.Wmax));
 
                     }//within visible region
                 }//within bounds
@@ -1045,7 +1045,7 @@ SDFTracker::EstimatePoseFromDepth(void) {
             for (int row = 0; row < depthImage_->rows - 0; row += stepSize[lvl]) {
                 #pragma omp parallel for \
                 default(shared) \
-reduction(+:g0,g1,g2,g3,g4,g5,A00,A10,A11,A20,A21,A22,A30,A31,A32,A33,A40,A41,A42,A43,A44,A50,A51,A52,A53,A54,A55)
+                reduction(+:g0,g1,g2,g3,g4,g5,A00,A10,A11,A20,A21,A22,A30,A31,A32,A33,A40,A41,A42,A43,A44,A50,A51,A52,A53,A54,A55)
                 for (int col = 0; col < depthImage_->cols - 0; col += stepSize[lvl]) {
                     if (!validityMask_[row][col]) continue;
                     double depth = double(depthImage_->ptr<float>(row)[col]);
@@ -1164,7 +1164,7 @@ SDFTracker::EstimatePoseFromPoints(void) {
 
             #pragma omp parallel for \
             default(shared) \
-reduction(+:g0,g1,g2,g3,g4,g5,A00,A10,A11,A20,A21,A22,A30,A31,A32,A33,A40,A41,A42,A43,A44,A50,A51,A52,A53,A54,A55)
+            reduction(+:g0,g1,g2,g3,g4,g5,A00,A10,A11,A20,A21,A22,A30,A31,A32,A33,A40,A41,A42,A43,A44,A50,A51,A52,A53,A54,A55)
             for (int idx = 0; idx < Points_.size(); idx += stepSize[lvl]) {
                 if (std::isnan(Points_.at(idx)(0))) continue;
                 Eigen::Vector4d currentPoint = camToWorld * Points_.at(idx);

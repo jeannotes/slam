@@ -141,9 +141,9 @@ Eigen::Matrix3d CParticleFilter::getDistributionVariances() {
     double wc = 1.0 / (1.0 - w2);
 
     Eigen::Matrix3d cov;
-    cov << wc*xx , wc*xy , 0,
-        wc*xy , wc*yy , 0,
-        0     , 0     , atan2(wc * aay, wc * aax);
+    cov << wc*xx, wc*xy, 0,
+        wc*xy, wc*yy, 0,
+        0, 0, atan2(wc * aay, wc * aax);
 
     return cov;
 }

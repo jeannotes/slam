@@ -384,7 +384,7 @@ struct SO2_Adaptor {
     SO2_Adaptor(const DataSource &_data_source) : data_source(_data_source) { }
 
     inline DistanceType evalMetric(const T* a, const size_t b_idx, size_t size) const {
-        return accum_dist(a[size - 1], data_source.kdtree_get_pt(b_idx, size - 1) , size - 1);
+        return accum_dist(a[size - 1], data_source.kdtree_get_pt(b_idx, size - 1), size - 1);
     }
 
     template <typename U, typename V>
@@ -1563,7 +1563,7 @@ public:
         float epsError = 1 + searchParams.eps;
 
         distance_vector_t dists; // fixed or variable-sized container (depending on DIM)
-        dists.assign((DIM > 0 ? DIM : BaseClassRef::dim) , 0); // Fill it with zeros.
+        dists.assign((DIM > 0 ? DIM : BaseClassRef::dim), 0);  // Fill it with zeros.
         DistanceType distsq = this->computeInitialDistances(*this, vec, dists);
         searchLevel(result, vec, BaseClassRef::root_node, distsq, dists, epsError);  // "count_leaf" parameter removed since was neither used nor returned to the user.
         return result.full();
@@ -1793,7 +1793,7 @@ public:
          * @param inputData Dataset with the input features
          * @param params Basically, the maximum leaf node size
          */
-    KDTreeSingleIndexDynamicAdaptor(const int dimensionality, DatasetAdaptor& inputData, const KDTreeSingleIndexAdaptorParams& params = KDTreeSingleIndexAdaptorParams() , const size_t maximumPointCount = 1000000000U) :
+    KDTreeSingleIndexDynamicAdaptor(const int dimensionality, DatasetAdaptor& inputData, const KDTreeSingleIndexAdaptorParams& params = KDTreeSingleIndexAdaptorParams(), const size_t maximumPointCount = 1000000000U) :
         dataset(inputData), index_params(params), distance(inputData) {
         if (dataset.kdtree_get_point_count()) throw std::runtime_error("[nanoflann] cannot handle non empty point cloud.");
         treeCount = log2(maximumPointCount);

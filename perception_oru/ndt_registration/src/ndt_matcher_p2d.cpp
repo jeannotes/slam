@@ -479,14 +479,14 @@ void NDTMatcherP2D::precomputeAngleDerivatives(Eigen::Vector3d &eulerAngles) {
     sy = sin(eulerAngles(1));
     sz = sin(eulerAngles(2));
 
-    jest13 << (-sx * sz + cx * sy * cz) , (-sx * cz - cx * sy * sz) , (-cx * cy) ;
-    jest23 << (cx * sz + sx * sy * cz) , (cx * cz - sx * sy * sz) , (-sx * cy);
-    jest04 << (-sy * cz) , sy*sz , cy;
-    jest14 << sx*cy*cz , (-sx * cy * sz) , sx*sy;
-    jest24 << (-cx * cy * cz) , cx*cy*sz , (-cx * sy);
-    jest05 << (-cy * sz) , (-cy * cz), 0;
-    jest15 << (cx * cz - sx * sy * sz) , (-cx * sz - sx * sy * cz), 0;
-    jest25 << (sx * cz + cx * sy * sz) , (cx * sy * cz - sx * sz), 0;
+    jest13 << (-sx * sz + cx * sy * cz), (-sx * cz - cx * sy * sz), (-cx * cy) ;
+    jest23 << (cx * sz + sx * sy * cz), (cx * cz - sx * sy * sz), (-sx * cy);
+    jest04 << (-sy * cz), sy*sz, cy;
+    jest14 << sx*cy*cz, (-sx * cy * sz), sx*sy;
+    jest24 << (-cx * cy * cz), cx*cy*sz, (-cx * sy);
+    jest05 << (-cy * sz), (-cy * cz), 0;
+    jest15 << (cx * cz - sx * sy * sz), (-cx * sz - sx * sy * cz), 0;
+    jest25 << (sx * cz + cx * sy * sz), (cx * sy * cz - sx * sz), 0;
     /*
         std::cerr<<"jest13 "<<jest13.transpose() <<std::endl;
         std::cerr<<"jest23 "<<jest23.transpose() <<std::endl;
