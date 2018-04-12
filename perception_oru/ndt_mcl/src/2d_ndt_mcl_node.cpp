@@ -440,22 +440,14 @@ int main(int argc, char **argv) {
 
     std::string tf_base_link, input_laser_topic;
 
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
-    /// Parameters for the mapper
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
+//	Parameters for the mapper
     bool loadMap = false; ///< flag to indicate that we want to load a map
     std::string mapName("basement.ndmap"); ///<name and the path to the map
 
     bool saveMap = true;						///< indicates if we want to save the map in a regular intervals
     std::string output_map_name = std::string("ndt_mapper_output.ndmap");
 
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
-    /// Set the values from a config file
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
+//    Set the values from a config file
 
     paramHandle.param<std::string>("input_laser_topic", input_laser_topic, std::string("/base_scan"));
     paramHandle.param<std::string>("tf_base_link", tf_state_topic, std::string("/base_link"));
@@ -485,11 +477,8 @@ int main(int argc, char **argv) {
 
     if (userInitialPose == true) hasNewInitialPose = true;
 
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
-    /// Prepare the map
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
+    // Prepare the map
+    
     fprintf(stderr, "USING RESOLUTION %lf\n", resolution);
     lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
 
@@ -504,17 +493,12 @@ int main(int argc, char **argv) {
     if (forceSIR) ndtmcl->forceSIR = true;
 
     fprintf(stderr, "*** FORCE SIR = %d****", forceSIR);
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
-    ///Set up our output
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
+	
+//	Set up our output
     mcl_pub = nh.advertise<nav_msgs::Odometry>("ndt_mcl", 10);
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
-    /// Set the subscribers and setup callbacks and message filters
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
+
+// Set the subscribers and setup callbacks and message filters
+
     ros::Subscriber scansub = nh.subscribe(input_laser_topic, 1, callback);
     ndt_viz.win3D->start_main_loop_own_thread();
     ndtmap_pub = nh.advertise<visualization_msgs::MarkerArray>( "NDTMAP", 0 );
@@ -524,7 +508,6 @@ int main(int argc, char **argv) {
     offa = sensor_pose_th;
     offx = sensor_pose_x;
     offy = sensor_pose_y;
-
 
     has_sensor_offset_set = true;
 

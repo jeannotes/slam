@@ -5,7 +5,7 @@
 #include <cv_bridge/cv_bridge.h>
 
 // uncomment this part to enable an example for how to work with LIDAR data.
-//#define LIDAR
+#define LIDAR
 
 #define EIGEN_NO_DEBUG
 

@@ -85,9 +85,9 @@ private:
     std::string tf_base_link, tf_sensor_link, points_topic, odometry_topic;
 public:
     NDTMCL3DNode(ros::NodeHandle param_nh) {
-        //////////////////////////////////////////////////////////
-        /// Prepare Pose offsets
-        //////////////////////////////////////////////////////////
+
+	// Prepare Pose offsets
+        
         bool use_sensor_pose, use_initial_pose;
         double pose_init_x, pose_init_y, pose_init_z,
                pose_init_r, pose_init_p, pose_init_t;
@@ -132,9 +132,8 @@ public:
             hasSensorPose = false;
         }
 
-        //////////////////////////////////////////////////////////
-        /// Prepare the map
-        //////////////////////////////////////////////////////////
+        // Prepare the map
+        
         param_nh.param<std::string>("map_file_name", mapName, std::string("basement.ndmap"));
         param_nh.param<bool>("save_output_map", saveMap, true);
         param_nh.param<bool>("do_visualize", do_visualize, true);
@@ -147,9 +146,7 @@ public:
         lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
         ndmap.loadFromJFF(mapName.c_str());
 
-        //////////////////////////////////////////////////////////
-        /// Prepare MCL object
-        //////////////////////////////////////////////////////////
+        // Prepare MCL object
 
         ndtmcl = new NDTMCL3D(resolution, ndmap, -5);
         param_nh.param<bool>("forceSIR", forceSIR, false);
@@ -158,9 +155,8 @@ public:
         fprintf(stderr, "*** FORCE SIR = %d****", forceSIR);
         mcl_pub = nh_.advertise<nav_msgs::Odometry>("ndt_mcl", 10);
 
-        //////////////////////////////////////////////////////////
-        /// Prepare the callbacks and message filters
-        //////////////////////////////////////////////////////////
+        // Prepare the callbacks and message filters
+        
         //the name of the TF link associated to the base frame / odometry frame
         param_nh.param<std::string>("tf_base_link", tf_base_link, std::string("/base_link"));
         //the name of the tf link associated to the 3d laser scanner
@@ -322,7 +318,6 @@ public:
 
         return true;
     }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
 };
 
 

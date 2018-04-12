@@ -128,6 +128,7 @@ static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& in
 
 static void output_callback(const runtime_manager::ConfigNdtMappingOutput::ConstPtr& input)
 {
+	ROS_INFO("output_callback");
     double filter_res = input->filter_res;
     std::string filename = input->filename;
     std::cout << "output_callback" << std::endl;
@@ -313,22 +314,23 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
         current_pose_pub.publish(current_pose_msg);
 
-        std::cout << "-----------------------------------------------------------------" << std::endl;
-        std::cout << "Sequence number: " << input->header.seq << std::endl;
-        std::cout << "Number of scan points: " << scan_ptr->size() << " points." << std::endl;
-        std::cout << "Number of filtered scan points: " << filtered_scan_ptr->size() << " points." << std::endl;
-        std::cout << "transformed_scan_ptr: " << transformed_scan_ptr->points.size() << " points." << std::endl;
-        std::cout << "map: " << map.points.size() << " points." << std::endl;
-        std::cout << "NDT has converged: " << ndt.hasConverged() << std::endl;
-        std::cout << "Fitness score: " << ndt.getFitnessScore() << std::endl;
-        std::cout << "Number of iteration: " << ndt.getFinalNumIteration() << std::endl;
-        std::cout << "(x,y,z,roll,pitch,yaw):" << std::endl;
-        std::cout << "(" << current_pos.x << ", " << current_pos.y << ", " << current_pos.z << ", " <<
-        current_pos.roll << ", " << current_pos.pitch << ", " << current_pos.yaw << ")" << std::endl;
-        std::cout << "Transformation Matrix:" << std::endl;
-        std::cout << t << std::endl;
-        std::cout << "shift: " << shift << std::endl;
-        std::cout << "-----------------------------------------------------------------" << std::endl;
+//        std::cout << "-----------------------------------------------------------------" << std::endl;
+//        std::cout << "Sequence number: " << input->header.seq << std::endl;
+//        std::cout << "Number of scan points: " << scan_ptr->size() << " points." << std::endl;
+//        std::cout << "Number of filtered scan points: " << filtered_scan_ptr->size() << " points." << std::endl;
+//        std::cout << "transformed_scan_ptr: " << transformed_scan_ptr->points.size() << " points." << std::endl;
+//        std::cout << "map: " << map.points.size() << " points." << std::endl;
+//        std::cout << "NDT has converged: " << ndt.hasConverged() << std::endl;
+//        std::cout << "Fitness score: " << ndt.getFitnessScore() << std::endl;
+//        std::cout << "Number of iteration: " << ndt.getFinalNumIteration() << std::endl;
+//        std::cout << "(x,y,z,roll,pitch,yaw):" << std::endl;
+//        std::cout << "(" << current_pos.x << ", " << current_pos.y << ", " << current_pos.z << ", " <<
+//        current_pos.roll << ", " << current_pos.pitch << ", " << current_pos.yaw << ")" << std::endl;
+//        std::cout << "Transformation Matrix:" << std::endl;
+//        std::cout << t << std::endl;
+//        std::cout << "shift: " << shift << std::endl;
+//        std::cout << "-----------------------------------------------------------------" << std::endl;
+
     } catch (...) {
 
     }

@@ -15,8 +15,8 @@
 
 		<param name="load_map_from_file" value="true" />
 		<!--param name="map_file_name" value="$(find ndt_mcl)/maps/ndt_0040.ndmap" /-->
-		<!--param name="map_file_name" value="$(find ndt_fuser)/maps/basement2d_map.jff" /-->
-		<param name="map_file_name" value="$(find ndt_mcl)/maps/ndt_0040.ndmap" />
+		<param name="map_file_name" value="$(find ndt_fuser)/maps/basement2d_map.jff" />
+		<!--param name="map_file_name" value="$(find ndt_mcl)/maps/ndt_0040.ndmap" /-->
 		
 		<param name="set_initial_pose" value="false" />
 		<param name="initial_pose_x" value="0.0" />

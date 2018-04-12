@@ -16,7 +16,8 @@ pcl::PointCloud<PointT> transformPointCloud(Eigen::Transform<double, 3, Eigen::A
 }
 
 template< typename PointT>
-void transformPointCloudInPlace(Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> &Tr, pcl::PointCloud<PointT> &pc) {
+void transformPointCloudInPlace(Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> &Tr, 
+								pcl::PointCloud<PointT> &pc) {
     Eigen::Transform<float, 3, Eigen::Affine, Eigen::ColMajor> T = Tr.cast<float>();
     for (unsigned int pit = 0; pit < pc.points.size(); ++pit) {
         Eigen::Map<Eigen::Vector3f> pt((float*)&pc.points[pit], 3);
