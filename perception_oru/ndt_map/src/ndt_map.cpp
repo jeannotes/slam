@@ -164,7 +164,8 @@ void NDTMap::loadPointCloud(const pcl::PointCloud<pcl::PointXYZ> &pc, double ran
 * \note every subsequent call will destroy the previous map!
 */
 void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, const Eigen::Vector3d &origin,
-                                    const Eigen::Vector3d &old_centroid, const Eigen::Vector3d &map_size, double range_limit) {
+                                    const Eigen::Vector3d &old_centroid, const Eigen::Vector3d &map_size, 
+                                    double range_limit) {
 
     if (index_ != NULL) {
         SpatialIndex *si = index_->clone();
@@ -558,9 +559,6 @@ void NDTMap::addPointCloud(const Eigen::Vector3d &origin, const pcl::PointCloud<
 #endif
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
 * Add new pointcloud to map - Updates the occupancy using the mean values of
 * a local map generated from an observation
@@ -763,16 +761,12 @@ void  NDTMap::addPointCloudMeanUpdate(const Eigen::Vector3d &origin,
     isFirstLoad_ = false;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 /**
  * Adds one measurement to the map using NDT-OM update step
  * @return true if an inconsistency was detected
  */
-bool NDTMap::addMeasurement(const Eigen::Vector3d &origin, pcl::PointXYZ endpoint, double classifierTh, double maxz, double sensor_noise) {
+bool NDTMap::addMeasurement(const Eigen::Vector3d &origin, pcl::PointXYZ endpoint, double classifierTh, 
+							double maxz, double sensor_noise) {
 
     if (index_ == NULL) {
         return false;
@@ -1015,11 +1009,6 @@ double NDTMap::getDepthSmooth(Eigen::Vector3d origin,
 
     return (maxDepth + 1.0);
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 void NDTMap::loadPointCloud(const pcl::PointCloud<pcl::PointXYZ> &pc, const std::vector<std::vector<size_t> > &indices) {
 
@@ -1892,6 +1881,10 @@ NDTCell* NDTMap::getCellIdx(unsigned int idx) const {
     return NULL;
 }
 
+/**
+ * Returns all computed cells from the map
+ * This method gives all the vectors that contain a gaussian within a cell (hasGaussian is true).
+ */
 std::vector<lslgeneric::NDTCell*> NDTMap::getAllCells() const {
 
     std::vector<NDTCell*> ret;

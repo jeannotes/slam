@@ -116,7 +116,8 @@ void NDTMCL3D::predict(Eigen::Affine3d Tmotion) {
                m[0], m[1], m[2], m[3], m[4], m[5]);
 }
 
-void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud, double subsample_level) {
+void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud, 
+									double subsample_level) {
     if (subsample_level < 0 || subsample_level > 1) subsample_level = 1;
 
     Eigen::Vector3d tr = Tmotion.translation();
@@ -137,6 +138,10 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
 
     Eigen::Matrix<double, 6, 1> incr;
     incr << fabs(tr[0]), fabs(tr[1]), fabs(tr[2]), fabs(rot[0]), fabs(rot[1]), fabs(rot[2]);
+//	motion_model_m is some parameters, we could infer from function og particle.predict
+//  something like double x = tr[0] + myrand.normalRandom() * vx;
+//  and at the beginning, motion_model_m have push back some very small numbers
+//  so, "m" is also a small number
     Eigen::Matrix<double, 6, 1> m = motion_model_m * incr;
 
     // std::cerr << "incr : " << incr.transpose() << std::endl;
@@ -147,10 +152,13 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
     }
 
     // std::cerr << "motion var(2) : " << m.transpose() << std::endl;
-
+/*
+	here, Tmotion is Tm, Tm = Todo_old.inverse() * Todo;
+	just the change difference
+	until, it update the particles
+	*/
     pf.predict(Tmotion,
                m[0], m[1], m[2], m[3], m[4], m[5]);
-
 
     // if(rot[2]<(0.5 * M_PI/180.0) && tr[0]>=0){
     //     pf.predict(Tmotion, tr[0]*pos_factor[0] + pos_offset, tr[1]*pos_scale[1] + pos_offset[1], tr[2]*pos_factor[2]/2.+pos_offset[2] ,rot[0]*rot_factor[0]+rot_offset[0],rot[1]*rot_factor[1]+rot_offset[1], rot[2]*rot_factor[2]+rot_offset[2]);
@@ -160,24 +168,31 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
     //     pf.predict(Tmotion, tr[0]*tr_scale + tr_offset, tr[1]*tr_scale / 2.+ tr_offset, tr[2]*tr_scale+tr_offset ,rot[0]*rot_scale+rot_offset,rot[1]*rot_scale+rot_offset, rot[2]*rot_scale+rot_offset);
     // }
 
-
     double t_pred = getDoubleTime() - time_start;
 
-    std::cerr << "cloud points " << cloud.points.size() << " res :" << resolution << " sres: " << resolution_sensor << std::endl;
+    std::cerr << "cloud points " << cloud.points.size() << " res :" 
+				<< resolution << " sres: " << resolution_sensor << std::endl;
+//	here, the local map is used to contain the latest pointclouds
     lslgeneric::NDTMap local_map(new lslgeneric::LazyGrid(resolution_sensor));
     //local_map.guessSize(0,0,0,30,30,10); //sensor_range,sensor_range,map_size_z);
     local_map.loadPointCloud(cloud);//,30); //sensor_range);
     local_map.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
 
-    /*lslgeneric::NDTMap<PointT> local_map(new lslgeneric::LazyGrid<PointT>(resolution_sensor));
+/*	lslgeneric::NDTMap<PointT> local_map(new lslgeneric::LazyGrid<PointT>(resolution_sensor));
       local_map.addPointCloudSimple(cloud);
     //local_map.computeNDTCells();
     local_map.computeNDTCellsSimple();
-     */
+*/
+/*
+	get the cells in new map just built
+*/
     std::vector<lslgeneric::NDTCell*> ndts0 = local_map.getAllCells();
     std::vector<lslgeneric::NDTCell*> ndts;
     std::cerr << "ndts: " << ndts0.size() << std::endl;
-
+/*
+I suppose this is adaptive mcl method, just don't select all cells.
+small trick
+*/
     if (subsample_level != 1) {
         srand((int)(t_pred * 10000));
         for (int i = 0; i < ndts0.size(); ++i) {
@@ -189,7 +204,7 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
             }
         }
     } else {
-        ndts = ndts0;
+        ndts = ndts0;// select all cells
     }
     std::cerr << "resampled ndts: " << ndts.size() << std::endl;
 
@@ -202,7 +217,6 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
         for (int i = 0; i < pf.size(); i++) {
             Eigen::Affine3d T = pf.pcloud[i].T;
 
-
             //ndts = local_map.pseudoTransformNDT(T);
             double score = 1;
 
@@ -211,6 +225,12 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
 
             for (int n = 0; n < ndts.size(); n++) {
                 Eigen::Vector3d m = T * ndts[n]->getMean();
+/*	attention, here T means translation, and it is from the start to the point right now
+	just because this, we show the trick
+	ndts[n]->getMean() return the cell average point(actually it is a laser point, the difference
+	is first we construct a local map, and then get new cells)
+	T * ndts[n]->getMean() should be the real point in the new map
+*/
 
                 if (m[2] < zfilt_min) continue;
 
@@ -218,29 +238,31 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
                 pcl::PointXYZ p;
                 p.x = m[0];
                 p.y = m[1];
-                p.z = m[2];
+                p.z = m[2];/* p copied from m, which is the real one in the map */
 
                 if (map.getCellAtPoint(p, cell)) {
                     //if(map.getCellForPoint(p,cell)){
                     if (cell == NULL) continue;
                     if (cell->hasGaussian_) {
-                        Eigen::Matrix3d covCombined = cell->getCov() + T.rotation() * ndts[n]->getCov() * T.rotation().transpose();
+                        Eigen::Matrix3d covCombined = cell->getCov() + T.rotation() 
+							* ndts[n]->getCov() * T.rotation().transpose();
                         Eigen::Matrix3d icov;
                         bool exists;
                         double det = 0;
                         covCombined.computeInverseAndDetWithCheck(icov, det, exists);
                         if (!exists) continue;
                         double l = (cell->getMean() - m).dot(icov * (cell->getMean() - m));
+/*
+here iterate all cells in the localmap constructed using laser,
+and compute all scores, just like the traditional method
+*/						
                         if (l * 0 != 0) continue;
                         score += 0.1 + 0.9 * exp(-0.05 * l / 2.0);
                     } else {
                     }
                 }
             }
-
             pf.pcloud[i].lik = score;
-
-
         }
     }///#pragma
 

@@ -64,11 +64,6 @@ public:
         y = tr[1];
         z = tr[2];
     }
-
-
-
-
-
 };
 
 #endif

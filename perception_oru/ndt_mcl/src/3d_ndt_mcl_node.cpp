@@ -231,7 +231,7 @@ public:
         Tm = Todo_old.inverse() * Todo;
         if (Tm.translation().norm() < 0.01 && fabs(Tm.rotation().eulerAngles(0, 1, 2)[2]) < (0.5 * M_PI / 180.0)) {
             mcl_m.unlock();
-            return;
+            return;//fabs(Tm.rotation().eulerAngles(0, 1, 2)[2]) < (0.5 * M_PI / 180.0)
         }
 
         Tcum = Tcum * Tm;
