@@ -478,7 +478,7 @@ int main(int argc, char **argv) {
     if (userInitialPose == true) hasNewInitialPose = true;
 
     // Prepare the map
-    
+
     fprintf(stderr, "USING RESOLUTION %lf\n", resolution);
     lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
 
@@ -493,7 +493,7 @@ int main(int argc, char **argv) {
     if (forceSIR) ndtmcl->forceSIR = true;
 
     fprintf(stderr, "*** FORCE SIR = %d****", forceSIR);
-	
+
 //	Set up our output
     mcl_pub = nh.advertise<nav_msgs::Odometry>("ndt_mcl", 10);
 

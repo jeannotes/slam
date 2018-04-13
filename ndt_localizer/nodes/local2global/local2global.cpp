@@ -37,7 +37,7 @@
 // #define VIEW_TIME
 
 // If you want to output "position_log.txt", "#define OUTPUT".
-//#define OUTPUT 
+//#define OUTPUT
 
 #include <iostream>
 #include <sstream>
@@ -127,8 +127,7 @@ static double control_shift_z = 0.0;
 
 static ros::Publisher ndt_map_pub;
 
-static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
-{
+static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input) {
     if (use_gnss != input->init_pos_gnss) {
         init_pos_set = 0;
     } else if (use_gnss == 0 && (initial_x != input->x || initial_y != input->y || initial_z != input->z || initial_roll != input->roll || initial_pitch != input->pitch || initial_yaw != input->yaw)) {
@@ -198,8 +197,7 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
     std::cout << "control_shift_z: " << control_shift_z << "." << std::endl;
 }
 
-static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
-{
+static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input) {
     if (use_gnss == 1 && init_pos_set == 0) {
         tf::Quaternion q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z, input->pose.orientation.w);
         tf::Matrix3x3 m(q);
@@ -236,29 +234,28 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 }
 
 //static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr& input)
-static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
-{
+static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input) {
 
-  if (map_loaded == 0) {
-    std::cout << "Loading map data... ";
-    map.header.frame_id = "/pointcloud_map_frame";
-    
-    // Convert the data type(from sensor_msgs to pcl).
-    pcl::fromROSMsg(*input, map);
-    
-    pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
-    // Setting point cloud to be aligned to.
-    ndt.setInputTarget(map_ptr);
-	
-    // Setting NDT parameters to default values
-    ndt.setMaximumIterations(iter);
-    ndt.setResolution(ndt_res);
-    ndt.setStepSize(step_size);
-    ndt.setTransformationEpsilon(trans_eps);
-    
-    map_loaded = 1;
-    std::cout << "Map Loaded." << std::endl;
-  }
+    if (map_loaded == 0) {
+        std::cout << "Loading map data... ";
+        map.header.frame_id = "/pointcloud_map_frame";
+
+        // Convert the data type(from sensor_msgs to pcl).
+        pcl::fromROSMsg(*input, map);
+
+        pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
+        // Setting point cloud to be aligned to.
+        ndt.setInputTarget(map_ptr);
+
+        // Setting NDT parameters to default values
+        ndt.setMaximumIterations(iter);
+        ndt.setResolution(ndt_res);
+        ndt.setStepSize(step_size);
+        ndt.setTransformationEpsilon(trans_eps);
+
+        map_loaded = 1;
+        std::cout << "Map Loaded." << std::endl;
+    }
 
 
 
@@ -272,12 +269,12 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         tf::Quaternion q_control;
 
         // 1 scan
-	/*
-        pcl::PointCloud<pcl::PointXYZI> scan;
-        pcl::PointXYZI p;
-        scan.header = input->header;
-        scan.header.frame_id = "velodyne_scan_frame";
-	*/
+        /*
+            pcl::PointCloud<pcl::PointXYZI> scan;
+            pcl::PointXYZI p;
+            scan.header = input->header;
+            scan.header.frame_id = "velodyne_scan_frame";
+        */
 
         ros::Time scan_time;
         scan_time.sec = additional_map.header.stamp / 1000000.0;
@@ -291,22 +288,22 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
          */
 
         t1_start = ros::Time::now();
-	/*
-        for (pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = input->begin(); item != input->end(); item++) {
-            p.x = (double) item->x;
-            p.y = (double) item->y;
-            p.z = (double) item->z;
+        /*
+            for (pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = input->begin(); item != input->end(); item++) {
+                p.x = (double) item->x;
+                p.y = (double) item->y;
+                p.z = (double) item->z;
 
-            scan.points.push_back(p);
-        }
-	*/
-	//	pcl::fromROSMsg(*input, scan);
+                scan.points.push_back(p);
+            }
+        */
+        //	pcl::fromROSMsg(*input, scan);
         t1_end = ros::Time::now();
         d1 = t1_end - t1_start;
 
         Eigen::Matrix4f t(Eigen::Matrix4f::Identity());
 
-	//        pcl::PointCloud<pcl::PointXYZI>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZI>(scan));
+        //        pcl::PointCloud<pcl::PointXYZI>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZI>(scan));
         pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_additional_map_ptr(new pcl::PointCloud<pcl::PointXYZI>);
 
         // Downsampling the velodyne scan using VoxelGrid filter
@@ -348,33 +345,33 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         ndt.align(*output_cloud, init_guess);
 
         t = ndt.getFinalTransformation();
-	pcl::PointCloud<pcl::PointXYZI>::Ptr transformed_additional_map_ptr (new pcl::PointCloud<pcl::PointXYZI>());
-	transformed_additional_map_ptr->header.frame_id = "/map";
-	pcl::transformPointCloud(*additional_map_ptr, *transformed_additional_map_ptr, t);
-	sensor_msgs::PointCloud2::Ptr msg_ptr(new sensor_msgs::PointCloud2);
+        pcl::PointCloud<pcl::PointXYZI>::Ptr transformed_additional_map_ptr (new pcl::PointCloud<pcl::PointXYZI>());
+        transformed_additional_map_ptr->header.frame_id = "/map";
+        pcl::transformPointCloud(*additional_map_ptr, *transformed_additional_map_ptr, t);
+        sensor_msgs::PointCloud2::Ptr msg_ptr(new sensor_msgs::PointCloud2);
 
-	pcl::toROSMsg(*transformed_additional_map_ptr, *msg_ptr);
-	msg_ptr->header.frame_id = "/map";
-	ndt_map_pub.publish(*msg_ptr);
+        pcl::toROSMsg(*transformed_additional_map_ptr, *msg_ptr);
+        msg_ptr->header.frame_id = "/map";
+        ndt_map_pub.publish(*msg_ptr);
 
-	// Writing Point Cloud data to PCD file
-	pcl::io::savePCDFileASCII("global_map.pcd", *transformed_additional_map_ptr);
-	std::cout << "Saved " << transformed_additional_map_ptr->points.size() << " data points to global_map.pcd." << std::endl;
+        // Writing Point Cloud data to PCD file
+        pcl::io::savePCDFileASCII("global_map.pcd", *transformed_additional_map_ptr);
+        std::cout << "Saved " << transformed_additional_map_ptr->points.size() << " data points to global_map.pcd." << std::endl;
 
-	pcl::PointCloud<pcl::PointXYZRGB> output;
-	output.width = transformed_additional_map_ptr->width;
-	output.height = transformed_additional_map_ptr->height;
-	output.points.resize(output.width * output.height);
+        pcl::PointCloud<pcl::PointXYZRGB> output;
+        output.width = transformed_additional_map_ptr->width;
+        output.height = transformed_additional_map_ptr->height;
+        output.points.resize(output.width * output.height);
 
-	for(size_t i = 0; i < output.points.size(); i++){
-	  output.points[i].x = transformed_additional_map_ptr->points[i].x;
-	  output.points[i].y = transformed_additional_map_ptr->points[i].y;
-	  output.points[i].z = transformed_additional_map_ptr->points[i].z;
-	  output.points[i].rgb = 255 << 8;
-	}
+        for (size_t i = 0; i < output.points.size(); i++) {
+            output.points[i].x = transformed_additional_map_ptr->points[i].x;
+            output.points[i].y = transformed_additional_map_ptr->points[i].y;
+            output.points[i].z = transformed_additional_map_ptr->points[i].z;
+            output.points[i].rgb = 255 << 8;
+        }
 
-	pcl::io::savePCDFileASCII("global_map_rgb.pcd", output);
-	std::cout << "Saved " << output.points.size() << " data points to global_map_rgb.pcd." << std::endl;
+        pcl::io::savePCDFileASCII("global_map_rgb.pcd", output);
+        std::cout << "Saved " << output.points.size() << " data points to global_map_rgb.pcd." << std::endl;
 
         t4_end = ros::Time::now();
         d4 = t4_end - t4_start;
@@ -395,14 +392,14 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         current_pos.z = t(2, 3);
         tf3d.getRPY(current_pos.roll, current_pos.pitch, current_pos.yaw, 1);
 
-	// control_pose
-	current_pos_control.roll = current_pos.roll;
-	current_pos_control.pitch = current_pos.pitch;
-	current_pos_control.yaw = current_pos.yaw - angle / 180.0 * M_PI;
-	double theta = current_pos_control.yaw;
-	current_pos_control.x = cos(theta) * (-control_shift_x) + sin(theta) * (-control_shift_y) + current_pos.x;
-	current_pos_control.y = -sin(theta) * (-control_shift_x) + cos(theta) * (-control_shift_y) + current_pos.y;
-	current_pos_control.z = current_pos.z - control_shift_z;
+        // control_pose
+        current_pos_control.roll = current_pos.roll;
+        current_pos_control.pitch = current_pos.pitch;
+        current_pos_control.yaw = current_pos.yaw - angle / 180.0 * M_PI;
+        double theta = current_pos_control.yaw;
+        current_pos_control.x = cos(theta) * (-control_shift_x) + sin(theta) * (-control_shift_y) + current_pos.x;
+        current_pos_control.y = -sin(theta) * (-control_shift_x) + cos(theta) * (-control_shift_y) + current_pos.y;
+        current_pos_control.z = current_pos.z - control_shift_z;
 
         // transform "/velodyne" to "/map"
 #if 0
@@ -410,23 +407,23 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
         transform.setRotation(q);
 #else
-	//
-	// FIXME:
-	// We corrected the angle of "/velodyne" so that pure_pursuit
-	// can read this frame for the control.
-	// However, this is not what we want because the scan of Velodyne
-	// looks unmatched for the 3-D map on Rviz.
-	// What we really want is to make another TF transforming "/velodyne"
-	// to a new "/ndt_points" frame and modify pure_pursuit to
-	// read this frame instead of "/velodyne".
-	// Otherwise, can pure_pursuit just use "/ndt_frame"?
-	//
+        //
+        // FIXME:
+        // We corrected the angle of "/velodyne" so that pure_pursuit
+        // can read this frame for the control.
+        // However, this is not what we want because the scan of Velodyne
+        // looks unmatched for the 3-D map on Rviz.
+        // What we really want is to make another TF transforming "/velodyne"
+        // to a new "/ndt_points" frame and modify pure_pursuit to
+        // read this frame instead of "/velodyne".
+        // Otherwise, can pure_pursuit just use "/ndt_frame"?
+        //
         transform.setOrigin(tf::Vector3(current_pos_control.x, current_pos_control.y, current_pos_control.z));
         q.setRPY(current_pos_control.roll, current_pos_control.pitch, current_pos_control.yaw);
         transform.setRotation(q);
 #endif
 
-	q_control.setRPY(current_pos_control.roll, current_pos_control.pitch, current_pos_control.yaw);
+        q_control.setRPY(current_pos_control.roll, current_pos_control.pitch, current_pos_control.yaw);
 
         /*
          std::cout << "ros::Time::now(): " << ros::Time::now() << std::endl;
@@ -434,19 +431,19 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
          std::cout << "ros::Time::now().nsec: " << ros::Time::now().nsec << std::endl;
          */
 
-	//        br.sendTransform(tf::StampedTransform(transform, scan_time, "map", "velodyne"));
+        //        br.sendTransform(tf::StampedTransform(transform, scan_time, "map", "velodyne"));
 
         static tf::TransformBroadcaster pose_broadcaster;
         tf::Transform pose_transform;
         tf::Quaternion pose_q;
 
-/*        pose_transform.setOrigin(tf::Vector3(0, 0, 0));
-        pose_q.setRPY(0, 0, 0);
-        pose_transform.setRotation(pose_q);
-        pose_broadcaster.sendTransform(tf::StampedTransform(pose_transform, scan_time, "map", "ndt_frame"));
-*/
+        /*        pose_transform.setOrigin(tf::Vector3(0, 0, 0));
+                pose_q.setRPY(0, 0, 0);
+                pose_transform.setRotation(pose_q);
+                pose_broadcaster.sendTransform(tf::StampedTransform(pose_transform, scan_time, "map", "ndt_frame"));
+        */
         // publish the position
-       // ndt_pose_msg.header.frame_id = "/ndt_frame";
+        // ndt_pose_msg.header.frame_id = "/ndt_frame";
         ndt_pose_msg.header.frame_id = "/map";
         ndt_pose_msg.header.stamp = scan_time;
         ndt_pose_msg.pose.position.x = current_pos.x;
@@ -461,13 +458,13 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         tf::Transform pose_transform_control;
         tf::Quaternion pose_q_control;
 
-     /*   pose_transform_control.setOrigin(tf::Vector3(0, 0, 0));
-        pose_q_control.setRPY(0, 0, 0);
-        pose_transform_control.setRotation(pose_q_control);
-        pose_broadcaster_control.sendTransform(tf::StampedTransform(pose_transform_control, scan_time, "map", "ndt_frame"));
-*/
+        /*   pose_transform_control.setOrigin(tf::Vector3(0, 0, 0));
+           pose_q_control.setRPY(0, 0, 0);
+           pose_transform_control.setRotation(pose_q_control);
+           pose_broadcaster_control.sendTransform(tf::StampedTransform(pose_transform_control, scan_time, "map", "ndt_frame"));
+        */
         // publish the position
-     //   control_pose_msg.header.frame_id = "/ndt_frame";
+        //   control_pose_msg.header.frame_id = "/ndt_frame";
         control_pose_msg.header.frame_id = "/map";
         control_pose_msg.header.stamp = scan_time;
         control_pose_msg.pose.position.x = current_pos_control.x;
@@ -540,11 +537,10 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
 }
 
-int main(int argc, char **argv)
-{
-    if(argc != 8){
-      std::cout << "Usage: rosrun ndt_localizer local2global \"filename\" \"x\" \"y\" \"z\" \"roll\" \"pitch\" \"yaw\"" << std::endl;
-      exit(1);
+int main(int argc, char **argv) {
+    if (argc != 8) {
+        std::cout << "Usage: rosrun ndt_localizer local2global \"filename\" \"x\" \"y\" \"z\" \"roll\" \"pitch\" \"yaw\"" << std::endl;
+        exit(1);
     }
 
     ros::init(argc, argv, "local2global");
@@ -553,9 +549,9 @@ int main(int argc, char **argv)
     std::string filename = argv[1];
     std::cout << filename << std::endl;
 
-    if(pcl::io::loadPCDFile<pcl::PointXYZI> (filename, *additional_map_ptr) == -1){
-      std::cout << "Couldn't read " << filename << "." << std::endl;
-      return(-1);
+    if (pcl::io::loadPCDFile<pcl::PointXYZI> (filename, *additional_map_ptr) == -1) {
+        std::cout << "Couldn't read " << filename << "." << std::endl;
+        return (-1);
     }
     std::cout << "Loaded " << additional_map_ptr->size() << " data points from " << filename << "." << std::endl;
 
@@ -567,8 +563,8 @@ int main(int argc, char **argv)
     initial_yaw = std::stod(argv[7]);
 
     std::cout << "initial_pose: "
-	      << initial_x << " " << initial_y << " " << initial_z << " "
-	      << initial_roll << " " << initial_pitch << " " << initial_yaw << std::endl;
+              << initial_x << " " << initial_y << " " << initial_z << " "
+              << initial_roll << " " << initial_pitch << " " << initial_yaw << std::endl;
 
     previous_pos.x = initial_x;
     previous_pos.y = initial_y;
@@ -576,7 +572,7 @@ int main(int argc, char **argv)
     previous_pos.roll = initial_roll;
     previous_pos.pitch = initial_pitch;
     previous_pos.yaw = initial_yaw;
-    
+
     current_pos.x = initial_x;
     current_pos.y = initial_y;
     current_pos.z = initial_z;

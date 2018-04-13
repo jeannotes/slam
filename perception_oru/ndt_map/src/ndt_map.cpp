@@ -164,7 +164,7 @@ void NDTMap::loadPointCloud(const pcl::PointCloud<pcl::PointXYZ> &pc, double ran
 * \note every subsequent call will destroy the previous map!
 */
 void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, const Eigen::Vector3d &origin,
-                                    const Eigen::Vector3d &old_centroid, const Eigen::Vector3d &map_size, 
+                                    const Eigen::Vector3d &old_centroid, const Eigen::Vector3d &map_size,
                                     double range_limit) {
 
     if (index_ != NULL) {
@@ -765,8 +765,8 @@ void  NDTMap::addPointCloudMeanUpdate(const Eigen::Vector3d &origin,
  * Adds one measurement to the map using NDT-OM update step
  * @return true if an inconsistency was detected
  */
-bool NDTMap::addMeasurement(const Eigen::Vector3d &origin, pcl::PointXYZ endpoint, double classifierTh, 
-							double maxz, double sensor_noise) {
+bool NDTMap::addMeasurement(const Eigen::Vector3d &origin, pcl::PointXYZ endpoint, double classifierTh,
+                            double maxz, double sensor_noise) {
 
     if (index_ == NULL) {
         return false;

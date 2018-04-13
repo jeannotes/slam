@@ -116,8 +116,8 @@ void NDTMCL3D::predict(Eigen::Affine3d Tmotion) {
                m[0], m[1], m[2], m[3], m[4], m[5]);
 }
 
-void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud, 
-									double subsample_level) {
+void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud,
+                                   double subsample_level) {
     if (subsample_level < 0 || subsample_level > 1) subsample_level = 1;
 
     Eigen::Vector3d tr = Tmotion.translation();
@@ -152,11 +152,11 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
     }
 
     // std::cerr << "motion var(2) : " << m.transpose() << std::endl;
-/*
-	here, Tmotion is Tm, Tm = Todo_old.inverse() * Todo;
-	just the change difference
-	until, it update the particles
-	*/
+    /*
+    	here, Tmotion is Tm, Tm = Todo_old.inverse() * Todo;
+    	just the change difference
+    	until, it update the particles
+    	*/
     pf.predict(Tmotion,
                m[0], m[1], m[2], m[3], m[4], m[5]);
 
@@ -170,29 +170,29 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
 
     double t_pred = getDoubleTime() - time_start;
 
-    std::cerr << "cloud points " << cloud.points.size() << " res :" 
-				<< resolution << " sres: " << resolution_sensor << std::endl;
+    std::cerr << "cloud points " << cloud.points.size() << " res :"
+              << resolution << " sres: " << resolution_sensor << std::endl;
 //	here, the local map is used to contain the latest pointclouds
     lslgeneric::NDTMap local_map(new lslgeneric::LazyGrid(resolution_sensor));
     //local_map.guessSize(0,0,0,30,30,10); //sensor_range,sensor_range,map_size_z);
     local_map.loadPointCloud(cloud);//,30); //sensor_range);
     local_map.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
 
-/*	lslgeneric::NDTMap<PointT> local_map(new lslgeneric::LazyGrid<PointT>(resolution_sensor));
-      local_map.addPointCloudSimple(cloud);
-    //local_map.computeNDTCells();
-    local_map.computeNDTCellsSimple();
-*/
-/*
-	get the cells in new map just built
-*/
+    /*	lslgeneric::NDTMap<PointT> local_map(new lslgeneric::LazyGrid<PointT>(resolution_sensor));
+          local_map.addPointCloudSimple(cloud);
+        //local_map.computeNDTCells();
+        local_map.computeNDTCellsSimple();
+    */
+    /*
+    	get the cells in new map just built
+    */
     std::vector<lslgeneric::NDTCell*> ndts0 = local_map.getAllCells();
     std::vector<lslgeneric::NDTCell*> ndts;
     std::cerr << "ndts: " << ndts0.size() << std::endl;
-/*
-I suppose this is adaptive mcl method, just don't select all cells.
-small trick
-*/
+    /*
+    I suppose this is adaptive mcl method, just don't select all cells.
+    small trick
+    */
     if (subsample_level != 1) {
         srand((int)(t_pred * 10000));
         for (int i = 0; i < ndts0.size(); ++i) {
@@ -225,12 +225,12 @@ small trick
 
             for (int n = 0; n < ndts.size(); n++) {
                 Eigen::Vector3d m = T * ndts[n]->getMean();
-/*	attention, here T means translation, and it is from the start to the point right now
-	just because this, we show the trick
-	ndts[n]->getMean() return the cell average point(actually it is a laser point, the difference
-	is first we construct a local map, and then get new cells)
-	T * ndts[n]->getMean() should be the real point in the new map
-*/
+                /*	attention, here T means translation, and it is from the start to the point right now
+                	just because this, we show the trick
+                	ndts[n]->getMean() return the cell average point(actually it is a laser point, the difference
+                	is first we construct a local map, and then get new cells)
+                	T * ndts[n]->getMean() should be the real point in the new map
+                */
 
                 if (m[2] < zfilt_min) continue;
 
@@ -244,18 +244,18 @@ small trick
                     //if(map.getCellForPoint(p,cell)){
                     if (cell == NULL) continue;
                     if (cell->hasGaussian_) {
-                        Eigen::Matrix3d covCombined = cell->getCov() + T.rotation() 
-							* ndts[n]->getCov() * T.rotation().transpose();
+                        Eigen::Matrix3d covCombined = cell->getCov() + T.rotation()
+                                                      * ndts[n]->getCov() * T.rotation().transpose();
                         Eigen::Matrix3d icov;
                         bool exists;
                         double det = 0;
                         covCombined.computeInverseAndDetWithCheck(icov, det, exists);
                         if (!exists) continue;
                         double l = (cell->getMean() - m).dot(icov * (cell->getMean() - m));
-/*
-here iterate all cells in the localmap constructed using laser,
-and compute all scores, just like the traditional method
-*/						
+                        /*
+                        here iterate all cells in the localmap constructed using laser,
+                        and compute all scores, just like the traditional method
+                        */
                         if (l * 0 != 0) continue;
                         score += 0.1 + 0.9 * exp(-0.05 * l / 2.0);
                     } else {

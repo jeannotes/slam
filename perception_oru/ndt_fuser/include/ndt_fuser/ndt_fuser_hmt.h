@@ -39,9 +39,9 @@ public:
 #endif
     FILE *fAddTimes, *fRegTimes;
 
-    NDTFuserHMT(double map_resolution, double map_size_x_, double map_size_y_, double map_size_z_, 
-				double sensor_range_ = 3, bool visualize_ = false, bool be2D_ = false, 
-				bool doMultires_ = false, bool fuseIncomplete_ = false, int max_itr = 30,
+    NDTFuserHMT(double map_resolution, double map_size_x_, double map_size_y_, double map_size_z_,
+                double sensor_range_ = 3, bool visualize_ = false, bool be2D_ = false,
+                bool doMultires_ = false, bool fuseIncomplete_ = false, int max_itr = 30,
                 std::string prefix_ = "", bool beHMT_ = true, std::string hmt_map_dir_ = "map",
                 bool _step_control = true, bool doSoftConstraints_ = false, int nb_neighbours = 2,
                 double resolutionLocalFactor = 1.) {

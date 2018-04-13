@@ -112,8 +112,7 @@ static Eigen::Matrix4f gnss_transform = Eigen::Matrix4f::Identity();
 static double RANGE = 5.0;
 static double SHIFT = 2.0;
 
-static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& input)
-{
+static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& input) {
     ndt_res = input->resolution;
     step_size = input->step_size;
     trans_eps = input->trans_eps;
@@ -126,9 +125,8 @@ static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& in
     std::cout << "voxel_leaf_size: " << voxel_leaf_size << std::endl;
 }
 
-static void output_callback(const runtime_manager::ConfigNdtMappingOutput::ConstPtr& input)
-{
-	ROS_INFO("output_callback");
+static void output_callback(const runtime_manager::ConfigNdtMappingOutput::ConstPtr& input) {
+    ROS_INFO("output_callback");
     double filter_res = input->filter_res;
     std::string filename = input->filename;
     std::cout << "output_callback" << std::endl;
@@ -144,10 +142,10 @@ static void output_callback(const runtime_manager::ConfigNdtMappingOutput::Const
     sensor_msgs::PointCloud2::Ptr map_msg_ptr(new sensor_msgs::PointCloud2);
 
     // Apply voxelgrid filter
-    if(filter_res == 0.0){
+    if (filter_res == 0.0) {
         std::cout << "Original: " << map_ptr->points.size() << " points." << std::endl;
         pcl::toROSMsg(*map_ptr, *map_msg_ptr);
-    }else{
+    } else {
         pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
         voxel_grid_filter.setLeafSize(filter_res, filter_res, filter_res);
         voxel_grid_filter.setInputCloud(map_ptr);
@@ -160,17 +158,16 @@ static void output_callback(const runtime_manager::ConfigNdtMappingOutput::Const
     ndt_map_pub.publish(*map_msg_ptr);
 
     // Writing Point Cloud data to PCD file
-    if(voxel_leaf_size == 0.0){
+    if (voxel_leaf_size == 0.0) {
         pcl::io::savePCDFileASCII(filename, *map_ptr);
         std::cout << "Saved " << map_ptr->points.size() << " data points to " << filename << "." << std::endl;
-    }else{
+    } else {
         //pcl::io::savePCDFileASCII(filename, *map_filtered);
         //std::cout << "Saved " << map_filtered->points.size() << " data points to " << filename << "." << std::endl;
     }
 }
 
-static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
-{
+static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input) {
     try {
         double r;
         pcl::PointXYZI p;
@@ -336,8 +333,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 //    iter = atoi(argv[1]); // Maximum iterations
 //    ndt_res = atof(argv[2]); // Resolution
 //    step_size = atof(argv[3]); // Step size

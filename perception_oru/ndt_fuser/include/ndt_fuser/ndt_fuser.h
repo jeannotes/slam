@@ -29,8 +29,8 @@ public:
 #ifndef NO_NDT_VIZ
     NDTViz *viewer;
 #endif
-    NDTFuser(double map_resolution, double map_size_x_, double map_size_y_, 
-    		double map_size_z_, double sensor_range_ = 3, bool visualize_ = false, bool be2D_ = false) {
+    NDTFuser(double map_resolution, double map_size_x_, double map_size_y_,
+             double map_size_z_, double sensor_range_ = 3, bool visualize_ = false, bool be2D_ = false) {
         isInit = false;
         resolution = map_resolution;
         sensor_pose.setIdentity();

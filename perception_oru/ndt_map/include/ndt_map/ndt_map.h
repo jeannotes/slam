@@ -75,32 +75,32 @@ namespace lslgeneric {
 * double range_limit = -1);
 * works as before: it computes an NDT map using only the samples and without tracking occupancy.
 *
-* Since version 2.0 the ndt_map integrates also incremental update features. These are accessible 
+* Since version 2.0 the ndt_map integrates also incremental update features. These are accessible
 * through two methods:
 * 1) void addPointCloudSimple(const pcl::PointCloud<PointT> &pc,double maxz=100.0);
-* 2) void addPointCloud(const Eigen::Vector3d &origin, const pcl::PointCloud<PointT> &pc, double 
+* 2) void addPointCloud(const Eigen::Vector3d &origin, const pcl::PointCloud<PointT> &pc, double
 * classifierTh=0.06, double maxz = 100.0, double sensor_noise = 0.25);
 *
-* The first one only updates the measurement points and thus is faster, but does not model free space 
+* The first one only updates the measurement points and thus is faster, but does not model free space
 * and does not tolerate dynamics
-* The second one uses ray tracing and a number of approaches to model the occupancy as well as 
+* The second one uses ray tracing and a number of approaches to model the occupancy as well as
 * adapts to the dynamics.
 *
 * In all cases the procedure to use the ndt_map is the following:
 * 1) Add the measurement (by above mentioned load or add methods)
 * 2) call computeNDTCells
 *
-* Afer this the map is updated. There are various methods to access the map elements documented in 
+* Afer this the map is updated. There are various methods to access the map elements documented in
 * this header file that you may use.
 *
 * This class implements now the following papers, which you hopefully cite if you find this useful:
 *	Normal Distributions Transform Occupancy Maps: Application to Large-Scale Online 3D Mapping.
 * IEEE International Conference on Robotics and Automation (ICRA 2013), 2013.
-*  There is also an implementation of modeling of the dynamics (edata structure in ndt_cell): 
+*  There is also an implementation of modeling of the dynamics (edata structure in ndt_cell):
 * "Independent Markov chain occupancy grid maps for representation of dynamic environments,"
 *  in IROS2012 Conference Proceedings, Vilamoura, Algarve, Portugal: IEEE, 2012, pp. 3489-3495.
 *
-* In addition, this class provide the basis for NDT registration, which is further discussed in the 
+* In addition, this class provide the basis for NDT registration, which is further discussed in the
 * \ref ndt_registration package. \todo The relevant publications are:
 *
 *
@@ -387,10 +387,10 @@ public:
      * Returns a transformed NDT as an NDT map with a CellVector data structure
      */
     NDTMap* pseudoTransformNDTMap(Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> T);
-/**
- * Returns all computed cells from the map
- * This method gives all the vectors that contain a gaussian within a cell (hasGaussian is true).
- */
+    /**
+     * Returns all computed cells from the map
+     * This method gives all the vectors that contain a gaussian within a cell (hasGaussian is true).
+     */
     virtual std::vector<lslgeneric::NDTCell*> getAllCells() const;
 
     /**
