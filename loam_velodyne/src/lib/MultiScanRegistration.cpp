@@ -223,6 +223,13 @@ void MultiScanRegistration::process(const pcl::PointCloud<pcl::PointXYZ> &laserC
         cloudSize += laserCloudScans[i].size();
         range.second = cloudSize > 0 ? cloudSize - 1 : 0;
         _scanIndices.push_back(range);
+        //< start and end indices of the individual scans withing the full resolution cloud
+        /*
+        first, 0,100
+        second 100, 200
+        ....
+        just sorted, and make them into a vector
+        */
     }
 
     // extract features

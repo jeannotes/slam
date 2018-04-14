@@ -263,13 +263,13 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg) {
         point.x = laserCloudIn.points[i].y;
         point.y = laserCloudIn.points[i].z;
         point.z = laserCloudIn.points[i].x;
-        // it just change the xyz, doesn't matter
+//         it just change the xyz, doesn't matter
         // so when computing orientation and pitch , it is the same
         // pay attention
         float angle = atan(point.y / sqrt(point.x * point.x + point.z * point.z)) * 180 / M_PI;
         int scanID;
         int roundedAngle = int(angle + (angle < 0.0 ? -0.5 : +0.5));
-        // 7.5 - 8.4 --> 8
+//         7.5 - 8.4 --> 8
         // just for convience , not sure
         if (roundedAngle > 0) {
             scanID = roundedAngle;
@@ -410,6 +410,11 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg) {
         }
         laserCloudScans[scanID].push_back(point);
     }
+    /*
+    here, we have a vlp-16 lidar, and we create a vector(16), and give each point a scanid
+    and push these points into the vector(in code it is "laserCloudScans")
+    	*/
+
     cloudSize = count;
 
     pcl::PointCloud<PointType>::Ptr laserCloud(new pcl::PointCloud<PointType>());
@@ -431,7 +436,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg) {
         if (int(laserCloud->points[i].intensity) != scanCount) {
             //here, it is nsh_indoor_outdoor.bag the point didn't come together
             //in contrast,for severals batches, we don't know how many
-            //bu at least 2(nsh_indoor_outdoor.bag)
+            //but at least 2(nsh_indoor_outdoor.bag)
             scanCount = int(laserCloud->points[i].intensity);
 
             if (scanCount > 0 && scanCount < N_SCANS) {
@@ -495,7 +500,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg) {
                     cloudNeighborPicked[i + 5] = 1;
                     cloudNeighborPicked[i + 6] = 1;
                 }
-                //do not use previous 5 points
+                //do not use next 5 points
             }
         }
 
@@ -522,9 +527,9 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg) {
         for (int j = 0; j < 6; j++) {
             int sp = (scanStartInd[i] * (6 - j) + scanEndInd[i] * j) / 6;
             int ep = (scanStartInd[i] * (5 - j) + scanEndInd[i] * (j + 1)) / 6 - 1;
-            // use ep - sp,we will find that
+            // use ep - sp, we will find that
 
-            // didn't understand
+            // sort curvature
             for (int k = sp + 1; k <= ep; k++) {
                 for (int l = k; l >= sp + 1; l--) {
                     if (cloudCurvature[cloudSortInd[l]] < cloudCurvature[cloudSortInd[l - 1]]) {
@@ -552,6 +557,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg) {
                     } else {
                         break;
                     }
+//	only choose the best two points
 
                     cloudNeighborPicked[ind] = 1;
                     for (int l = 1; l <= 5; l++) {

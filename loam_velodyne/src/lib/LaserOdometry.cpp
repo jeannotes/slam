@@ -416,8 +416,6 @@ bool LaserOdometry::hasNewData() {
            fabs((_timeImuTrans - _timeSurfPointsLessFlat).toSec()) < 0.005;
 }
 
-
-
 void LaserOdometry::process() {
     if (!hasNewData()) {
         // waiting for new data to arrive...
@@ -474,12 +472,25 @@ void LaserOdometry::process() {
 
             for (int i = 0; i < cornerPointsSharpNum; i++) {
                 transformToStart(_cornerPointsSharp->points[i], pointSel);
-
+/* here, it use optimized transform to translate, then iterate as much as can
+_cornerPointsSharp->points[i] is this time's point, we translate to last frame's point, that
+is exactly pointSel. we use pointSel to align the previous point.
+adn just in this process, we get the best "_transform" -> the optimized translation!
+*/
                 if (iterCount % 5 == 0) {
                     pcl::removeNaNFromPointCloud(*_lastCornerCloud, *_lastCornerCloud, indices);
+
+                    // find the first min
                     _lastCornerKDTree.nearestKSearch(pointSel, 1, pointSearchInd, pointSearchSqDis);
+                    /*
+                    pointSearchInd:		index
+                    pointSearchSqDis:	the corresponding distance
+                    	*/
 
                     int closestPointInd = -1, minPointInd2 = -1;
+                    // find the second min
+                    // can use k-mean to find 2 in stead of 1 point ,
+                    // maybe cannot construct the line(plane)
                     if (pointSearchSqDis[0] < 25) {
                         closestPointInd = pointSearchInd[0];
                         int closestPointScan = int(_lastCornerCloud->points[closestPointInd].intensity);
@@ -522,7 +533,7 @@ void LaserOdometry::process() {
                 if (_pointSearchCornerInd2[i] >= 0) {
                     tripod1 = _lastCornerCloud->points[_pointSearchCornerInd1[i]];
                     tripod2 = _lastCornerCloud->points[_pointSearchCornerInd2[i]];
-
+//tripod means the first and second point, together with the pointSel to construct a triangle!
                     float x0 = pointSel.x;
                     float y0 = pointSel.y;
                     float z0 = pointSel.z;
@@ -532,7 +543,7 @@ void LaserOdometry::process() {
                     float x2 = tripod2.x;
                     float y2 = tripod2.y;
                     float z2 = tripod2.z;
-
+// the L2-norm of |(pointSel-tripod1)*(pointSel-tripod2)|
                     float a012 = sqrt(((x0 - x1) * (y0 - y2) - (x0 - x2) * (y0 - y1))
                                       * ((x0 - x1) * (y0 - y2) - (x0 - x2) * (y0 - y1))
                                       + ((x0 - x1) * (z0 - z2) - (x0 - x2) * (z0 - z1))

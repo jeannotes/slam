@@ -317,8 +317,6 @@ void ScanRegistration::interpolateIMUStateFor(const float &relTime,
     }
 }
 
-
-
 void ScanRegistration::extractFeatures(const uint16_t& beginIdx) {
     // extract features from individual scans
     size_t nScans = _scanIndices.size();
@@ -339,6 +337,12 @@ void ScanRegistration::extractFeatures(const uint16_t& beginIdx) {
         }*/
 
         // reset scan buffers
+        /** \brief Set up scan buffers for the specified point range.
+         *
+         * @param startIdx the scan start index
+         * @param endIdx the scan start index
+         * get out some bad points
+         */
         setScanBuffersFor(scanStartIdx, scanEndIdx);
 
         // extract features from equally sized scan regions
@@ -356,8 +360,9 @@ void ScanRegistration::extractFeatures(const uint16_t& beginIdx) {
             size_t regionSize = ep - sp + 1;
 
             // reset region buffers
+            // compute curvayure
+            // sort according to curvature
             setRegionBuffersFor(sp, ep);
-
 
             // extract corner features
             int largestPickedNum = 0;
@@ -419,8 +424,6 @@ void ScanRegistration::extractFeatures(const uint16_t& beginIdx) {
     }
 }
 
-
-
 void ScanRegistration::setRegionBuffersFor(const size_t& startIdx,
         const size_t& endIdx) {
     // resize buffers
@@ -457,8 +460,6 @@ void ScanRegistration::setRegionBuffersFor(const size_t& startIdx,
     }
 }
 
-
-
 void ScanRegistration::setScanBuffersFor(const size_t& startIdx,
         const size_t& endIdx) {
     // resize buffers
@@ -479,7 +480,11 @@ void ScanRegistration::setScanBuffersFor(const size_t& startIdx,
 
             if (depth1 > depth2) {
                 float weighted_distance = std::sqrt(calcSquaredDiff(nextPoint, point, depth2 / depth1)) / depth2;
-
+                /*
+                these two points already have differences, so this time, we normalize it, again
+                we check it, if weighted_distance is small then some number(0.1), do not use it as a feature.
+                also, weighted_distance is weighted using (depth2 / depth1) or (depth1 / depth2)
+                			*/
                 if (weighted_distance < 0.1) {
                     std::fill_n(&_scanNeighborPicked[i - startIdx - _config.curvatureRegion], _config.curvatureRegion + 1, 1);
 
@@ -502,8 +507,6 @@ void ScanRegistration::setScanBuffersFor(const size_t& startIdx,
         }
     }
 }
-
-
 
 void ScanRegistration::markAsPicked(const size_t& cloudIdx,
                                     const size_t& scanIdx) {
