@@ -853,7 +853,6 @@ int main(int argc, char** argv) {
             float y2 = cos(rx) * y1 - sin(rx) * z1;
             float z2 = sin(rx) * y1 + cos(rx) * z1;
 
-            //attitude updating
             tx = transformSum[3] - (cos(ry) * x2 + sin(ry) * z2);
             ty = transformSum[4] - y2;
             tz = transformSum[5] - (-sin(ry) * x2 + cos(ry) * z2);

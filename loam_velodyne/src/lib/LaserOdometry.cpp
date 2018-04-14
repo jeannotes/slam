@@ -175,6 +175,7 @@ void LaserOdometry::transformToStart(const pcl::PointXYZI& pi, pcl::PointXYZI& p
     rotateZXY(po, rz, rx, ry);
 }
 
+//Transform the given point cloud to the end of the sweep.
 size_t LaserOdometry::transformToEnd(pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud) {
     size_t cloudSize = cloud->points.size();
 
@@ -182,6 +183,8 @@ size_t LaserOdometry::transformToEnd(pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud
         pcl::PointXYZI& point = cloud->points[i];
 
         float s = 10 * (point.intensity - int(point.intensity));
+	// in decimal part of intensity, it is actually time
+	// so here, we interpolate the translation
 
         point.x -= s * _transform.pos.x();
         point.y -= s * _transform.pos.y();
@@ -191,9 +194,12 @@ size_t LaserOdometry::transformToEnd(pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud
         Angle rx = -s * _transform.rot_x.rad();
         Angle ry = -s * _transform.rot_y.rad();
         Angle rz = -s * _transform.rot_z.rad();
+		// it already have a rotation(suppose it is  (s * _transform.rot_x.rad())   )
+		// so first translate to first point
         rotateZXY(point, rz, rx, ry);
+		// now it at the first point
         rotateYXZ(point, _transform.rot_y, _transform.rot_x, _transform.rot_z);
-
+		// now translate wholy, I mean from start to the end
         point.x += _transform.pos.x() - _imuShiftFromStart.x();
         point.y += _transform.pos.y() - _imuShiftFromStart.y();
         point.z += _transform.pos.z() - _imuShiftFromStart.z();
@@ -544,15 +550,17 @@ adn just in this process, we get the best "_transform" -> the optimized translat
                     float y2 = tripod2.y;
                     float z2 = tripod2.z;
 // the L2-norm of |(pointSel-tripod1)*(pointSel-tripod2)|
+//  -> which is the molecular in equation (2)
                     float a012 = sqrt(((x0 - x1) * (y0 - y2) - (x0 - x2) * (y0 - y1))
                                       * ((x0 - x1) * (y0 - y2) - (x0 - x2) * (y0 - y1))
                                       + ((x0 - x1) * (z0 - z2) - (x0 - x2) * (z0 - z1))
                                       * ((x0 - x1) * (z0 - z2) - (x0 - x2) * (z0 - z1))
                                       + ((y0 - y1) * (z0 - z2) - (y0 - y2) * (z0 - z1))
                                       * ((y0 - y1) * (z0 - z2) - (y0 - y2) * (z0 - z1)));
-
+// distance between tripod1 and tripod2 -> which is the denominator in equation (2)
                     float l12 = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) + (z1 - z2) * (z1 - z2));
 
+// la, lb ,lc just is the difference with respect to x0(pointSel)
                     float la = ((y1 - y2) * ((x0 - x1) * (y0 - y2) - (x0 - x2) * (y0 - y1))
                                 + (z1 - z2) * ((x0 - x1) * (z0 - z2) - (x0 - x2) * (z0 - z1))) / a012 / l12;
 
@@ -561,7 +569,7 @@ adn just in this process, we get the best "_transform" -> the optimized translat
 
                     float lc = -((x1 - x2) * ((x0 - x1) * (z0 - z2) - (x0 - x2) * (z0 - z1))
                                  + (y1 - y2) * ((y0 - y1) * (z0 - z2) - (y0 - y2) * (z0 - z1))) / a012 / l12;
-
+// ld2 is the final distance of equation (2)
                     float ld2 = a012 / l12;
 
                     // TODO: Why writing to a variable that's never read?
@@ -701,7 +709,7 @@ adn just in this process, we get the best "_transform" -> the optimized translat
 
             for (int i = 0; i < pointSelNum; i++) {
                 const pcl::PointXYZI& pointOri = _laserCloudOri->points[i];
-                coeff = _coeffSel->points[i];
+                coeff = _coeffSel->points[i];// the differential number(with respect to x0)
 
                 float s = 1;
 
@@ -830,6 +838,11 @@ adn just in this process, we get the best "_transform" -> the optimized translat
                        -_transform.rot_y.rad() * 1.05,
                        -_transform.rot_z,
                        rx, ry, rz);
+	/*
+para: transdorsum -> all the rotation from start,
+para: _transform  -> just this time's optimized transformation
+set transdorsum to (0,0,5), _transform to (0,0,1) , after that we have (0,0,6)
+	*/
 
     Vector3 v( _transform.pos.x()        - _imuShiftFromStart.x(),
                _transform.pos.y()        - _imuShiftFromStart.y(),
@@ -847,7 +860,7 @@ adn just in this process, we get the best "_transform" -> the optimized translat
     _transformSum.rot_z = rz;
     _transformSum.pos = trans;
 
-    transformToEnd(_cornerPointsLessSharp);
+    transformToEnd(_cornerPointsLessSharp);//Transform the given point cloud to the end of the sweep.
     transformToEnd(_surfPointsLessFlat);
 
     _cornerPointsLessSharp.swap(_lastCornerCloud);
