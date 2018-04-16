@@ -153,7 +153,7 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
         }
     }
 
-    if (be2D) {
+    if (be2D) {//originally false.
         t2 = getDoubleTime();
         if (matcher2D.match( *map, ndlocal, Tinit, true) || fuseIncomplete) {
             t3 = getDoubleTime();

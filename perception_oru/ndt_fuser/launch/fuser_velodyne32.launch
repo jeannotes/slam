@@ -9,7 +9,7 @@
 	<param name="size_x_meters" value="30" />
 	<param name="size_y_meters" value="30" />
 	<param name="size_z_meters" value="5" />
-	<param name="resolution" value="0.2" />
+	<param name="resolution" value="0.4" />
 	<param name="sensor_range" value="30." />
 	
 	<!-- Specific sensor offset parameters for the example file -->
