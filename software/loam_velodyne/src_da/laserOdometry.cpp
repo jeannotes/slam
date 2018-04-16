@@ -838,8 +838,6 @@ int main(int argc, char** argv) {
             // T matrix update including translate and attitude updating
 
             float rx, ry, rz, tx, ty, tz;
-            //the inside algorithm is kind of complicate, read it later
-            //just translate updating, maybe easy
             AccumulateRotation(transformSum[0], transformSum[1], transformSum[2],
                                -transform[0], -transform[1] * 1.05, -transform[2], rx, ry, rz);
 

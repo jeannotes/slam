@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
 	
     loam::LaserOdometry laserOdom(0.1);
 
-	ros::Timer timer1 = node.createTimer(ros::Duration(1), &loam::LaserOdometry::callback, &laserOdom);
+	//ros::Timer timer1 = node.createTimer(ros::Duration(1), &loam::LaserOdometry::callback, &laserOdom);
 
     if (laserOdom.setup(node, privateNode)) {
         // initialization successful

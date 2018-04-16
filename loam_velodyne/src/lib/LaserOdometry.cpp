@@ -172,15 +172,14 @@ size_t LaserOdometry::transformToEnd(pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud
         rotateZXY(point, rz, rx, ry);
 		// now it at the first point
         rotateYXZ(point, _transform.rot_y, _transform.rot_x, _transform.rot_z);
-		// now translate wholy, I mean from start to the end
+		/* now translate wholy, I mean from start to the end
+		rz is opposite from _transform.rot_z, I have already do some experiment
+		if it is opposite, then they can go back.
+		*/
         point.x += _transform.pos.x() - _imuShiftFromStart.x();
         point.y += _transform.pos.y() - _imuShiftFromStart.y();
         point.z += _transform.pos.z() - _imuShiftFromStart.z();
-	/*
 
-		to do: why 
-
-		*/
         rotateZXY(point, _imuRollStart, _imuPitchStart, _imuYawStart);
         rotateYXZ(point, -_imuYawEnd, -_imuPitchEnd, -_imuRollEnd);
     }
@@ -824,7 +823,9 @@ set transdorsum to (0,0,5), _transform to (0,0,1) , after that we have (0,0,6)
     Vector3 v( _transform.pos.x()        - _imuShiftFromStart.x(),
                _transform.pos.y()        - _imuShiftFromStart.y(),
                _transform.pos.z() * 1.05 - _imuShiftFromStart.z() );
-    rotateZXY(v, rz, rx, ry);
+    rotateZXY(v, rz, rx, ry);//go back format
+    // here, we have v, which is the optimized transpose, and rx, ry, rz are total transformation
+    // after translate, we 
     Vector3 trans = _transformSum.pos - v;
 
     pluginIMURotation(rx, ry, rz,
@@ -888,12 +889,23 @@ void LaserOdometry::publishResult() {
         publishCloudMsg(_pubLaserCloudFullRes, *_laserCloud, sweepTime, "/camera");
     }
 }
-	
+
 void LaserOdometry::callback(const ros::TimerEvent&){
 	pcl::PointXYZI p;
-	p.x=0;p.y=0;p.z=1;p.intensity=2;
-	ROS_INFO("OK");
-	Angle rx = 0;
+	p.x=0;p.y=1;p.z=0;p.intensity=2;
+	float an = 90 *  M_PI / 180;
+	Angle angX = 0;
+	Angle angY = 0;
+	Angle angZ(an);
+	static int i=0;
+	ROS_INFO("NUMBER:%d", i);
+	ROS_INFO("original: x:%f,y:%f,z:%f", p.x, p.y, p.z);
+	rotateZXY(p, -angZ, angX, angY);
+	ROS_INFO("first: x:%f,y:%f,z:%f", p.x, p.y, p.z);
+	rotateYXZ(p, angY, angX, angZ);
+	ROS_INFO("second: x:%f,y:%f,z:%f", p.x, p.y, p.z);
+
+	i++;
 }
 
 } // end namespace loam
