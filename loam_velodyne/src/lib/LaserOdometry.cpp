@@ -1,39 +1,7 @@
-// Copyright 2013, Ji Zhang, Carnegie Mellon University
-// Further contributions copyright (c) 2016, Southwest Research Institute
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright notice,
-//    this list of conditions and the following disclaimer in the documentation
-//    and/or other materials provided with the distribution.
-// 3. Neither the name of the copyright holder nor the names of its
-//    contributors may be used to endorse or promote products derived from this
-//    software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
-//
-// This is an implementation of the algorithm described in the following paper:
-//   J. Zhang and S. Singh. LOAM: Lidar Odometry and Mapping in Real-time.
-//     Robotics: Science and Systems Conference (RSS). Berkeley, CA, July 2014.
-
 #include "loam_velodyne/LaserOdometry.h"
 #include "loam_velodyne/common.h"
 #include "math_utils.h"
-
+#include "ros/ros.h"
 #include <pcl/filters/filter.h>
 #include <Eigen/Eigenvalues>
 #include <Eigen/QR>
@@ -139,6 +107,7 @@ bool LaserOdometry::setup(ros::NodeHandle &node,
     _pubLaserCloudFullRes    = node.advertise<sensor_msgs::PointCloud2>("/velodyne_cloud_3", 2);
     _pubLaserOdometry        = node.advertise<nav_msgs::Odometry>("/laser_odom_to_init", 5);
 
+
     // subscribe to scan registration topics
     _subCornerPointsSharp = node.subscribe<sensor_msgs::PointCloud2>
                             ("/laser_cloud_sharp", 2, &LaserOdometry::laserCloudSharpHandler, this);
@@ -163,7 +132,11 @@ bool LaserOdometry::setup(ros::NodeHandle &node,
 
 void LaserOdometry::transformToStart(const pcl::PointXYZI& pi, pcl::PointXYZI& po) {
     float s = 10 * (pi.intensity - int(pi.intensity));
-
+	/*
+	********************
+	start				current
+	\\\\\\ -> this is (s)
+	*/
     po.x = pi.x - s * _transform.pos.x();
     po.y = pi.y - s * _transform.pos.y();
     po.z = pi.z - s * _transform.pos.z();
@@ -203,7 +176,11 @@ size_t LaserOdometry::transformToEnd(pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud
         point.x += _transform.pos.x() - _imuShiftFromStart.x();
         point.y += _transform.pos.y() - _imuShiftFromStart.y();
         point.z += _transform.pos.z() - _imuShiftFromStart.z();
+	/*
 
+		to do: why 
+
+		*/
         rotateZXY(point, _imuRollStart, _imuPitchStart, _imuYawStart);
         rotateYXZ(point, -_imuYawEnd, -_imuPitchEnd, -_imuRollEnd);
     }
@@ -910,6 +887,13 @@ void LaserOdometry::publishResult() {
         publishCloudMsg(_pubLaserCloudSurfLast, *_lastSurfaceCloud, sweepTime, "/camera");
         publishCloudMsg(_pubLaserCloudFullRes, *_laserCloud, sweepTime, "/camera");
     }
+}
+	
+void LaserOdometry::callback(const ros::TimerEvent&){
+	pcl::PointXYZI p;
+	p.x=0;p.y=0;p.z=1;p.intensity=2;
+	ROS_INFO("OK");
+	Angle rx = 0;
 }
 
 } // end namespace loam

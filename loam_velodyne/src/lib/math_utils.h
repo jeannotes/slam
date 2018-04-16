@@ -19,8 +19,6 @@ inline double rad2deg(double radians) {
     return radians * 180.0 / M_PI;
 }
 
-
-
 /** \brief Convert the given radian angle to degrees.
  *
  * @param radians The radian angle to convert.
@@ -29,8 +27,6 @@ inline double rad2deg(double radians) {
 inline float rad2deg(float radians) {
     return (float) (radians * 180.0 / M_PI);
 }
-
-
 
 /** \brief Convert the given degree angle to radian.
  *
@@ -41,8 +37,6 @@ inline double deg2rad(double degrees) {
     return degrees * M_PI / 180.0;
 }
 
-
-
 /** \brief Convert the given degree angle to radian.
  *
  * @param degrees The degree angle to convert.
@@ -51,9 +45,6 @@ inline double deg2rad(double degrees) {
 inline float deg2rad(float degrees) {
     return (float) (degrees * M_PI / 180.0);
 }
-
-
-
 
 /** \brief Calculate the squared difference of the given two points.
  *
@@ -70,8 +61,6 @@ inline float calcSquaredDiff(const PointT& a, const PointT& b) {
     return diffX * diffX + diffY * diffY + diffZ * diffZ;
 }
 
-
-
 /** \brief Calculate the squared difference of the given two points.
  *
  * @param a The first point.
@@ -87,7 +76,6 @@ inline float calcSquaredDiff(const PointT& a, const PointT& b, const float& wb) 
 
     return diffX * diffX + diffY * diffY + diffZ * diffZ;
 }
-
 
 /** \brief Calculate the absolute distance of the point to the origin.
  *
@@ -135,8 +123,6 @@ inline void rotX(PointT& p, const Angle& ang) {
     p.y = ang.cos() * y - ang.sin() * p.z;
     p.z = ang.sin() * y + ang.cos() * p.z;
 }
-
-
 
 /** \brief Rotate the given vector by the specified angle around the y-axis.
  *
@@ -220,8 +206,6 @@ inline void rotateZXY(PointT& p,
     rotX(p, angX);
     rotY(p, angY);
 }
-
-
 
 /** \brief Rotate the given vector by the specified angles around the y-, x- respectively z-axis.
  *
