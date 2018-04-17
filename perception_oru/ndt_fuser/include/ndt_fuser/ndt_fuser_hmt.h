@@ -29,8 +29,8 @@ public:
     lslgeneric::NDTMap *map;		 ///< da map
     bool checkConsistency;			 ///perform a check for consistency against initial estimate
     double max_translation_norm, max_rotation_norm;
-    double sensor_range;
-    bool be2D, doMultires, fuseIncomplete, beHMT, disableRegistration, doSoftConstraints;
+    double sensor_range/* 3 */;
+    bool be2D, doMultires, fuseIncomplete, beHMT, disableRegistration/* false */, doSoftConstraints;
     int ctr;
     std::string prefix;
     std::string hmt_map_dir;

@@ -70,7 +70,8 @@ protected:
     std::string points_topic, laser_topic, map_dir, map_name, odometry_topic,
         world_frame, fuser_frame, init_pose_frame, gt_topic, bag_name;
     double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_;
-    bool visualize, match2D, matchLaser, beHMT, useOdometry, plotGTTrack,
+    bool visualize, match2D, matchLaser,/*false*/
+		beHMT, useOdometry, plotGTTrack,
          initPoseFromGT, initPoseFromTF, initPoseSet, renderGTmap;
 
     double pose_init_x, pose_init_y, pose_init_z,
@@ -179,7 +180,7 @@ public:
         param_nh.param<double>("motion_params_Td", motion_params.Td, 0.001);
         param_nh.param<double>("motion_params_Tt", motion_params.Tt, 0.005);
 
-        bool do_soft_constraints;
+        bool do_soft_constraints;// originally false.
         param_nh.param<bool>("do_soft_constraints", do_soft_constraints, false);
 
         use_tf_listener_ = false;
@@ -201,8 +202,17 @@ public:
 
         if (matchLaser) match2D = true;
         fuser = new lslgeneric::NDTFuserHMT(resolution, size_x, size_y, size_z,
-                                            sensor_range, visualize, match2D, false, false, 30, map_name, beHMT, map_dir, true, do_soft_constraints);
-
+                                            sensor_range/*3*/, visualize, match2D, false /*doMultires_*/,
+                                            false, 30, map_name, beHMT, map_dir, true,
+                                            do_soft_constraints);
+/*
+NDTFuserHMT(double map_resolution, double map_size_x_, double map_size_y_, double map_size_z_,
+			double sensor_range_ = 3, bool visualize_ = false, bool be2D_ = false,
+			bool doMultires_ = false, bool fuseIncomplete_ = false, int max_itr = 30,
+			std::string prefix_ = "", bool beHMT_ = true, std::string hmt_map_dir_ = "map",
+			bool _step_control = true, bool doSoftConstraints_ = false, int nb_neighbours = 2,
+			double resolutionLocalFactor = 1.)
+											*/
         fuser->setMotionParams(motion_params);
         fuser->setSensorPose(sensor_pose_);
 
@@ -246,7 +256,6 @@ public:
 
     void processFrame(pcl::PointCloud<pcl::PointXYZ> &cloud,
                       Eigen::Affine3d Tmotion) {
-
         m.lock();
         if (nb_added_clouds_  == 0) {
             ROS_INFO("initializing fuser map. Init pose from GT? %d, TF? %d", initPoseFromGT, initPoseFromTF);
@@ -303,6 +312,7 @@ public:
         m.lock();
         ret = fuser->saveMap();
         m.unlock();
+		ROS_INFO("Save map %d", ret);
         return ret;
     }
 

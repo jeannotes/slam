@@ -1,4 +1,5 @@
 #include <ndt_fuser/ndt_fuser_hmt.h>
+#include <ros/ros.h>
 
 namespace lslgeneric {
 void NDTFuserHMT::initialize(Eigen::Affine3d initPos, pcl::PointCloud<pcl::PointXYZ> &cloud, bool preLoad) {
@@ -90,7 +91,7 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
 
     t1 = getDoubleTime();
     Eigen::Affine3d Tinit = Tnow * Tmotion;
-    if (disableRegistration) {
+    if (disableRegistration) {//after useOdometry and renderGTmap, it is true
         Tnow = Tinit;
         lslgeneric::transformPointCloudInPlace(Tnow, cloud);
         Eigen::Affine3d spose = Tnow * sensor_pose;
@@ -112,8 +113,9 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
         ctr++;
         return Tnow;
     }
-
+	
     if (doMultires) {
+		//false
         //create two ndt maps with resolution = 3*resolution (or 5?)
         lslgeneric::NDTMap ndlocalLow(new lslgeneric::LazyGrid(3 * resolution));
         ndlocalLow.guessSize(0, 0, 0, sensor_range, sensor_range, map_size_z);
@@ -153,8 +155,10 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
         }
     }
 
-    if (be2D) {//originally false.
-        t2 = getDoubleTime();
+	ROS_INFO("be2D %d", be2D);
+    if (be2D) {
+		//originally false.
+		t2 = getDoubleTime();
         if (matcher2D.match( *map, ndlocal, Tinit, true) || fuseIncomplete) {
             t3 = getDoubleTime();
             Eigen::Affine3d diff = (Tnow * Tmotion).inverse() * Tinit;
@@ -204,10 +208,9 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
         }
 
     } else {
-
         t2 = getDoubleTime();
         bool match_ret = false;
-        if (doSoftConstraints) {
+        if (doSoftConstraints) {//false
             // Local covariance matrix in vehicle frame.
             Eigen::MatrixXd local_cov = motionModel2D.getCovMatrix6(Tmotion, 1., 1., 1.); //0.0000000000001, 0.0000000000001, 0.0000000000001);
 
@@ -239,9 +242,10 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
             match_ret = matcherSC.match(*map, ndlocal, Tinit, global_cov);
             std::cout << matcherSC.nb_match_calls << " successes : " << matcherSC.nb_success_reg << std::endl;
         } else {
-            match_ret = matcher.match( *map, ndlocal, Tinit, true);
+            match_ret = matcher.match(*map, ndlocal, Tinit, true);
         }
         if (match_ret || fuseIncomplete) {
+			// fuseIncomplete initially false
             t3 = getDoubleTime();
             Eigen::Affine3d diff = (Tnow * Tmotion).inverse() * Tinit;
 

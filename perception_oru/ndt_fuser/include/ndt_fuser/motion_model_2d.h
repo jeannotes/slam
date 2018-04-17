@@ -11,7 +11,8 @@
   The only motion model that are really useful is the relative  incremental one.
   That is, given two measurement at t0 and t1, obtain the relative
   odometry pose between t0 and t1 (for example using the tf ROS package).
-  This relative incremental pose can then directly be used to get the incremental motion (need to adjust it with the current heading), and to get the covariance of the motion.
+  This relative incremental pose can then directly be used to get the incremental
+  motion (need to adjust it with the current heading), and to get the covariance of the motion.
 */
 namespace lslgeneric {
 class MotionModel2d {
