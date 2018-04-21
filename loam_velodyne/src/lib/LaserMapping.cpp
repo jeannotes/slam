@@ -729,8 +729,6 @@ void LaserMapping::process() {
     publishResult();
 }
 
-
-
 void LaserMapping::optimizeTransformTobeMapped() {
     if (_laserCloudCornerFromMap->points.size() <= 10 || _laserCloudSurfFromMap->points.size() <= 100) {
         return;
@@ -1021,8 +1019,6 @@ void LaserMapping::optimizeTransformTobeMapped() {
     transformUpdate();
 }
 
-
-
 void LaserMapping::publishResult() {
     // publish new map cloud according to the input output ratio
     _mapFrameCount++;
@@ -1056,7 +1052,6 @@ void LaserMapping::publishResult() {
 
     // publish transformed full resolution input cloud
     publishCloudMsg(_pubLaserCloudFullRes, *_laserCloudFullRes, _timeLaserOdometry, "/camera_init");
-
 
     // publish odometry after mapped transformations
     geometry_msgs::Quaternion geoQuat = tf::createQuaternionMsgFromRollPitchYaw
