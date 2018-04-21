@@ -111,7 +111,7 @@ bool NDTMatcherD2D_2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
             //transform moving
             T = Temp * T;
 
-#ifdef DO_DEBUG_PROC
+#ifndef DO_DEBUG_PROC
             std::cout << "RESOLUTION: " << current_resolution << std::endl;
             std::cout << "rotation   : " << Temp.rotation().eulerAngles(0, 1, 2).transpose() << std::endl;
             std::cout << "translation: " << Temp.translation().transpose() << std::endl;
