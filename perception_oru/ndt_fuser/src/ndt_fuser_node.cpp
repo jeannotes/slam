@@ -202,7 +202,7 @@ public:
 
         if (matchLaser) match2D = true;
         fuser = new lslgeneric::NDTFuserHMT(resolution, size_x, size_y, size_z,
-                                            sensor_range/*3*/, visualize, match2D, false /*doMultires_*/,
+                                            sensor_range/*3*/, visualize, match2D/*true*/, false /*doMultires_*/,
                                             false, 30, map_name, beHMT, map_dir, true,
                                             do_soft_constraints);
 /*
@@ -505,10 +505,10 @@ NDTFuserHMT(double map_resolution, double map_size_x_, double map_size_y_, doubl
             ROS_INFO("Set initial pose from GT track");
         }
         if (visualize) {
-#ifndef NO_NDT_VIZ
+#ifdef NO_NDT_VIZ
             fuser->viewer->addTrajectoryPoint(gt_pose.translation()(0), gt_pose.translation()(1), gt_pose.translation()(2) + 0.2, 1, 1, 1);
             fuser->viewer->displayTrajectory();
-            //      fuser->viewer->repaint();
+            //fuser->viewer->repaint();
 #endif
         }
         m.unlock();

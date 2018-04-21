@@ -39,7 +39,7 @@ void NDTFuserHMT::initialize(Eigen::Affine3d initPos, pcl::PointCloud<pcl::Point
     Tlast_fuse = Tnow;
     Todom = Tnow;
     if (visualize) {
-#ifndef NO_NDT_VIZ
+#ifdef NO_NDT_VIZ
         //      # error compiling with visualization
         viewer->plotNDTSAccordingToOccupancy(-1, map);
         //viewer->plotLocalNDTMap(cloud,resolution);
@@ -155,9 +155,8 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
         }
     }
 
-	ROS_INFO("be2D %d", be2D);
+	ROS_INFO("be2D %d, doMultires %d", be2D, doMultires);
     if (be2D) {
-		//originally false.
 		t2 = getDoubleTime();
         if (matcher2D.match( *map, ndlocal, Tinit, true) || fuseIncomplete) {
             t3 = getDoubleTime();
@@ -191,7 +190,7 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
                             //viewer->plotLocalNDTMap(cloud,resolution);
                         }
                         viewer->addTrajectoryPoint(Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2) + 0.2, 0, 1, 0);
-                        viewer->addTrajectoryPoint(Todom.translation()(0), Todom.translation()(1), Todom.translation()(2) + 0.2, 0.5, 0, 0.5);
+                        viewer->addTrajectoryPoint(Todom.translation()(0), Todom.translation()(1), Todom.translation()(2) + 0.2, 1, 0, 0);
                         viewer->displayTrajectory();
                         viewer->setCameraPointing(Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2) + 3);
                         viewer->repaint();
