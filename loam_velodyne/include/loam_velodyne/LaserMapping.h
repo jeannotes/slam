@@ -182,6 +182,8 @@ private:
     pcl::PointCloud<pcl::PointXYZI>::Ptr _laserCloudSurfLast;     ///< last surface points cloud
     pcl::PointCloud<pcl::PointXYZI>::Ptr _laserCloudFullRes;      ///< last full resolution cloud
 
+    pcl::PointCloud<pcl::PointXYZI> accumulate_laserCloudFullRes;      //all the full resolution cloud
+
     pcl::PointCloud<pcl::PointXYZI>::Ptr _laserCloudCornerStack;
     pcl::PointCloud<pcl::PointXYZI>::Ptr _laserCloudSurfStack;
     pcl::PointCloud<pcl::PointXYZI>::Ptr _laserCloudCornerStackDS;  ///< down sampled
@@ -227,6 +229,7 @@ private:
 
     ros::Publisher _pubLaserCloudSurround;    ///< map cloud message publisher
     ros::Publisher _pubLaserCloudFullRes;     ///< current full resolution cloud message publisher
+    ros::Publisher _pubLaserCloudFullRes_all;     ///< current full resolution cloud message publisher
     ros::Publisher _pubOdomAftMapped;         ///< mapping odometry publisher
     tf::TransformBroadcaster _tfBroadcaster;  ///< mapping odometry transform broadcaster
 

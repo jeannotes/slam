@@ -188,7 +188,8 @@ bool LaserMapping::setup(ros::NodeHandle& node,
     // advertise laser mapping topics
     _pubLaserCloudSurround = node.advertise<sensor_msgs::PointCloud2> ("/laser_cloud_surround", 1);
     _pubLaserCloudFullRes = node.advertise<sensor_msgs::PointCloud2> ("/velodyne_cloud_registered", 2);
-    _pubOdomAftMapped = node.advertise<nav_msgs::Odometry> ("/aft_mapped_to_init", 5);
+	_pubLaserCloudFullRes_all = node.advertise<sensor_msgs::PointCloud2> ("/velodyne_cloud_registered_all", 2);
+	_pubOdomAftMapped = node.advertise<nav_msgs::Odometry> ("/aft_mapped_to_init", 5);
 
 
     // subscribe to laser odometry topics
@@ -1043,15 +1044,15 @@ void LaserMapping::publishResult() {
         publishCloudMsg(_pubLaserCloudSurround, *_laserCloudSurroundDS, _timeLaserOdometry, "/camera_init");
     }
 
-
     // transform full resolution input cloud to map
     size_t laserCloudFullResNum = _laserCloudFullRes->points.size();
     for (int i = 0; i < laserCloudFullResNum; i++) {
         pointAssociateToMap(_laserCloudFullRes->points[i], _laserCloudFullRes->points[i]);
     }
-
+	accumulate_laserCloudFullRes += *_laserCloudFullRes;
     // publish transformed full resolution input cloud
     publishCloudMsg(_pubLaserCloudFullRes, *_laserCloudFullRes, _timeLaserOdometry, "/camera_init");
+	publishCloudMsg(_pubLaserCloudFullRes_all, accumulate_laserCloudFullRes, _timeLaserOdometry, "/camera_init");
 
     // publish odometry after mapped transformations
     geometry_msgs::Quaternion geoQuat = tf::createQuaternionMsgFromRollPitchYaw
