@@ -165,6 +165,8 @@ public:
         param_nh.param<std::string>("points_topic", points_topic, "points");
         ///topic to wait for odometry messages
         param_nh.param<std::string>("odometry_topic", odometry_topic, "odometry");
+		// to visualize
+		ndt_viz.win3D->start_main_loop_own_thread();
 
         points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, points_topic, 1);
         odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_, odometry_topic, 10);
@@ -184,6 +186,7 @@ public:
     //new callback: looks up transforms on TF
     void callback(const sensor_msgs::PointCloud2::ConstPtr& cloud_in,
                   const nav_msgs::Odometry::ConstPtr& odo_in) {
+        
         mcl_m.lock();
         //compute new odo and point cloud
         Eigen::Quaterniond qd;
@@ -200,17 +203,16 @@ public:
 
         pcl::fromROSMsg (*cloud_in, cloud);
 
-        fprintf(stderr, "cloud has %zu points\n", cloud.points.size());
+        //fprintf(stderr, "cloud has %zu points\n", cloud.points.size());
         //check if sensor pose is known, if not, look it up on TF
-        if (!hasSensorPose) {
 
-        }
         //check if we have done iterations
         if (isFirstLoad) {
             //if not, check if initial robot pose has been set
             if (!hasInitialPose) {
                 //can't do anything, wait for pose message...
                 mcl_m.unlock();
+				fprintf(stderr, "*********FAIL********");
                 return;
             }
             //initialize filter
@@ -250,12 +252,15 @@ public:
 
         //update visualization
         ///DRAW STUFF///
+        
+		fprintf(stderr, "*********do_visualize %d********", do_visualize);
         if (do_visualize) {
             pcounter++;
             if (pcounter % 500 == 0) {
                 ndt_viz.clear();
                 ndt_viz.plotNDTSAccordingToOccupancy(-1, &ndtmcl->map);
-
+            	ndt_viz.displayParticles();
+				ndt_viz.displayTrajectory();
             }
 
             //if(pcounter%10==0){
