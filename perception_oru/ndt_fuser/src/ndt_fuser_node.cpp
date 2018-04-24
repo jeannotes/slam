@@ -71,7 +71,7 @@ protected:
         world_frame, fuser_frame, init_pose_frame, gt_topic, bag_name;
     double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_;
     bool visualize, match2D, matchLaser,/*false*/
-		beHMT, useOdometry, plotGTTrack,
+         beHMT, useOdometry, plotGTTrack,
          initPoseFromGT, initPoseFromTF, initPoseSet, renderGTmap;
 
     double pose_init_x, pose_init_y, pose_init_z,
@@ -205,14 +205,14 @@ public:
                                             sensor_range/*3*/, visualize, match2D/*true*/, false /*doMultires_*/,
                                             false, 30, map_name, beHMT, map_dir, true,
                                             do_soft_constraints);
-/*
-NDTFuserHMT(double map_resolution, double map_size_x_, double map_size_y_, double map_size_z_,
-			double sensor_range_ = 3, bool visualize_ = false, bool be2D_ = false,
-			bool doMultires_ = false, bool fuseIncomplete_ = false, int max_itr = 30,
-			std::string prefix_ = "", bool beHMT_ = true, std::string hmt_map_dir_ = "map",
-			bool _step_control = true, bool doSoftConstraints_ = false, int nb_neighbours = 2,
-			double resolutionLocalFactor = 1.)
-											*/
+        /*
+        NDTFuserHMT(double map_resolution, double map_size_x_, double map_size_y_, double map_size_z_,
+        			double sensor_range_ = 3, bool visualize_ = false, bool be2D_ = false,
+        			bool doMultires_ = false, bool fuseIncomplete_ = false, int max_itr = 30,
+        			std::string prefix_ = "", bool beHMT_ = true, std::string hmt_map_dir_ = "map",
+        			bool _step_control = true, bool doSoftConstraints_ = false, int nb_neighbours = 2,
+        			double resolutionLocalFactor = 1.)
+        											*/
         fuser->setMotionParams(motion_params);
         fuser->setSensorPose(sensor_pose_);
 
@@ -312,7 +312,7 @@ NDTFuserHMT(double map_resolution, double map_size_x_, double map_size_y_, doubl
         m.lock();
         ret = fuser->saveMap();
         m.unlock();
-		ROS_INFO("Save map %d", ret);
+        ROS_INFO("Save map %d", ret);
         return ret;
     }
 

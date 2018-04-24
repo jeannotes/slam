@@ -132,11 +132,11 @@ bool LaserOdometry::setup(ros::NodeHandle &node,
 
 void LaserOdometry::transformToStart(const pcl::PointXYZI& pi, pcl::PointXYZI& po) {
     float s = 10 * (pi.intensity - int(pi.intensity));
-	/*
-	********************
-	start				current
-	\\\\\\ -> this is (s)
-	*/
+    /*
+    ********************
+    start				current
+    \\\\\\ -> this is (s)
+    */
     po.x = pi.x - s * _transform.pos.x();
     po.y = pi.y - s * _transform.pos.y();
     po.z = pi.z - s * _transform.pos.z();
@@ -156,8 +156,8 @@ size_t LaserOdometry::transformToEnd(pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud
         pcl::PointXYZI& point = cloud->points[i];
 
         float s = 10 * (point.intensity - int(point.intensity));
-	// in decimal part of intensity, it is actually time
-	// so here, we interpolate the translation
+        // in decimal part of intensity, it is actually time
+        // so here, we interpolate the translation
 
         point.x -= s * _transform.pos.x();
         point.y -= s * _transform.pos.y();
@@ -167,15 +167,15 @@ size_t LaserOdometry::transformToEnd(pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud
         Angle rx = -s * _transform.rot_x.rad();
         Angle ry = -s * _transform.rot_y.rad();
         Angle rz = -s * _transform.rot_z.rad();
-		// it already have a rotation(suppose it is  (s * _transform.rot_x.rad())   )
-		// so first translate to first point
+        // it already have a rotation(suppose it is  (s * _transform.rot_x.rad())   )
+        // so first translate to first point
         rotateZXY(point, rz, rx, ry);
-		// now it at the first point
+        // now it at the first point
         rotateYXZ(point, _transform.rot_y, _transform.rot_x, _transform.rot_z);
-		/* now translate wholy, I mean from start to the end
-		rz is opposite from _transform.rot_z, I have already do some experiment
-		if it is opposite, then they can go back.
-		*/
+        /* now translate wholy, I mean from start to the end
+        rz is opposite from _transform.rot_z, I have already do some experiment
+        if it is opposite, then they can go back.
+        */
         point.x += _transform.pos.x() - _imuShiftFromStart.x();
         point.y += _transform.pos.y() - _imuShiftFromStart.y();
         point.z += _transform.pos.z() - _imuShiftFromStart.z();
@@ -454,11 +454,11 @@ void LaserOdometry::process() {
 
             for (int i = 0; i < cornerPointsSharpNum; i++) {
                 transformToStart(_cornerPointsSharp->points[i], pointSel);
-/* here, it use optimized transform to translate, then iterate as much as can
-_cornerPointsSharp->points[i] is this time's point, we translate to last frame's point, that
-is exactly pointSel. we use pointSel to align the previous point.
-adn just in this process, we get the best "_transform" -> the optimized translation!
-*/
+                /* here, it use optimized transform to translate, then iterate as much as can
+                _cornerPointsSharp->points[i] is this time's point, we translate to last frame's point, that
+                is exactly pointSel. we use pointSel to align the previous point.
+                adn just in this process, we get the best "_transform" -> the optimized translation!
+                */
                 if (iterCount % 5 == 0) {
                     pcl::removeNaNFromPointCloud(*_lastCornerCloud, *_lastCornerCloud, indices);
 
@@ -814,18 +814,18 @@ adn just in this process, we get the best "_transform" -> the optimized translat
                        -_transform.rot_y.rad() * 1.05,
                        -_transform.rot_z,
                        rx, ry, rz);
-	/*
-para: transdorsum -> all the rotation from start,
-para: _transform  -> just this time's optimized transformation
-set transdorsum to (0,0,5), _transform to (0,0,1) , after that we have (0,0,6)
-	*/
+    /*
+    para: transdorsum -> all the rotation from start,
+    para: _transform  -> just this time's optimized transformation
+    set transdorsum to (0,0,5), _transform to (0,0,1) , after that we have (0,0,6)
+    */
 
     Vector3 v( _transform.pos.x()        - _imuShiftFromStart.x(),
                _transform.pos.y()        - _imuShiftFromStart.y(),
                _transform.pos.z() * 1.05 - _imuShiftFromStart.z() );
     rotateZXY(v, rz, rx, ry);//go back format
     // here, we have v, which is the optimized transpose, and rx, ry, rz are total transformation
-    // after translate, we 
+    // after translate, we
     Vector3 trans = _transformSum.pos - v;
 
     pluginIMURotation(rx, ry, rz,
@@ -890,22 +890,25 @@ void LaserOdometry::publishResult() {
     }
 }
 
-void LaserOdometry::callback(const ros::TimerEvent&){
-	pcl::PointXYZI p;
-	p.x=0;p.y=1;p.z=0;p.intensity=2;
-	float an = 90 *  M_PI / 180;
-	Angle angX = 0;
-	Angle angY = 0;
-	Angle angZ(an);
-	static int i=0;
-	ROS_INFO("NUMBER:%d", i);
-	ROS_INFO("original: x:%f,y:%f,z:%f", p.x, p.y, p.z);
-	rotateZXY(p, -angZ, angX, angY);
-	ROS_INFO("first: x:%f,y:%f,z:%f", p.x, p.y, p.z);
-	rotateYXZ(p, angY, angX, angZ);
-	ROS_INFO("second: x:%f,y:%f,z:%f", p.x, p.y, p.z);
+void LaserOdometry::callback(const ros::TimerEvent&) {
+    pcl::PointXYZI p;
+    p.x = 0;
+    p.y = 1;
+    p.z = 0;
+    p.intensity = 2;
+    float an = 90 *  M_PI / 180;
+    Angle angX = 0;
+    Angle angY = 0;
+    Angle angZ(an);
+    static int i = 0;
+    ROS_INFO("NUMBER:%d", i);
+    ROS_INFO("original: x:%f,y:%f,z:%f", p.x, p.y, p.z);
+    rotateZXY(p, -angZ, angX, angY);
+    ROS_INFO("first: x:%f,y:%f,z:%f", p.x, p.y, p.z);
+    rotateYXZ(p, angY, angX, angZ);
+    ROS_INFO("second: x:%f,y:%f,z:%f", p.x, p.y, p.z);
 
-	i++;
+    i++;
 }
 
 } // end namespace loam

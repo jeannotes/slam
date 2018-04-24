@@ -11,7 +11,8 @@ find_package(Eigen REQUIRED )
 find_package(catkin REQUIRED COMPONENTS cv_bridge roscpp pcl_ros pcl_conversions 
   std_msgs
   nav_msgs
-   message_generation  )
+   message_generation    
+     )
 
 add_message_files(
   FILES
@@ -25,7 +26,7 @@ generate_messages(
 
 catkin_package(
     DEPENDS eigen opencv2 libpcl-all-dev
-    CATKIN_DEPENDS cv_bridge message_runtime roscpp pcl_ros pcl_conversions 
+    CATKIN_DEPENDS cv_bridge message_runtime roscpp pcl_ros pcl_conversions  
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
 )

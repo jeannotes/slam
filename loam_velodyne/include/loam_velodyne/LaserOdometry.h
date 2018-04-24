@@ -74,8 +74,8 @@ public:
 
     /** \brief Try to process buffered data. */
     void process();
-	
-	void callback(const ros::TimerEvent&);
+
+    void callback(const ros::TimerEvent&);
 
 protected:
     /** \brief Reset flags, etc. */
@@ -183,6 +183,6 @@ private:
 };
 
 } // end namespace loam
-	
+
 
 #endif //LOAM_LASERODOMETRY_H

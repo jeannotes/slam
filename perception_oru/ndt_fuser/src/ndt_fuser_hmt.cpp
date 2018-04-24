@@ -113,9 +113,9 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
         ctr++;
         return Tnow;
     }
-	
+
     if (doMultires) {
-		//false
+        //false
         //create two ndt maps with resolution = 3*resolution (or 5?)
         lslgeneric::NDTMap ndlocalLow(new lslgeneric::LazyGrid(3 * resolution));
         ndlocalLow.guessSize(0, 0, 0, sensor_range, sensor_range, map_size_z);
@@ -155,9 +155,9 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
         }
     }
 
-	ROS_INFO("be2D %d, doMultires %d", be2D, doMultires);
+    ROS_INFO("be2D %d, doMultires %d", be2D, doMultires);
     if (be2D) {
-		t2 = getDoubleTime();
+        t2 = getDoubleTime();
         if (matcher2D.match( *map, ndlocal, Tinit, true) || fuseIncomplete) {
             t3 = getDoubleTime();
             Eigen::Affine3d diff = (Tnow * Tmotion).inverse() * Tinit;
@@ -244,7 +244,7 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
             match_ret = matcher.match(*map, ndlocal, Tinit, true);
         }
         if (match_ret || fuseIncomplete) {
-			// fuseIncomplete initially false
+            // fuseIncomplete initially false
             t3 = getDoubleTime();
             Eigen::Affine3d diff = (Tnow * Tmotion).inverse() * Tinit;
 

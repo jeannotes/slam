@@ -37,34 +37,33 @@ void ndtCallback(const sensor_msgs::PointCloud2ConstPtr &msg) {
     nd.computeNDTCells();
 
     ROS_INFO("Loaded point cloud, %d's time", ctr);
-	
-	nd.writeToJFF("1.jff");// const char*
+
+    nd.writeToJFF("1.jff");// const char*
 
     ctr++;
 }
 
-void convert(){
-	pcl::PointCloud<pcl::PointXYZ> cloud;
-	ROS_INFO ("start converting");
-	if (pcl::io::loadPCDFile<pcl::PointXYZ>("1422133476050525.pcd", cloud) == -1) //* load the file
-    {
-    // we can change name to ohter, and every time we could just run the node
-    // TODO: change resolution, map size etc
+void convert() {
+    pcl::PointCloud<pcl::PointXYZ> cloud;
+    ROS_INFO ("start converting");
+    if (pcl::io::loadPCDFile<pcl::PointXYZ>("1422133476050525.pcd", cloud) == -1) { //* load the file
+        // we can change name to ohter, and every time we could just run the node
+        // TODO: change resolution, map size etc
         ROS_INFO ("error of load points");
         return;
     }
-	ROS_INFO ("loading ok!");
-	lslgeneric::NDTMap nd(new lslgeneric::LazyGrid(0.4));
+    ROS_INFO ("loading ok!");
+    lslgeneric::NDTMap nd(new lslgeneric::LazyGrid(0.4));
 
     Eigen::Affine3d T;
     T.setIdentity();
 
-	nd.initialize(T.translation()(0), T.translation()(1), T.translation()(2), 300, 300, 5);
-	nd.addPointCloud(T.translation(), cloud, 0.1, 100.0, 0.1);
+    nd.initialize(T.translation()(0), T.translation()(1), T.translation()(2), 300, 300, 5);
+    nd.addPointCloud(T.translation(), cloud, 0.1, 100.0, 0.1);
 
     nd.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, T.translation(), 0.1);
-	
-	nd.writeToJFF("2.jff");// const char*
+
+    nd.writeToJFF("2.jff");// const char*
 }
 
 int
@@ -74,7 +73,7 @@ main (int argc, char** argv) {
     ros::NodeHandle n;
     //ros::Subscriber sub1 = n.subscribe("/velodyne_cloud_registered_all", 100, ndtCallback);
     //ros::spin();
-	convert();
+    convert();
 
     return (0);
 }
