@@ -52,10 +52,6 @@ void NDTFuserHMT::initialize(Eigen::Affine3d initPos, pcl::PointCloud<pcl::Point
     }
 }
 
-/**
- *
- *
- */
 Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud) {
     if (!isInit) {
         fprintf(stderr, "NDT-FuserHMT: Call Initialize first!!\n");
