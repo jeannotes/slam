@@ -63,7 +63,7 @@ void convert() {
 
     nd.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, T.translation(), 0.1);
 
-    nd.writeToJFF("2.jff");// const char*
+    nd.writeToJFF("loam.jff");// const char*
 }
 
 int
