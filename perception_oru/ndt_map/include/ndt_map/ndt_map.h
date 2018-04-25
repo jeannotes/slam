@@ -170,8 +170,6 @@ public:
         guess_size_ = false;
     }
 
-
-
     /**
     	* Initilize with known values - normally this is done automatically, but in some cases you want to
     	* influence these - call only once and before calling any other function

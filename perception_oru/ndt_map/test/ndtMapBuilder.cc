@@ -46,7 +46,7 @@ void ndtCallback(const sensor_msgs::PointCloud2ConstPtr &msg) {
 void convert() {
     pcl::PointCloud<pcl::PointXYZ> cloud;
     ROS_INFO ("start converting");
-    if (pcl::io::loadPCDFile<pcl::PointXYZ>("1422133476050525.pcd", cloud) == -1) { //* load the file
+    if (pcl::io::loadPCDFile<pcl::PointXYZ>("1524226013228103.pcd", cloud) == -1) { //* load the file
         // we can change name to ohter, and every time we could just run the node
         // TODO: change resolution, map size etc
         ROS_INFO ("error of load points");
