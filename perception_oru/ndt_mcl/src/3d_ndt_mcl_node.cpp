@@ -249,11 +249,6 @@ public:
         //update filter -> + add parameter to subsample ndt map in filter step
         ndtmcl->updateAndPredictEff(Tm, cloud, subsample_level);
 
-
-        //update visualization
-        ///DRAW STUFF///
-        
-		fprintf(stderr, "*********do_visualize %d********", do_visualize);
         if (do_visualize) {
             pcounter++;
             if (pcounter % 500 == 0) {
@@ -273,8 +268,10 @@ public:
             }
 
             Eigen::Affine3d mean = ndtmcl->pf.getMean();
-            ndt_viz.addTrajectoryPoint(mean.translation()[0], mean.translation()[1], mean.translation()[2] + 0.5, 1.0, 0, 0);
+			//optimized trajectory red line
+            ndt_viz.addTrajectoryPoint(mean.translation()[0], mean.translation()[1], mean.translation()[2], 1.0, 0, 0);
             Eigen::Vector3d tr = Tcum.translation();
+			//odo trajectory green line
             ndt_viz.addTrajectoryPoint(tr[0], tr[1], tr[2] + 0.5, 0.0, 1.0, 0);
 
             //ndt_viz.addPointCloud(cloudT,1,0,0);
