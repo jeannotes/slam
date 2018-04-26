@@ -65,7 +65,7 @@ private:
 
     ///Laser sensor offset
     Eigen::Affine3d sensorPoseT; //<<Sensor offset with respect to odometry frame
-    Eigen::Affine3d Told, Todo, Todo_old, Tcum; //<<old and current odometry transformations
+    Eigen::Affine3d Told, Todo, Todo_old, Tcum, FIST_POSE; //<<old and current odometry transformations
     Eigen::Affine3d initPoseT; //<<Sensor offset with respect to odometry frame
 
     bool hasSensorPose, hasInitialPose;
@@ -215,6 +215,7 @@ public:
 				fprintf(stderr, "*********FAIL********");
                 return;
             }
+			FIST_POSE = Todo;
             //initialize filter
             Eigen::Vector3d tr = initPoseT.translation();
             Eigen::Vector3d rot = initPoseT.rotation().eulerAngles(0, 1, 2);
@@ -283,6 +284,7 @@ public:
         }
         //publish pose
         sendROSOdoMessage(ndtmcl->pf.getMean(), odo_in->header.stamp);
+        
         mcl_m.unlock();
 
     }
@@ -320,6 +322,25 @@ public:
 
         return true;
     }
+
+	template <typename PointT>
+	void publishCloudMsg(ros::Publisher& publisher,
+	                            const pcl::PointCloud<PointT>& cloud,
+	                            const ros::Time& stamp,
+	                            std::string frameID) {
+	    sensor_msgs::PointCloud2 msg;
+	    pcl::toROSMsg(cloud, msg);
+	    msg.header.stamp = stamp;
+	    msg.header.frame_id = frameID;
+	    publisher.publish(msg);
+	}
+	/*
+todo : we have the transformation matrix, and the cloud, attention
+the tum is actually the transformation matrix to the original(map), we just have to use this
+also, we could use Pt(this time's transformation to the real origin to odometry(very first time))
+we could first go to using Pt to go the the very first odometry, and again use P0
+to transformate to the map_origin(P0 is actually the first time we initialize a robot)
+*/
 };
 
 
