@@ -217,8 +217,6 @@ void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, co
             continue;
         }
 
-        //        std::cout << "centoroid add point [" << it->x << "," << it->y << "," <<it->z <<std::endl;
-
         if (range_limit > 0) {
             d << it->x, it->y, it->z;
             d = d - origin;
@@ -236,23 +234,6 @@ void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, co
         if (ptCell != NULL) {
             update_set.insert(ptCell);
             //          std::cout << "insert" << std::endl;
-        }
-        // else {
-        //   std::cout << "invalid cell..." << *it << std::endl;
-        //   int indX, indY, indZ;
-        //   lz->getIndexForPoint(*it, indX, indY, indZ);
-        //   std::cout << "ind : " << indX << "," << indY << "," << indZ << std::endl;
-        // }
-        {
-            // int indX, indY, indZ;
-            // lz->getIndexForPoint(*it, indX, indY, indZ);
-            // //          std::cout << "ind : " << indX << "," << indY << "," << indZ << std::endl;
-            // double dx,dy,dz;
-            // lz->getCenter(dx,dy,dz);
-            // //          std::cout << "center : " << dx << "," << dy << "," << dz << std::endl;
-            // int indX, indY, indZ;
-            // lz->getGridSize(indX, indY, indZ);
-            // //          std::cout << "gridsize : " << indX << "," << indY << "," << indZ << std::endl;
         }
 #endif
         it++;
@@ -782,8 +763,6 @@ bool NDTMap::addMeasurement(const Eigen::Vector3d &origin, pcl::PointXYZ endpoin
     int sizeX, sizeY, sizeZ;
     lz->getGridSize(sizeX, sizeY, sizeZ);
 
-    //Cell<PointT> ****dataArray = lz->getDataArrayPtr();
-
     double min1 = std::min(cellSizeX, cellSizeY);
     double min2 = std::min(cellSizeZ, cellSizeY);
 
@@ -801,7 +780,6 @@ bool NDTMap::addMeasurement(const Eigen::Vector3d &origin, pcl::PointXYZ endpoin
 
     Eigen::Vector3d diff;
     diff << endpoint.x - origin(0), endpoint.y - origin(1), endpoint.z - origin(2);
-
 
     double l = diff.norm();
     if (l > 200) {
