@@ -31,6 +31,7 @@
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "geometry_msgs/Pose.h"
 #include <pcl_conversions/pcl_conversions.h>
+#include <pcl/common/transforms.h>
 
 #include "message_filters/subscriber.h"
 #include "tf/message_filter.h"
@@ -80,6 +81,7 @@ private:
     NDTViz ndt_viz;
 
     ros::Publisher mcl_pub; ///< The output of MCL is published with this!
+    ros::Publisher mcl_cloud;
     message_filters::Synchronizer< PointsOdomSync > *sync_po_;
 
     std::string tf_base_link, tf_sensor_link, points_topic, odometry_topic;
@@ -154,6 +156,7 @@ public:
 
         fprintf(stderr, "*** FORCE SIR = %d****", forceSIR);
         mcl_pub = nh_.advertise<nav_msgs::Odometry>("ndt_mcl", 10);
+		mcl_cloud = nh_.advertise<sensor_msgs::PointCloud2> ("/perception_loam", 10);
 
         // Prepare the callbacks and message filters
 
@@ -262,11 +265,22 @@ public:
             //if(pcounter%10==0){
 
             ndt_viz.clearParticles();
+			/*
             for (int i = 0; i < ndtmcl->pf.size(); i++) {
-                double x, y, z;
-                ndtmcl->pf.pcloud[i].getXYZ(x, y, z);
-                ndt_viz.addParticle(x, y, z + 0.5, 1.0, 1.0, 1.0);
+                //double x, y, z;
+                //ndtmcl->pf.pcloud[i].getXYZ(x, y, z);
+                //ndt_viz.addParticle(x, y, z + 0.5, 1.0, 1.0, 1.0);
             }
+            originally, it is used to show particles, 
+            now I changed to show lidar points
+            */
+            pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
+			pcl::transformPointCloud (cloud, transformed_cloud, ndtmcl->pf.getMean());
+            for (int i=0; i< cloud.points.size(); i++){
+				ndt_viz.addParticle(transformed_cloud.points[i].x, 
+									transformed_cloud.points[i].y,
+									transformed_cloud.points[i].z, 1.0, 1.0, 1.0);
+			}
 
             Eigen::Affine3d mean = ndtmcl->pf.getMean();
 			//optimized trajectory red line
@@ -280,13 +294,11 @@ public:
             ndt_viz.displayTrajectory();
             ndt_viz.win3D->setCameraPointingToPoint(mean.translation()[0], mean.translation()[1], 3.0);
             ndt_viz.repaint();
-            //}
-        }
+		}
         //publish pose
         sendROSOdoMessage(ndtmcl->pf.getMean(), odo_in->header.stamp);
         
         mcl_m.unlock();
-
     }
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     //FIXME: this should be in 3D
@@ -342,7 +354,6 @@ we could first go to using Pt to go the the very first odometry, and again use P
 to transformate to the map_origin(P0 is actually the first time we initialize a robot)
 */
 };
-
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "NDT-MCL");
