@@ -27,56 +27,23 @@ catkin_package(
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
 
-#find_package(LibXml2 REQUIRED)
-#include_directories(${LIBXML2_INCLUDE_DIR})
-#ADD_DEFINITIONS(-DLINUX_OS)
-#find_package(ndt_visualisation)
 find_package(OpenGL REQUIRED)
-#find_package(GLU REQUIRED)
-#find_package(GLUT REQUIRED)
-#find_package(JPEG REQUIRED)
-#include_directories(${JPEG_INCLUDE_DIR})
-#include_directories(${GLUT_INCLUDE_DIR})
+
 include_directories(${OPENGL_INCLUDE_DIR})
-#FIND_PACKAGE(MRPT REQUIRED gui;base;opengl)
-#find_package(MRPT REQUIRED)
+
 find_package(OpenMP)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 
-#uncomment if you have defined messages
-#add_message_files(
-#  FILES
-#  ndt_cell.msg
-#  ndt_map.msg
-#)
-#uncomment if you have defined services
-#add_service_files(
-#  FILES
-  # TODO: List your msg files here
-#)
 
 include_directories(${Boost_INCLUDE_DIRS})
-#target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
-#message(STATUS "->" ${MRPT_LIBS})
-#message(STATUS "->" ${MRPT_LIBRARIES})
 
 set (${PROJECT_NAME}_LIB_SRCS
 #	    src/ndt_fuser.cpp
 	    src/ndt_fuser_hmt.cpp
 	)
 
-#add_executable(test_ndt_fuser src/ndt_fuser_from_depth.cpp)
-#target_link_libraries(test_ndt_fuser ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS})
-#target_link_libraries(test_ndt_fuser ${Boost_LIBRARIES})
-#rosbuild_add_openmp_flags(test_ndt_fuser)
 
-#target_link_libraries(example ${PROJECT_NAME})
-## Generate added messages and services with any dependencies listed here
-#generate_messages(
-#    DEPENDENCIES 
-#    std_msgs
-#)
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
