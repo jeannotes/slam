@@ -375,8 +375,6 @@ void LaserOdometry::spin() {
     }
 }
 
-
-
 void LaserOdometry::reset() {
     _newCornerPointsSharp = false;
     _newCornerPointsLessSharp = false;
@@ -385,8 +383,6 @@ void LaserOdometry::reset() {
     _newLaserCloudFullRes = false;
     _newImuTrans = false;
 }
-
-
 
 bool LaserOdometry::hasNewData() {
     return _newCornerPointsSharp && _newCornerPointsLessSharp && _newSurfPointsFlat &&
@@ -455,8 +451,8 @@ void LaserOdometry::process() {
             for (int i = 0; i < cornerPointsSharpNum; i++) {
                 transformToStart(_cornerPointsSharp->points[i], pointSel);
                 /* here, it use optimized transform to translate, then iterate as much as can
-                _cornerPointsSharp->points[i] is this time's point, we translate to last frame's point, that
-                is exactly pointSel. we use pointSel to align the previous point.
+                _cornerPointsSharp->points[i] is this time's point, we translate to last frame's point,
+                that is exactly pointSel. we use pointSel to align the previous point.
                 adn just in this process, we get the best "_transform" -> the optimized translation!
                 */
                 if (iterCount % 5 == 0) {
@@ -467,7 +463,7 @@ void LaserOdometry::process() {
                     /*
                     pointSearchInd:		index
                     pointSearchSqDis:	the corresponding distance
-                    	*/
+                    */
 
                     int closestPointInd = -1, minPointInd2 = -1;
                     // find the second min
@@ -536,7 +532,7 @@ void LaserOdometry::process() {
 // distance between tripod1 and tripod2 -> which is the denominator in equation (2)
                     float l12 = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) + (z1 - z2) * (z1 - z2));
 
-// la, lb ,lc just is the difference with respect to x0(pointSel)
+// la, lb ,lc just is the difference(d in equation (2)) with respect to x0(pointSel)
                     float la = ((y1 - y2) * ((x0 - x1) * (y0 - y2) - (x0 - x2) * (y0 - y1))
                                 + (z1 - z2) * ((x0 - x1) * (z0 - z2) - (x0 - x2) * (z0 - z1))) / a012 / l12;
 
@@ -854,8 +850,6 @@ void LaserOdometry::process() {
 
     publishResult();
 }
-
-
 
 void LaserOdometry::publishResult() {
     // publish odometry tranformations

@@ -715,7 +715,6 @@ void LaserMapping::process() {
         _laserCloudSurfArray[ind].swap(_laserCloudSurfDSArray[ind]);
     }
 
-
     // publish result
     publishResult();
 }
