@@ -204,8 +204,6 @@ void TransformMaintenance::laserOdometryHandler(const nav_msgs::Odometry::ConstP
     _tfBroadcaster2.sendTransform(_laserOdometryTrans2);
 }
 
-
-
 void TransformMaintenance::odomAftMappedHandler(const nav_msgs::Odometry::ConstPtr& odomAftMapped) {
     double roll, pitch, yaw;
     geometry_msgs::Quaternion geoQuat = odomAftMapped->pose.pose.orientation;

@@ -211,8 +211,6 @@ bool LaserMapping::setup(ros::NodeHandle& node,
     return true;
 }
 
-
-
 void LaserMapping::transformAssociateToMap() {
     _transformIncre.pos = _transformBefMapped.pos - _transformSum.pos;
     rotateYXZ(_transformIncre.pos, -(_transformSum.rot_y), -(_transformSum.rot_x), -(_transformSum.rot_z));
@@ -278,8 +276,6 @@ void LaserMapping::transformAssociateToMap() {
     _transformTobeMapped.pos = _transformAftMapped.pos - v;
 }
 
-
-
 void LaserMapping::transformUpdate() {
     if (_imuHistory.size() > 0) {
         size_t imuIdx = 0;
@@ -308,8 +304,6 @@ void LaserMapping::transformUpdate() {
     _transformAftMapped = _transformTobeMapped;
 }
 
-
-
 void LaserMapping::pointAssociateToMap(const pcl::PointXYZI& pi, pcl::PointXYZI& po) {
     po.x = pi.x;
     po.y = pi.y;
@@ -323,8 +317,6 @@ void LaserMapping::pointAssociateToMap(const pcl::PointXYZI& pi, pcl::PointXYZI&
     po.z += _transformTobeMapped.pos.z();
 }
 
-
-
 void LaserMapping::pointAssociateTobeMapped(const pcl::PointXYZI& pi, pcl::PointXYZI& po) {
     po.x = pi.x - _transformTobeMapped.pos.x();
     po.y = pi.y - _transformTobeMapped.pos.y();
@@ -333,8 +325,6 @@ void LaserMapping::pointAssociateTobeMapped(const pcl::PointXYZI& pi, pcl::Point
 
     rotateYXZ(po, -_transformTobeMapped.rot_y, -_transformTobeMapped.rot_x, -_transformTobeMapped.rot_z);
 }
-
-
 
 void LaserMapping::laserCloudCornerLastHandler(const sensor_msgs::PointCloud2ConstPtr& cornerPointsLastMsg) {
     _timeLaserCloudCornerLast = cornerPointsLastMsg->header.stamp;
