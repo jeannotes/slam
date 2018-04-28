@@ -23,18 +23,17 @@
 void ndtCallback(const sensor_msgs::PointCloud2ConstPtr &msg) {
     pcl::PointCloud<pcl::PointXYZ> cloud;
     pcl::fromROSMsg(*msg, cloud);
-	int i=0;
+	static int i=0;
     ROS_INFO ("%d Received %d data points with the following fields: %s",i, (int)(msg->width * msg->height),
               pcl::getFieldsList (*msg).c_str ());
 
-    lslgeneric::NDTMap nd(new lslgeneric::LazyGrid(0.4));
-
     Eigen::Affine3d T;
     T.setIdentity();
+	lslgeneric::NDTMap nd(new lslgeneric::LazyGrid(0.4));
     nd.addPointCloud(T.translation(), cloud);
     nd.computeNDTCells();
-
-    nd.writeToJFF("1.jff");// const char*
+	if (i % 5 == 0)
+    	nd.writeToJFF("1.jff");// const char*
 
     i++;
 }
@@ -57,11 +56,10 @@ void convert() {
 
 	pcl::PointCloud<pcl::PointXYZ> first(cloud);
 	first.resize(100);
-    //nd.addPointCloud(T.translation(), first, 0.1, 100.0, 0.1);	
-	//nd.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, T.translation(), 0.1);
-	//map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 1250, map_size_z/2, 0.06);
-
-	nd.addPointCloudMeanUpdate(T.translation(), cloud, localMapSize, 100e5, 2550, 5, 0.1);
+	
+	//nd.addPointCloud(T.translation(), cloud, 0.06, 100.0, 0.25, 1e7);
+	nd.loadPointCloud(cloud, 100);
+	nd.computeNDTCells();
 
     nd.writeToJFF("loam.jff");// const char*
 }

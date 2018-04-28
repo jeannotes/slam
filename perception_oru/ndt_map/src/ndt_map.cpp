@@ -5,7 +5,7 @@
 
 #include <string>
 #include <climits>
-
+#include <ros/ros.h>
 //#include <ndt_map/oc_tree.h>
 #include <ndt_map/ndt_map.h>
 #include <ndt_map/lazy_grid.h>
@@ -26,18 +26,16 @@ namespace lslgeneric {
 */
 void NDTMap::loadPointCloud(const pcl::PointCloud<pcl::PointXYZ> &pc, double range_limit) {
     if (index_ != NULL) {
-        //std::cout<<"CLONE INDEX\n";
+        std::cout<<"CLONE INDEX\n";
         SpatialIndex *si = index_->clone();
-        //cout<<"allocating index\n";
         if (!isFirstLoad_) {
-            //std::cout<<"deleting old index\n";
+            std::cout<<"deleting old index\n";
             delete index_;
         }
         isFirstLoad_ = false;
         index_ = si;
     } else {
-        //NULL index in constructor, abort!
-        //ERR("constructor must specify a non-NULL spatial index\n");
+        fprintf(stderr, "constructor must specify a non-NULL spatial index!\n");
         return;
     }
 
@@ -48,7 +46,7 @@ void NDTMap::loadPointCloud(const pcl::PointCloud<pcl::PointXYZ> &pc, double ran
     }
 
     if (index_ == NULL) {
-        //ERR("Problem creating index, unimplemented method\n");
+        fprintf(stderr, "Problem creating index, unimplemented method!\n");
         return;
     }
 
@@ -125,8 +123,8 @@ void NDTMap::loadPointCloud(const pcl::PointCloud<pcl::PointXYZ> &pc, double ran
         }
     }
 
-    //    ROS_INFO("centroid is %f,%f,%f", centroid(0),centroid(1),centroid(2));
-    //    ROS_INFO("maxDist is %lf", maxDist);
+	fprintf(stderr, "centroid is");
+	fprintf(stderr, "maxDist is");
 
     it = pc.points.begin();
     while (it != pc.points.end()) {
