@@ -131,10 +131,15 @@ public:
      * Intialize filter to some pose and with some number of particles
      *
      */
-    void initializeFilter(double x, double y, double z, double roll, double pitch, double yaw,
-                          double x_e, double y_e, double z_e, double roll_e, double pitch_e, double yaw_e,
+    void initializeFilter(double x, double y, double z, 
+    					  double roll, double pitch, double yaw,
+                          double x_e, double y_e, double z_e, 
+                          double roll_e, double pitch_e, double yaw_e,
                           unsigned int numParticles) {
-        pf.initializeNormalRandom(numParticles, x, y, z, roll, pitch, yaw, x_e, y_e, z_e, roll_e, pitch_e, yaw_e);
+        pf.initializeNormalRandom(numParticles, x, y, z, 
+									roll, pitch, yaw, 
+									x_e, y_e, z_e, 
+									roll_e, pitch_e, yaw_e);
     }
 
     void predict(Eigen::Affine3d Tmotion);

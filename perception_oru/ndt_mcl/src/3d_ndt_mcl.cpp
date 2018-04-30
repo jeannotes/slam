@@ -137,7 +137,9 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
     Eigen::Matrix<double, 6, 6> motion_model_m(motion_model.data());
 
     Eigen::Matrix<double, 6, 1> incr;
-    incr << fabs(tr[0]), fabs(tr[1]), fabs(tr[2]), fabs(rot[0]), fabs(rot[1]), fabs(rot[2]);
+    //incr << fabs(tr[0]), fabs(tr[1]), fabs(tr[2]), fabs(rot[0]), fabs(rot[1]), fabs(rot[2]);
+    // originally it is fabs, I think it should be what it is instead of fabs
+	incr << tr[0], tr[1], tr[2], rot[0], rot[1], rot[2];
 //	motion_model_m is some parameters, we could infer from function og particle.predict
 //  something like double x = tr[0] + myrand.normalRandom() * vx;
 //  and at the beginning, motion_model_m have push back some very small numbers
@@ -152,7 +154,7 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
     }
 
     // std::cerr << "motion var(2) : " << m.transpose() << std::endl;
-    /*
+    	/*
     	here, Tmotion is Tm, Tm = Todo_old.inverse() * Todo;
     	just the change difference
     	until, it update the particles
