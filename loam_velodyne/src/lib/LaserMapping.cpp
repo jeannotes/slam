@@ -37,7 +37,7 @@
 
 #include <Eigen/Eigenvalues>
 #include <Eigen/QR>
-
+#include <Eigen/Eigen>
 
 namespace loam {
 
@@ -46,7 +46,6 @@ using std::fabs;
 using std::asin;
 using std::atan2;
 using std::pow;
-
 
 LaserMapping::LaserMapping(const float& scanPeriod,
                            const size_t& maxIterations)
@@ -104,9 +103,12 @@ LaserMapping::LaserMapping(const float& scanPeriod,
     _downSizeFilterCorner.setLeafSize(0.2, 0.2, 0.2);
     _downSizeFilterSurf.setLeafSize(0.4, 0.4, 0.4);
     _downSizeFilterMap.setLeafSize(0.6, 0.6, 0.6);
+
+	viewer = new NDTViz(true);
+    viewer->win3D->start_main_loop_own_thread();
+
+	map = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(0.2));
 }
-
-
 
 bool LaserMapping::setup(ros::NodeHandle& node,
                          ros::NodeHandle& privateNode) {
@@ -463,7 +465,6 @@ void LaserMapping::process() {
         pointAssociateToMap(_laserCloudSurfLast->points[i], pointSel);
         _laserCloudSurfStack->push_back(pointSel);
     }
-
 
     pcl::PointXYZI pointOnYAxis;
     pointOnYAxis.x = 0.0;
@@ -1042,6 +1043,17 @@ void LaserMapping::publishResult() {
     // publish transformed full resolution input cloud
     publishCloudMsg(_pubLaserCloudFullRes, *_laserCloudFullRes, _timeLaserOdometry, "/camera_init");
     publishCloudMsg(_pubLaserCloudFullRes_all, accumulate_laserCloudFullRes, _timeLaserOdometry, "/camera_init");
+
+	static bool point_map_first = true;
+	Eigen::Affine3d Tnow;
+	if(point_map_first){
+		//map->addPointCloud(Tnow.translation(), *_laserCloudFullRes, 0.1, 100.0, 0.1);
+		//map->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, Tnow.translation(), 0.1);
+		point_map_first = false;
+	}
+/*
+Todo, add ndt-viewer here and map transformation
+*/
 
     // publish odometry after mapped transformations
     geometry_msgs::Quaternion geoQuat = tf::createQuaternionMsgFromRollPitchYaw

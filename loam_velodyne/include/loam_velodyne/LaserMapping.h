@@ -47,6 +47,8 @@
 #include <pcl/point_types.h>
 #include <pcl/filters/voxel_grid.h>
 
+#include <ndt_visualisation/ndt_viz.h>
+#include <ndt_map/ndt_map.h>
 
 namespace loam {
 
@@ -88,7 +90,10 @@ class LaserMapping {
 public:
     explicit LaserMapping(const float& scanPeriod = 0.1,
                           const size_t& maxIterations = 10);
-
+	~LaserMapping(){
+		delete viewer;
+		delete map;
+	}
     /** \brief Setup component in active mode.
      *
      * @param node the ROS node handle
@@ -238,7 +243,8 @@ private:
     ros::Subscriber _subLaserCloudFullRes;      ///< full resolution cloud message subscriber
     ros::Subscriber _subLaserOdometry;          ///< laser odometry message subscriber
     ros::Subscriber _subImu;                    ///< IMU message subscriber
-
+	NDTViz *viewer;
+	lslgeneric::NDTMap *map;	
 };
 
 } // end namespace loam
