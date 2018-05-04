@@ -90,10 +90,10 @@ class LaserMapping {
 public:
     explicit LaserMapping(const float& scanPeriod = 0.1,
                           const size_t& maxIterations = 10);
-	~LaserMapping(){
-		delete viewer;
-		delete map;
-	}
+    ~LaserMapping() {
+        delete viewer;
+        delete map;
+    }
     /** \brief Setup component in active mode.
      *
      * @param node the ROS node handle
@@ -243,8 +243,8 @@ private:
     ros::Subscriber _subLaserCloudFullRes;      ///< full resolution cloud message subscriber
     ros::Subscriber _subLaserOdometry;          ///< laser odometry message subscriber
     ros::Subscriber _subImu;                    ///< IMU message subscriber
-	NDTViz *viewer;
-	lslgeneric::NDTMap *map;	
+    NDTViz *viewer;
+    lslgeneric::NDTMap *map;
 };
 
 } // end namespace loam

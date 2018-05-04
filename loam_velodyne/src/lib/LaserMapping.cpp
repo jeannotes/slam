@@ -104,10 +104,10 @@ LaserMapping::LaserMapping(const float& scanPeriod,
     _downSizeFilterSurf.setLeafSize(0.4, 0.4, 0.4);
     _downSizeFilterMap.setLeafSize(0.6, 0.6, 0.6);
 
-	viewer = new NDTViz(true);
+    viewer = new NDTViz(true);
     viewer->win3D->start_main_loop_own_thread();
 
-	map = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(0.2));
+    map = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(0.2));
 }
 
 bool LaserMapping::setup(ros::NodeHandle& node,
@@ -1044,16 +1044,16 @@ void LaserMapping::publishResult() {
     publishCloudMsg(_pubLaserCloudFullRes, *_laserCloudFullRes, _timeLaserOdometry, "/camera_init");
     publishCloudMsg(_pubLaserCloudFullRes_all, accumulate_laserCloudFullRes, _timeLaserOdometry, "/camera_init");
 
-	static bool point_map_first = true;
-	Eigen::Affine3d Tnow;
-	if(point_map_first){
-		//map->addPointCloud(Tnow.translation(), *_laserCloudFullRes, 0.1, 100.0, 0.1);
-		//map->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, Tnow.translation(), 0.1);
-		point_map_first = false;
-	}
-/*
-Todo, add ndt-viewer here and map transformation
-*/
+    static bool point_map_first = true;
+    Eigen::Affine3d Tnow;
+    if (point_map_first) {
+        //map->addPointCloud(Tnow.translation(), *_laserCloudFullRes, 0.1, 100.0, 0.1);
+        //map->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, Tnow.translation(), 0.1);
+        point_map_first = false;
+    }
+    /*
+    Todo, add ndt-viewer here and map transformation
+    */
 
     // publish odometry after mapped transformations
     geometry_msgs::Quaternion geoQuat = tf::createQuaternionMsgFromRollPitchYaw
