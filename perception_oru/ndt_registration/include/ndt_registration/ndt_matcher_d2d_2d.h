@@ -43,12 +43,14 @@
 #include <stdio.h>
 #include <math.h>
 
-namespace lslgeneric {
+namespace lslgeneric
+{
 
 /**
  * This class implements NDT registration for 3D point cloud scans.
  */
-class NDTMatcherD2D_2D {
+class NDTMatcherD2D_2D
+{
 public:
     /**
      parametrized constructor. A default set is (false,false,true,empty_vector). parameters are:
@@ -57,14 +59,17 @@ public:
     \param _resolutions --- if previous bool is not set, these are the resolutions (in reverse order) that we will go through
     */
     NDTMatcherD2D_2D(bool _isIrregularGrid,
-                     bool useDefaultGridResolutions, std::vector<double> _resolutions) {
-        this->init(_isIrregularGrid, useDefaultGridResolutions, _resolutions);
+                  bool useDefaultGridResolutions, std::vector<double> _resolutions)
+    {
+        this->init(_isIrregularGrid,useDefaultGridResolutions,_resolutions);
     }
-    NDTMatcherD2D_2D() {
-        this->init(false, true, std::vector<double>());
+    NDTMatcherD2D_2D()
+    {
+        this->init(false,true,std::vector<double>());
     }
-    NDTMatcherD2D_2D(const NDTMatcherD2D_2D& other) {
-        this->init(other.isIrregularGrid, false, other.resolutions);
+    NDTMatcherD2D_2D(const NDTMatcherD2D_2D& other)
+    {
+        this->init(other.isIrregularGrid,false,other.resolutions);
     }
 
     /**
@@ -82,7 +87,7 @@ public:
      */
     bool match( pcl::PointCloud<pcl::PointXYZ>& target,
                 pcl::PointCloud<pcl::PointXYZ>& source,
-                Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T,
+                Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T,
                 bool useInitialGuess = false);
 
     /**
@@ -98,7 +103,7 @@ public:
      */
     bool match( NDTMap& target,
                 NDTMap& source,
-                Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T,
+                Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T,
                 bool useInitialGuess = false);
 
     //compute the score gradient & hessian of a point cloud + transformation to an NDT (assuming a 2D transformation)
@@ -113,7 +118,7 @@ public:
     );
     double finalscore;
     double current_resolution;
-
+    
     ///max iterations, set in constructor
     int ITR_MAX;
     ///sets step control on/off. set to true in constructor
@@ -124,19 +129,19 @@ public:
     int n_neighbours;
 protected:
 
-    Eigen::Matrix<double, 3, 3> Jest;
-    Eigen::Matrix<double, 9, 3> Hest;
-    Eigen::Matrix<double, 3, 9> Zest;
-    Eigen::Matrix<double, 9, 9> ZHest;
+    Eigen::Matrix<double,3,3> Jest;
+    Eigen::Matrix<double,9,3> Hest;
+    Eigen::Matrix<double,3,9> Zest;
+    Eigen::Matrix<double,9,9> ZHest;
     //vars for gradient
-    Eigen::Matrix<double, 3, 1> xtBJ, xtBZBx, Q;
+    Eigen::Matrix<double,3,1> xtBJ, xtBZBx, Q;
     //vars for hessian
-    Eigen::Matrix<double, 3, 3> JtBJ, xtBZBJ, xtBH, xtBZBZBx, xtBZhBx;
-    Eigen::Matrix<double, 1, 3> TMP1, xtB;
+    Eigen::Matrix<double,3,3> JtBJ, xtBZBJ, xtBH, xtBZBZBx, xtBZhBx;
+    Eigen::Matrix<double,1,3> TMP1, xtB;
 
     int NUMBER_OF_ACTIVE_CELLS;
     int NUMBER_OF_POINTS;
-    double lfd1, lfd2;
+    double lfd1,lfd2;
     int iteration_counter_internal;
     bool isIrregularGrid;
     std::vector<double> resolutions;
@@ -156,7 +161,7 @@ protected:
         bool computeHessian);
 
     //pre-computes the derivative matrices Jest, Hest, Zest, ZHest
-    void computeDerivatives_2d(Eigen::Vector3d &m1, Eigen::Matrix3d C1, bool computeHessian = true);
+    void computeDerivatives_2d(Eigen::Vector3d &m1, Eigen::Matrix3d C1, bool computeHessian=true);
 
     //iteratively update the score gradient and hessian (2d version)
     virtual bool update_gradient_hessian_local_2d(
@@ -165,29 +170,30 @@ protected:
         const Eigen::Vector3d &m1,
         const Eigen::Matrix3d &C1,
         const double &likelihood,
-        const Eigen::Matrix<double, 3, 3> &_Jest,
-        const Eigen::Matrix<double, 9, 3> &_Hest,
-        const Eigen::Matrix<double, 3, 9> &_Zest,
-        const Eigen::Matrix<double, 9, 9> &_ZHest,
+        const Eigen::Matrix<double,3,3> &_Jest,
+        const Eigen::Matrix<double,9,3> &_Hest,
+        const Eigen::Matrix<double,3,9> &_Zest,
+        const Eigen::Matrix<double,9,9> &_ZHest,
         bool computeHessian);
 
     //pre-computes the derivative matrices Jest, Hest, Zest, ZHest
     void computeDerivativesLocal_2d(Eigen::Vector3d &m1, Eigen::Matrix3d C1,
-                                    Eigen::Matrix<double, 3, 3> &_Jest,
-                                    Eigen::Matrix<double, 9, 3> &_Hest,
-                                    Eigen::Matrix<double, 3, 9> &_Zest,
-                                    Eigen::Matrix<double, 9, 9> &_ZHest,
-                                    bool computeHessian);
+                                 Eigen::Matrix<double,3,3> &_Jest,
+                                 Eigen::Matrix<double,9,3> &_Hest,
+                                 Eigen::Matrix<double,3,9> &_Zest,
+                                 Eigen::Matrix<double,9,9> &_ZHest,
+                                 bool computeHessian);
 
     //perform line search to find the best descent rate (Mohre&Thuente)
     //adapted from NOX
     double lineSearch2D(
-        Eigen::Matrix<double, 3, 1> &increment,
+        Eigen::Matrix<double,3,1> &increment,
         std::vector<NDTCell*> &source,
         NDTMap &target) ;
 
     //auxiliary functions for MoreThuente line search
-    struct MoreThuente {
+    struct MoreThuente
+    {
         static double min(double a, double b);
         static double max(double a, double b);
         static double absmax(double a, double b, double c);

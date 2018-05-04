@@ -36,13 +36,16 @@
 #define NDTMATCHERFEATUREF2F_HH
 
 #include <ndt_registration/ndt_matcher_d2d.h>
-namespace lslgeneric {
+namespace lslgeneric
+{
 /**
  * This class implements NDT / NDT registration with a priory known correspondances.
  */
-class NDTMatcherFeatureD2D : public lslgeneric::NDTMatcherD2D {
+class NDTMatcherFeatureD2D : public lslgeneric::NDTMatcherD2D
+{
 public:
-    NDTMatcherFeatureD2D(const std::vector<std::pair<int, int> > &corr, double trimFactor = 1.) : _corr(corr), _trimFactor(trimFactor) {
+    NDTMatcherFeatureD2D(const std::vector<std::pair<int, int> > &corr, double trimFactor = 1.) : _corr(corr), _trimFactor(trimFactor)
+    {
         _goodCorr.resize(corr.size());
         std::fill(_goodCorr.begin(), _goodCorr.end(), true);
     }
@@ -67,29 +70,29 @@ public:
      */
     bool covariance( lslgeneric::NDTMap& target,
                      lslgeneric::NDTMap& source,
-                     Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T,
-                     Eigen::Matrix<double, 6, 6> &cov
+                     Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T,
+                     Eigen::Matrix<double,6,6> &cov
                    );
 
     //compute the score of a point cloud to an NDT
     virtual double scoreNDT(std::vector<lslgeneric::NDTCell*> &source,
                             lslgeneric::NDTMap &target,
-                            Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T);
+                            Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T);
 
     //compute the score gradient & hessian of a point cloud + transformation to an NDT
     // input: moving, fixed, tr, computeHessian
     //output: score_gradient, Hessian
     virtual double derivativesNDT(
-        const std::vector<NDTCell*> &sourceNDT,
-        const NDTMap &targetNDT,
-        Eigen::MatrixXd &score_gradient,
-        Eigen::MatrixXd &Hessian,
-        bool computeHessian
+	    const std::vector<NDTCell*> &sourceNDT,
+	    const NDTMap &targetNDT,
+	    Eigen::MatrixXd &score_gradient,
+	    Eigen::MatrixXd &Hessian,
+	    bool computeHessian
     );
 #if 0
     virtual bool update_gradient_hessian(
-        Eigen::Matrix<double, 6, 1> &score_gradient,
-        Eigen::Matrix<double, 6, 6> &Hessian,
+        Eigen::Matrix<double,6,1> &score_gradient,
+        Eigen::Matrix<double,6,6> &Hessian,
 
         Eigen::Vector3d &m1,
         Eigen::Matrix3d &C1);
