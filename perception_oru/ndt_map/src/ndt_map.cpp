@@ -26,10 +26,10 @@ namespace lslgeneric {
 */
 void NDTMap::loadPointCloud(const pcl::PointCloud<pcl::PointXYZ> &pc, double range_limit) {
     if (index_ != NULL) {
-        std::cout<<"CLONE INDEX\n";
+        std::cout << "CLONE INDEX\n";
         SpatialIndex *si = index_->clone();
         if (!isFirstLoad_) {
-            std::cout<<"deleting old index\n";
+            std::cout << "deleting old index\n";
             delete index_;
         }
         isFirstLoad_ = false;
@@ -123,8 +123,8 @@ void NDTMap::loadPointCloud(const pcl::PointCloud<pcl::PointXYZ> &pc, double ran
         }
     }
 
-	fprintf(stderr, "centroid is");
-	fprintf(stderr, "maxDist is");
+    fprintf(stderr, "centroid is");
+    fprintf(stderr, "maxDist is");
 
     it = pc.points.begin();
     while (it != pc.points.end()) {

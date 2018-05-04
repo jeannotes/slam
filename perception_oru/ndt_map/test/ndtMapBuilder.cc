@@ -23,17 +23,17 @@
 void ndtCallback(const sensor_msgs::PointCloud2ConstPtr &msg) {
     pcl::PointCloud<pcl::PointXYZ> cloud;
     pcl::fromROSMsg(*msg, cloud);
-	static int i=0;
-    ROS_INFO ("%d Received %d data points with the following fields: %s",i, (int)(msg->width * msg->height),
+    static int i = 0;
+    ROS_INFO ("%d Received %d data points with the following fields: %s", i, (int)(msg->width * msg->height),
               pcl::getFieldsList (*msg).c_str ());
 
     Eigen::Affine3d T;
     T.setIdentity();
-	lslgeneric::NDTMap nd(new lslgeneric::LazyGrid(0.4));
+    lslgeneric::NDTMap nd(new lslgeneric::LazyGrid(0.4));
     nd.addPointCloud(T.translation(), cloud);
     nd.computeNDTCells();
-	if (i % 5 == 0)
-    	nd.writeToJFF("1.jff");// const char*
+    if (i % 5 == 0)
+        nd.writeToJFF("1.jff");// const char*
 
     i++;
 }
@@ -41,7 +41,7 @@ void ndtCallback(const sensor_msgs::PointCloud2ConstPtr &msg) {
 void convert() {
     pcl::PointCloud<pcl::PointXYZ> cloud;
     ROS_INFO ("start converting");
-	Eigen::Vector3d localMapSize(3,3,5);
+    Eigen::Vector3d localMapSize(3, 3, 5);
     if (pcl::io::loadPCDFile<pcl::PointXYZ>("1524226013228103.pcd", cloud) == -1) {
         ROS_INFO ("error of load points");
         return;
@@ -54,12 +54,12 @@ void convert() {
 
     nd.initialize(T.translation()(0), T.translation()(1), T.translation()(2), 300, 300, 5);
 
-	pcl::PointCloud<pcl::PointXYZ> first(cloud);
-	first.resize(100);
-	
-	//nd.addPointCloud(T.translation(), cloud, 0.06, 100.0, 0.25, 1e7);
-	nd.loadPointCloud(cloud, 100);
-	nd.computeNDTCells();
+    pcl::PointCloud<pcl::PointXYZ> first(cloud);
+    first.resize(100);
+
+    //nd.addPointCloud(T.translation(), cloud, 0.06, 100.0, 0.25, 1e7);
+    nd.loadPointCloud(cloud, 100);
+    nd.computeNDTCells();
 
     nd.writeToJFF("loam.jff");// const char*
 }

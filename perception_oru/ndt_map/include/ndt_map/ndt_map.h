@@ -235,8 +235,8 @@ public:
     	* @param sensor_noise The expected standard deviation of the sensor noise
     	*/
     virtual void addPointCloud(const Eigen::Vector3d &origin, const pcl::PointCloud<pcl::PointXYZ> &pc,
-    						   double classifierTh = 0.06, double maxz = 100.0, double sensor_noise = 0.25, 
-    						   double occupancy_limit = 255);
+                               double classifierTh = 0.06, double maxz = 100.0, double sensor_noise = 0.25,
+                               double occupancy_limit = 255);
 
     /**
     * This interface updates only the end points into the map without raytracing
