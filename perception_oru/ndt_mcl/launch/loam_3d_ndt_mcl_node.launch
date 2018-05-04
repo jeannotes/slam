@@ -3,7 +3,7 @@
     <node pkg="velodyne_pointcloud" type="cloud_node" name="convert_veloscans">
 	<param name="calibration" value="$(find ndt_fuser)/launch/velo16.yaml" />
     </node>
-    <node pkg="ndt_mcl" type="3d_ndt_mcl_node" required="true" name="NDTMCL3D">
+    <node pkg="ndt_mcl" type="3d_ndt_mcl_node" required="true" name="NDTMCL3D" output="screen">
 	<param name="points_topic" value="/velodyne_points" />
 	<param name="odometry_topic" value="/odom" />
 	<param name="map_resolution" value="0.4" />
