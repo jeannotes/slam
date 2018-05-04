@@ -156,7 +156,7 @@ public:
 
         fprintf(stderr, "*** FORCE SIR = %d****", forceSIR);
         mcl_pub = nh_.advertise<nav_msgs::Odometry>("ndt_mcl", 10);
-		mcl_cloud = nh_.advertise<sensor_msgs::PointCloud2> ("/perception_loam", 10);
+        mcl_cloud = nh_.advertise<sensor_msgs::PointCloud2> ("/perception_loam", 10);
 
         // Prepare the callbacks and message filters
 
@@ -168,8 +168,8 @@ public:
         param_nh.param<std::string>("points_topic", points_topic, "points");
         ///topic to wait for odometry messages
         param_nh.param<std::string>("odometry_topic", odometry_topic, "odometry");
-		// to visualize
-		ndt_viz.win3D->start_main_loop_own_thread();
+        // to visualize
+        ndt_viz.win3D->start_main_loop_own_thread();
 
         points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, points_topic, 1);
         odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_, odometry_topic, 10);
@@ -189,7 +189,7 @@ public:
     //new callback: looks up transforms on TF
     void callback(const sensor_msgs::PointCloud2::ConstPtr& cloud_in,
                   const nav_msgs::Odometry::ConstPtr& odo_in) {
-        
+
         mcl_m.lock();
         //compute new odo and point cloud
         Eigen::Quaterniond qd;
@@ -215,10 +215,10 @@ public:
             if (!hasInitialPose) {
                 //can't do anything, wait for pose message...
                 mcl_m.unlock();
-				fprintf(stderr, "*********FAIL********");
+                fprintf(stderr, "*********FAIL********");
                 return;
             }
-			FIST_POSE = Todo;
+            FIST_POSE = Todo;
             //initialize filter
             Eigen::Vector3d tr = initPoseT.translation();
             Eigen::Vector3d rot = initPoseT.rotation().eulerAngles(0, 1, 2);
@@ -258,35 +258,35 @@ public:
             if (pcounter % 500 == 0) {
                 ndt_viz.clear();
                 ndt_viz.plotNDTSAccordingToOccupancy(-1, &ndtmcl->map);
-            	ndt_viz.displayParticles();
-				ndt_viz.displayTrajectory();
+                ndt_viz.displayParticles();
+                ndt_viz.displayTrajectory();
             }
 
             //if(pcounter%10==0){
 
             ndt_viz.clearParticles();
-			/*
+            /*
             for (int i = 0; i < ndtmcl->pf.size(); i++) {
                 //double x, y, z;
                 //ndtmcl->pf.pcloud[i].getXYZ(x, y, z);
                 //ndt_viz.addParticle(x, y, z + 0.5, 1.0, 1.0, 1.0);
             }
-            originally, it is used to show particles, 
+            originally, it is used to show particles,
             now I changed to show lidar points
             */
             pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
-			pcl::transformPointCloud (cloud, transformed_cloud, ndtmcl->pf.getMean());
-            for (int i=0; i< cloud.points.size(); i++){
-				ndt_viz.addParticle(transformed_cloud.points[i].x, 
-									transformed_cloud.points[i].y,
-									transformed_cloud.points[i].z, 1.0, 1.0, 1.0);
-			}
+            pcl::transformPointCloud (cloud, transformed_cloud, ndtmcl->pf.getMean());
+            for (int i = 0; i < cloud.points.size(); i++) {
+                ndt_viz.addParticle(transformed_cloud.points[i].x,
+                                    transformed_cloud.points[i].y,
+                                    transformed_cloud.points[i].z, 1.0, 1.0, 1.0);
+            }
 
             Eigen::Affine3d mean = ndtmcl->pf.getMean();
-			//optimized trajectory red line
+            //optimized trajectory red line
             ndt_viz.addTrajectoryPoint(mean.translation()[0], mean.translation()[1], mean.translation()[2], 1.0, 0, 0);
             Eigen::Vector3d tr = Tcum.translation();
-			//odo trajectory green line
+            //odo trajectory green line
             ndt_viz.addTrajectoryPoint(tr[0], tr[1], tr[2] + 0.5, 0.0, 1.0, 0);
 
             //ndt_viz.addPointCloud(cloudT,1,0,0);
@@ -294,10 +294,10 @@ public:
             ndt_viz.displayTrajectory();
             ndt_viz.win3D->setCameraPointingToPoint(mean.translation()[0], mean.translation()[1], 3.0);
             ndt_viz.repaint();
-		}
+        }
         //publish pose
         sendROSOdoMessage(ndtmcl->pf.getMean(), odo_in->header.stamp);
-        
+
         mcl_m.unlock();
     }
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -335,24 +335,24 @@ public:
         return true;
     }
 
-	template <typename PointT>
-	void publishCloudMsg(ros::Publisher& publisher,
-	                            const pcl::PointCloud<PointT>& cloud,
-	                            const ros::Time& stamp,
-	                            std::string frameID) {
-	    sensor_msgs::PointCloud2 msg;
-	    pcl::toROSMsg(cloud, msg);
-	    msg.header.stamp = stamp;
-	    msg.header.frame_id = frameID;
-	    publisher.publish(msg);
-	}
-	/*
-todo : we have the transformation matrix, and the cloud, attention
-the tum is actually the transformation matrix to the original(map), we just have to use this
-also, we could use Pt(this time's transformation to the real origin to odometry(very first time))
-we could first go to using Pt to go the the very first odometry, and again use P0
-to transformate to the map_origin(P0 is actually the first time we initialize a robot)
-*/
+    template <typename PointT>
+    void publishCloudMsg(ros::Publisher& publisher,
+                         const pcl::PointCloud<PointT>& cloud,
+                         const ros::Time& stamp,
+                         std::string frameID) {
+        sensor_msgs::PointCloud2 msg;
+        pcl::toROSMsg(cloud, msg);
+        msg.header.stamp = stamp;
+        msg.header.frame_id = frameID;
+        publisher.publish(msg);
+    }
+    /*
+    todo : we have the transformation matrix, and the cloud, attention
+    the tum is actually the transformation matrix to the original(map), we just have to use this
+    also, we could use Pt(this time's transformation to the real origin to odometry(very first time))
+    we could first go to using Pt to go the the very first odometry, and again use P0
+    to transformate to the map_origin(P0 is actually the first time we initialize a robot)
+    */
 };
 
 int main(int argc, char **argv) {
