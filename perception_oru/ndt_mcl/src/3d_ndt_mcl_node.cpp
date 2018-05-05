@@ -48,6 +48,7 @@
 //#include "ndt_mcl/impl/ndt_mcl.hpp"
 #include "ndt_mcl/3d_ndt_mcl.h"
 #include <ndt_map/ndt_map.h>
+#include <fstream>
 
 #define SYNC_FRAMES 20
 
@@ -85,10 +86,10 @@ private:
     message_filters::Synchronizer< PointsOdomSync > *sync_po_;
 
     std::string tf_base_link, tf_sensor_link, points_topic, odometry_topic;
+	std::ofstream file1, file2; 
+
 public:
     NDTMCL3DNode(ros::NodeHandle param_nh) {
-
-		
         // Prepare Pose offsets
 
         bool use_sensor_pose, use_initial_pose;
@@ -264,28 +265,22 @@ public:
                 ndt_viz.displayTrajectory();
             }
 
-            //if(pcounter%10==0){
-
             ndt_viz.clearParticles();
-            
+			//draw particles and save particle likelihood
             for (int i = 0; i < ndtmcl->pf.size(); i++) {
                 double x, y, z;
                 ndtmcl->pf.pcloud[i].getXYZ(x, y, z);
                 ndt_viz.addParticle(x, y, z + 0.5, 0.5, 1.0, 0.5);
             }
-			/*
-            originally, it is used to show particles,
-            now I changed to show lidar points
-            */
             pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
-            pcl::transformPointCloud (cloud, transformed_cloud, ndtmcl->pf.getMax());
+            pcl::transformPointCloud (cloud, transformed_cloud, ndtmcl->pf.getTop3());
             for (int i = 0; i < cloud.points.size(); i++) {
                 ndt_viz.addParticle(transformed_cloud.points[i].x,
                                     transformed_cloud.points[i].y,
                                     transformed_cloud.points[i].z, 1.0, 1.0, 1.0);
             }
 
-            Eigen::Affine3d mean = ndtmcl->pf.getMax();
+            Eigen::Affine3d mean = ndtmcl->pf.getTop3();
             //optimized trajectory red line
             ndt_viz.addTrajectoryPoint(mean.translation()[0], mean.translation()[1], mean.translation()[2], 1.0, 0, 0);
             Eigen::Vector3d tr = Tcum.translation();
@@ -299,7 +294,7 @@ public:
             ndt_viz.repaint();
         }
         //publish pose
-        sendROSOdoMessage(ndtmcl->pf.getMean(), odo_in->header.stamp);
+        //sendROSOdoMessage(ndtmcl->pf.getMean(), odo_in->header.stamp);
 
         mcl_m.unlock();
     }

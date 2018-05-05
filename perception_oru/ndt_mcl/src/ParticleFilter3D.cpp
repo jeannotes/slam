@@ -1,8 +1,5 @@
 #include <ndt_mcl/ParticleFilter3D.h>
-/*
- * Implementation for the 6dof pose particle filtering
- */
-
+#include <ros/ros.h>
 /**
  * Initializes the filter using normally distributed random variables with given means (m-values) and standard deviations (v-values)
  */
@@ -85,7 +82,7 @@ void ParticleFilter3D::SIRUpdate() {
 
             /// Check for index error
             if (k >= NumOfParticles || i >= NumOfParticles) {
-                fprintf(stderr, "SIR error i=%d k=%d N=%d", i, k, NumOfParticles);
+                //fprintf(stderr, "SIR error i=%d k=%d N=%d", i, k, NumOfParticles);
                 break; ///Leave the loop
             }
             tmp[i] = pcloud[k];
@@ -103,7 +100,8 @@ void ParticleFilter3D::SIRUpdate() {
         }
     }//While
 
-    if (i < (NumOfParticles - 1)) fprintf(stderr, "SIR error(3) i=%d k=%d N=%d\n", i, k, NumOfParticles);
+    //if (i < (NumOfParticles - 1)) 
+		//fprintf(stderr, "SIR error(3) i=%d k=%d N=%d\n", i, k, NumOfParticles);
     while (i < NumOfParticles) { ///Make sure that the vector is filled
         if (k >= NumOfParticles) k = NumOfParticles - 1;
         tmp[i] = pcloud[k];
@@ -204,6 +202,15 @@ Eigen::Affine3d ParticleFilter3D::getMean() {
     //Eigen::Translation3d v(mx,my,mz);
 }
 
+
+bool compareByLength(const PoseParticle &a, const PoseParticle &b)
+{
+	// smallest comes first
+    //return a.p < b.p;
+	// bigger comes first
+	return a.p > b.p;
+}
+
 Eigen::Affine3d ParticleFilter3D::getMax(){
     double mx = 0, my = 0, mz = 0;
     //Eigen::Quaternion<double> qm;
@@ -213,17 +220,24 @@ Eigen::Affine3d ParticleFilter3D::getMax(){
 
     Eigen::Matrix3d sumRot = Eigen::Matrix3d::Zero();
 	double max_p = 0;
-    for (unsigned int i = 0; i < pcloud.size(); i++) {
-        //Eigen::Quaternion<double> q(pcloud[i].T.rotation());
-        //qm=qm+pcloud[i].p * q;
-        if (pcloud[i].lik <= max_p)
-			continue;
-		max_p = pcloud[i].p;
+	std::sort(pcloud.begin(), pcloud.end(), compareByLength);
+
+	for (int i = 0;i < pcloud.size(); i++){
+		outf<<pcloud[i].p<<" ";
+	}
+	outf<<endl;
+	
+    for (unsigned int i = 0 ; i < 1 ; i++) {//pcloud.size()
+
         Eigen::Vector3d tr = pcloud[i].T.translation();
+		/*
         mx += pcloud[i].p * tr[0];
         my += pcloud[i].p * tr[1];
         mz += pcloud[i].p * tr[2];
-
+		*/
+		mx += tr[0];
+        my += tr[1];
+        mz += tr[2];
         //Get as euler
         Eigen::Vector3d rot = pcloud[i].T.rotation().eulerAngles(0, 1, 2);
         roll_x += pcloud[i].p * cos(rot[0]);
@@ -237,24 +251,56 @@ Eigen::Affine3d ParticleFilter3D::getMax(){
 
         sumRot += pcloud[i].p * pcloud[i].T.rotation();
     } 
-
+	ROS_INFO("%2.4f, %2.4f, %2.4f,", pcloud[0].p, pcloud[1].p, pcloud[2].p);
     Eigen::JacobiSVD<Eigen::Matrix3d> svd(sumRot,  Eigen::ComputeFullU | Eigen::ComputeFullV);
     Eigen::Matrix3d averageRot = svd.matrixU() * svd.matrixV().transpose();
 
     Eigen::Affine3d ret;
-    ret.translation() = Eigen::Vector3d(mx, my, mz);
+    ret.translation() = Eigen::Vector3d(mx-0.5, my, mz);
     ret.linear() = averageRot;
-    return ret; //Eigen::Translation3d v(mx,my,mz)*Eigen::Rotation3d(averageRot);
-
-    //	return xyzrpy2affine(mx,my,mz, atan2(roll_y,roll_x), atan2(pitch_y,pitch_x), atan2(yaw_y,yaw_x));
-
-
-    //qm.normalize();
-    //Eigen::Matrix3d m;
-    //m = qm.toRotationMatrix();
-    //Eigen::Translation3d v(mx,my,mz);
+    return ret;
 }
 
+Eigen::Affine3d ParticleFilter3D::getTop3(){
+	double mx = 0, my = 0, mz = 0;
+	//Eigen::Quaternion<double> qm;
+	double roll_x = 0, roll_y = 0;
+	double pitch_x = 0, pitch_y = 0;
+	double yaw_x = 0, yaw_y = 0;
+
+	Eigen::Matrix3d sumRot = Eigen::Matrix3d::Zero();
+	double max_p = 0;
+	std::sort(pcloud.begin(), pcloud.end(), compareByLength);
+	for (unsigned int i = 0; i < 3; i++) {
+
+		Eigen::Vector3d tr = pcloud[i].T.translation();
+		mx += tr[0];
+        my += tr[1];
+        mz += tr[2];
+
+		//Get as euler
+		Eigen::Vector3d rot = pcloud[i].T.rotation().eulerAngles(0, 1, 2);
+		roll_x += pcloud[i].p * cos(rot[0]);
+		roll_y += pcloud[i].p * sin(rot[0]);
+
+		pitch_x += pcloud[i].p * cos(rot[1]);
+		pitch_y += pcloud[i].p * sin(rot[1]);
+
+		yaw_x += pcloud[i].p * cos(rot[2]);
+		yaw_y += pcloud[i].p * sin(rot[2]);
+
+		sumRot += pcloud[i].p * pcloud[i].T.rotation();
+	} 
+	ROS_INFO("%2.4f, %2.4f, %2.4f,", pcloud[0].p, pcloud[1].p, pcloud[2].p);
+
+	Eigen::JacobiSVD<Eigen::Matrix3d> svd(sumRot,  Eigen::ComputeFullU | Eigen::ComputeFullV);
+	Eigen::Matrix3d averageRot = svd.matrixU() * svd.matrixV().transpose();
+
+	Eigen::Affine3d ret;
+	ret.translation() = Eigen::Vector3d(mx/3, my/3, mz/3);
+	ret.linear() = averageRot;
+	return ret;
+}
 
 #if 0 // no one cares
 Eigen::Matrix<double, 7, 7> ParticleFilter3D::getCov() {

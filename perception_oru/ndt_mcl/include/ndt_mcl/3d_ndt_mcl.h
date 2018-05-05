@@ -34,8 +34,8 @@ public:
     /**
     * Constructor
      */
-    NDTMCL3D(double map_resolution, lslgeneric::NDTMap &nd_map, double zfilter):
-        map(new lslgeneric::LazyGrid(map_resolution)), SIR_varP_threshold(0.006), SIR_max_iters_wo_resampling(25) {
+    NDTMCL3D(double map_resolution, lslgeneric::NDTMap &nd_map, double zfilter)://SIR_varP_threshold 0.006 SIR_max_iters_wo_resampling 25
+        map(new lslgeneric::LazyGrid(map_resolution)), SIR_varP_threshold(0.01), SIR_max_iters_wo_resampling(40) {
         isInit = false;
         forceSIR = false;
         resolution = map_resolution;

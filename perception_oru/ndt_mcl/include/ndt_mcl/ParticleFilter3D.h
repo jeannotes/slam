@@ -11,17 +11,28 @@
 #include <time.h>
 #include <string.h>
 #include <vector>
+#include <algorithm>
 #include <Eigen/Core>
 #include "ndt_mcl/PoseParticle.h"
 #include "ndt_mcl/ownRandom.h"
+#include <fstream>
 
+using namespace std;
 
 class ParticleFilter3D {
 public:
+	
+	ofstream outf; 
     std::vector<PoseParticle> pcloud;	      ///< Particle distribution
     ownRandom myrand;                 			///< The random number class
 
-    ParticleFilter3D() {}
+    ParticleFilter3D() {
+		outf.open("sort.txt");
+	}
+
+	~ParticleFilter3D() {
+		outf.close();
+	}
 
     /**
      * Initializes the filter by sampling from normal distribution with
@@ -57,6 +68,7 @@ public:
     Eigen::Affine3d getMean();
     //Eigen::Matrix<double,7,7> getCov();
 	Eigen::Affine3d getMax();
+	Eigen::Affine3d getTop3();
 
 
     /**
@@ -71,8 +83,6 @@ public:
         Eigen::Translation3d v(x, y, z);
         return (v * m);
     }
-
-
 
 private:
 

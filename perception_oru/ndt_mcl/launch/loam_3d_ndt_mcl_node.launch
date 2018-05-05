@@ -12,7 +12,7 @@
 	<param name="sensor_pose_x" value="0" />
 	<param name="sensor_pose_y" value="0" />
 	<param name="sensor_pose_z" value="0" />
-	<param name="sensor_pose_t" value="2" />
+	<param name="sensor_pose_t" value="-M_PI/2" />
 
 	<param name="set_initial_pose" value="true" />
 	<param name="pose_init_x" value="0" />
