@@ -165,6 +165,7 @@ private:
     }
 
 
+    bool point_map_first;
     float _scanPeriod;          ///< time per scan
     const int _stackFrameNum;
     const int _mapFrameNum;

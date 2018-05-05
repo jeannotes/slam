@@ -38,6 +38,7 @@
 #include <Eigen/Eigenvalues>
 #include <Eigen/QR>
 #include <Eigen/Eigen>
+#include <Eigen/Geometry> 
 
 namespace loam {
 
@@ -186,6 +187,7 @@ bool LaserMapping::setup(ros::NodeHandle& node,
         }
     }
 
+	point_map_first = true;
 
     // advertise laser mapping topics
     _pubLaserCloudSurround = node.advertise<sensor_msgs::PointCloud2> ("/laser_cloud_surround", 1);
@@ -1039,18 +1041,37 @@ void LaserMapping::publishResult() {
     for (int i = 0; i < laserCloudFullResNum; i++) {
         pointAssociateToMap(_laserCloudFullRes->points[i], _laserCloudFullRes->points[i]);
     }
+	pcl::PointCloud<pcl::PointXYZ> _laserCloudFullRes_tr; 
     accumulate_laserCloudFullRes += *_laserCloudFullRes;
     // publish transformed full resolution input cloud
     publishCloudMsg(_pubLaserCloudFullRes, *_laserCloudFullRes, _timeLaserOdometry, "/camera_init");
+
+
+	////////////////
+	////////////////
+	////////////////
     publishCloudMsg(_pubLaserCloudFullRes_all, accumulate_laserCloudFullRes, _timeLaserOdometry, "/camera_init");
 
-    static bool point_map_first = true;
+	_laserCloudFullRes_tr.points.resize(_laserCloudFullRes->size());
+	for (int p =0; p < _laserCloudFullRes->size(); p++){
+		_laserCloudFullRes_tr.points[p].x = _laserCloudFullRes->points[p].x;
+		_laserCloudFullRes_tr.points[p].y = _laserCloudFullRes->points[p].y;
+		_laserCloudFullRes_tr.points[p].z = _laserCloudFullRes->points[p].z;
+	}
     Eigen::Affine3d Tnow;
     if (point_map_first) {
-        //map->addPointCloud(Tnow.translation(), *_laserCloudFullRes, 0.1, 100.0, 0.1);
-        //map->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, Tnow.translation(), 0.1);
+		Tnow.setIdentity();
+		map->initialize(Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2), 300, 300, 15);
+        map->addPointCloud(Tnow.translation(), _laserCloudFullRes_tr, 0.1, 100.0, 0.1);
+	    map->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, Tnow.translation(), 0.1);
+        
         point_map_first = false;
     }
+	Eigen::Matrix3f m ;
+	m = Eigen::AngleAxisf(0.25*M_PI, Eigen::Vector3f::UnitY())
+	  * Eigen::AngleAxisf(0.5*M_PI,  Eigen::Vector3f::UnitX())
+	  * Eigen::AngleAxisf(0.33*M_PI, Eigen::Vector3f::UnitZ());
+	
     /*
     Todo, add ndt-viewer here and map transformation
     */
