@@ -50,7 +50,7 @@ public:
 
     Eigen::Affine3d getMean();
     //Eigen::Matrix<double,7,7> getCov();
-
+	Eigen::Affine3d getMax();
 
 
     /**

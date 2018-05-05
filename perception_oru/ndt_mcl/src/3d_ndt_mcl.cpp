@@ -201,7 +201,11 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
 
             for (int n = 0; n < ndts.size(); n++) {
                 Eigen::Vector3d m = T * ndts[n]->getMean();
-
+/*
+T is overall translation, ndts[n]->getMean() is the cell center(built from local pointcloud)
+here it means to translate wholly, so that it can be registered with the map
+see below, point P is the translated point. after that use this to find corresponding cell and get score.
+*/
                 if (m[2] < zfilt_min) continue;
 
                 lslgeneric::NDTCell *cell;

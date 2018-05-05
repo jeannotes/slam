@@ -9,7 +9,8 @@
 	<param name="map_resolution" value="0.4" />
 	<!-- Specific sensor offset parameters for the example file -->
 	<param name="set_sensor_pose" value="true" />
-	<param name="sensor_pose_x" value="0" />
+	<param name="sensor_pose_x" value="-1" />
+	<param name="sensor_pose_y" value="0" />
 	<param name="sensor_pose_z" value="0" />
 	<param name="sensor_pose_t" value="0" />
 

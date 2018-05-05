@@ -255,7 +255,7 @@ public:
 
         if (do_visualize) {
             pcounter++;
-            if (pcounter % 500 == 0) {
+            if (pcounter % 5000 == 0) {
                 ndt_viz.clear();
                 ndt_viz.plotNDTSAccordingToOccupancy(-1, &ndtmcl->map);
                 ndt_viz.displayParticles();
@@ -265,24 +265,25 @@ public:
             //if(pcounter%10==0){
 
             ndt_viz.clearParticles();
-            /*
+            
             for (int i = 0; i < ndtmcl->pf.size(); i++) {
-                //double x, y, z;
-                //ndtmcl->pf.pcloud[i].getXYZ(x, y, z);
-                //ndt_viz.addParticle(x, y, z + 0.5, 1.0, 1.0, 1.0);
+                double x, y, z;
+                ndtmcl->pf.pcloud[i].getXYZ(x, y, z);
+                ndt_viz.addParticle(x, y, z + 0.5, 0.5, 1.0, 0.5);
             }
+			/*
             originally, it is used to show particles,
             now I changed to show lidar points
             */
             pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
-            pcl::transformPointCloud (cloud, transformed_cloud, ndtmcl->pf.getMean());
+            pcl::transformPointCloud (cloud, transformed_cloud, ndtmcl->pf.getMax());
             for (int i = 0; i < cloud.points.size(); i++) {
                 ndt_viz.addParticle(transformed_cloud.points[i].x,
                                     transformed_cloud.points[i].y,
                                     transformed_cloud.points[i].z, 1.0, 1.0, 1.0);
             }
 
-            Eigen::Affine3d mean = ndtmcl->pf.getMean();
+            Eigen::Affine3d mean = ndtmcl->pf.getMax();
             //optimized trajectory red line
             ndt_viz.addTrajectoryPoint(mean.translation()[0], mean.translation()[1], mean.translation()[2], 1.0, 0, 0);
             Eigen::Vector3d tr = Tcum.translation();
