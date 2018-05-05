@@ -6,9 +6,11 @@
 /**
  * Initializes the filter using normally distributed random variables with given means (m-values) and standard deviations (v-values)
  */
-void ParticleFilter3D::initializeNormalRandom(unsigned int NumParticles, double mx, double my, double mz, double mroll, double mpitch, double myaw,
-        double vx, double vy, double vz, double vroll, double vpitch, double vyaw) {
-    for (unsigned int i = 0; i < NumParticles; i++) {
+void ParticleFilter3D::initializeNormalRandom(unsigned int NumParticles, double mx, double my, double mz, 
+												double mroll, double mpitch, double myaw,
+										        double vx, double vy, double vz, 
+        										double vroll, double vpitch, double vyaw) {
+	for (unsigned int i = 0; i < NumParticles; i++) {
 
         double x = mx + myrand.normalRandom() * vx;
         double y = my + myrand.normalRandom() * vy;
@@ -23,6 +25,37 @@ void ParticleFilter3D::initializeNormalRandom(unsigned int NumParticles, double 
         P.p = 1.0 / (double) NumParticles;
         pcloud.push_back(P);
     }
+}
+
+/*
+* initialize particle filter evenly
+	-vy
+-vx  0  vx		something  like this
+	vy
+*/
+void ParticleFilter3D::initializeAverage(unsigned int NumParticles, double mx, double my, double mz, 
+											double mroll, double mpitch, double myaw,
+											double vx, double vy, double vz, 
+											double vroll, double vpitch, double vyaw){
+	int width = std::sqrt(NumParticles);
+	double half_per_distance = 2 * vx / width;
+	for (int i = -width/2; i < width/2; i++) {
+		for (int j = -width/2; j < width/2; j++){
+
+			double x = mx + half_per_distance * i;
+			double y = my + half_per_distance * j;
+			double z = mz + myrand.normalRandom() * vz;
+
+			double roll 	= mroll + myrand.normalRandom() * vroll;
+			double pitch = mpitch + myrand.normalRandom() * vpitch;
+			double yaw	= myaw + myrand.normalRandom() * vyaw;
+
+			PoseParticle P(x, y, z, roll, pitch, yaw);
+			P.lik = 1.0;
+			P.p = 1.0 / (double) NumParticles;
+			pcloud.push_back(P);
+		}
+	}
 }
 
 /**

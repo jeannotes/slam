@@ -88,6 +88,7 @@ private:
 public:
     NDTMCL3DNode(ros::NodeHandle param_nh) {
 
+		
         // Prepare Pose offsets
 
         bool use_sensor_pose, use_initial_pose;
@@ -227,7 +228,8 @@ public:
             Tcum = initPoseT;
 
             ndtmcl->initializeFilter(tr[0], tr[1], tr[2], rot[0], rot[1], rot[2], 0.5, 0.5, 0.1, 2.0 * M_PI / 180.0, 2.0 * M_PI / 180.0, 2.0 * M_PI / 180.0, 100);
-            //ndt_viz.plotNDTMap(&ndtmcl->map,0,1.0,1.0,true, false);
+			
+			//ndt_viz.plotNDTMap(&ndtmcl->map,0,1.0,1.0,true, false);
             ndt_viz.plotNDTSAccordingToOccupancy(-1, &ndtmcl->map);
             isFirstLoad = false;
             mcl_m.unlock();

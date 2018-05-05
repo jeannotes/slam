@@ -27,8 +27,14 @@ public:
      * Initializes the filter by sampling from normal distribution with
      * mean in @p0 and variance defined by @variance
      */
-    void initializeNormalRandom(unsigned int NumParticles, double mx, double my, double mz, double mroll, double mpitch, double myaw,
-                                double vx, double vy, double vz, double vroll, double vpitch, double vyaw);
+    void initializeNormalRandom(unsigned int NumParticles, double mx, double my, double mz, 
+    							double mroll, double mpitch, double myaw,
+                                double vx, double vy, double vz, 
+                                double vroll, double vpitch, double vyaw);
+	void initializeAverage(unsigned int NumParticles, double mx, double my, double mz, 
+							double mroll, double mpitch, double myaw,
+							double vx, double vy, double vz, 
+							double vroll, double vpitch, double vyaw);
 
     /**
      * SIR Update for the filter
