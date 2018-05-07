@@ -76,9 +76,9 @@ public:
      * \param  moving
      *   The output transformation registers this point cloud to \c fixed.
      * \param  T
-     *   This is an input/output parameter. The initial value of \c T
-     *   gives the initial pose estimate of \c moving. When the
-     *   algorithm terminates, \c T holds the registration result.
+     *   This is an input/output parameter. The initial value of T
+     *   gives the initial pose estimate of  moving. When the
+     *   algorithm terminates,  T holds the registration result.
      */
     bool match( pcl::PointCloud<pcl::PointXYZ>& target,
                 pcl::PointCloud<pcl::PointXYZ>& source,
@@ -90,11 +90,11 @@ public:
      * \param  fixed
      *   Reference data.
      * \param  moving
-     *   The output transformation registers this point cloud to \c fixed.
+     *   The output transformation registers this point cloud to  fixed.
      * \param  T
-     *   This is an input/output parameter. The initial value of \c T
-     *   gives the initial pose estimate of \c moving. When the
-     *   algorithm terminates, \c T holds the registration result.
+     *   This is an input/output parameter. The initial value of T
+     *   gives the initial pose estimate of moving. When the
+     *   algorithm terminates, T holds the registration result.
      */
     bool match( NDTMap& target,
                 NDTMap& source,
