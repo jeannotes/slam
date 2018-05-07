@@ -14,6 +14,7 @@
 #include <Eigen/Eigen>
 #include <pcl/point_cloud.h>
 #include <sys/time.h>
+#include <ros/ros.h>
 
 //#define BASELINE
 

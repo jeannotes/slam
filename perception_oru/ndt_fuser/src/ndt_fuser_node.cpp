@@ -360,8 +360,6 @@ public:
     void points2OdomCallback(const sensor_msgs::PointCloud2::ConstPtr& msg_in,
                              const nav_msgs::Odometry::ConstPtr& odo_in) {
 
-        ROS_INFO("got points2OdomCallback()");
-
         Eigen::Quaterniond qd;
         Eigen::Affine3d Tm;
         pcl::PointCloud<pcl::PointXYZ> cloud;
@@ -378,7 +376,6 @@ public:
             Tm.setIdentity();
         } else {
             Tm = last_odom.inverse() * this_odom;
-            std::cout << "delta from last update: " << Tm.translation().transpose() << " " << Tm.rotation().eulerAngles(0, 1, 2)[2] << std::endl;
             //if(Tm.translation().norm()<0.2 && fabs(Tm.rotation().eulerAngles(0,1,2)[2])<(5*M_PI/180.0)) {
             //    message_m.unlock();
             //    return;
@@ -390,10 +387,8 @@ public:
         message_m.unlock();
 
         this->processFrame(cloud, Tm);
-        /////////////////////////MAP PUBLISHIGN///////////////////////////
-        publish_map();
-        ROS_INFO("got points2OdomCallback() - done.");
 
+        publish_map();
     };
 
     // Callback

@@ -51,45 +51,26 @@ void NDTFuserHMT::initialize(Eigen::Affine3d initPos, pcl::PointCloud<pcl::Point
     }
 }
 
-/**
- *
- *
- */
 Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud) {
     if (!isInit) {
-        fprintf(stderr, "NDT-FuserHMT: Call Initialize first!!\n");
+        //fprintf(stderr, "NDT-FuserHMT: Call Initialize first!!\n");
         return Tnow;
     }
     Todom = Todom * Tmotion; //we track this only for display purposes!
     double t0 = 0, t1 = 0, t2 = 0, t3 = 0, t4 = 0, t5 = 0, t6 = 0;
-    ///Set the cloud to sensor frame with respect to base
+    //Set the cloud to sensor frame with respect to base
     lslgeneric::transformPointCloudInPlace(sensor_pose, cloud);
     t0 = getDoubleTime();
-    ///Create local map
+    //Create local map
     lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution * resolution_local_factor));
     ndlocal.guessSize(0, 0, 0, sensor_range, sensor_range, map_size_z);
     ndlocal.loadPointCloud(cloud, sensor_range);
     ndlocal.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
-    //pass through ndlocal and set all cells with vertically pointing normals to non-gaussian :-O
-    /*SpatialIndex *index = ndlocal.getMyIndex();
-      typename SpatialIndexctorItr it = index->begin();
-      while (it != index->end())
-      {
-      NDTCell *cell = dynamic_cast<NDTCell*> (*it);
-      if(cell!=NULL)
-      {
-      if(cell->hasGaussian_)
-      {
-      if(cell->getClass() == NDTCell::HORIZONTAL) {
-      cell->hasGaussian_ = false;
-      }
-      }
-      }
-      it++;
-      }*/
 
     t1 = getDoubleTime();
     Eigen::Affine3d Tinit = Tnow * Tmotion;
+
+	//ROS_INFO("disableRegistration:%d,doMultires:%d,be2D:%d",disableRegistration, doMultires, be2D);
     if (disableRegistration) {
         Tnow = Tinit;
         lslgeneric::transformPointCloudInPlace(Tnow, cloud);
@@ -100,7 +81,6 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
             if (ctr % 50 == 0) {
 
                 viewer->plotNDTSAccordingToOccupancy(-1, map);
-                //viewer->plotLocalNDTMap(cloud,resolution);
             }
             viewer->addTrajectoryPoint(Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2) + 0.2, 1, 0, 0);
             viewer->addTrajectoryPoint(Todom.translation()(0), Todom.translation()(1), Todom.translation()(2) + 0.2, 0, 1, 0);
@@ -169,25 +149,19 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
                 Eigen::Affine3d diff_fuse = Tlast_fuse.inverse() * Tnow;
                 if (diff_fuse.translation().norm() > translation_fuse_delta ||
                         diff_fuse.rotation().eulerAngles(0, 1, 2).norm() > rotation_fuse_delta) {
-                    //std::cout<<"F: "<<spose.translation().transpose()<<" "<<spose.rotation().eulerAngles(0,1,2).transpose()<<std::endl;
-                    t4 = getDoubleTime();
-                    //TSV: originally this!
+
                     //map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 1250, map_size_z/2, 0.06);
                     map->addPointCloudMeanUpdate(spose.translation(), cloud, localMapSize, 1e5, 25, 2 * map_size_z, 0.06);
-                    t5 = getDoubleTime();
-                    //map->addPointCloud(spose.translation(),cloud, 0.06, 25);
-                    //map->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, spose.translation(), 0.1);
-                    //t4 = getDoubleTime();
-                    //std::cout<<"match: "<<t3-t2<<" addPointCloud: "<<t5-t4<<" ndlocal "<<t1-t0<<" total: "<<t5-t0<<std::endl;
+
                     Tlast_fuse = Tnow;
                     if (visualize) { //&&ctr%20==0)
 #ifndef NO_NDT_VIZ
-                        if (ctr % 30 == 0) {
+                        if (ctr % 300 == 0) {
                             viewer->plotNDTSAccordingToOccupancy(-1, map);
                             //viewer->plotLocalNDTMap(cloud,resolution);
                         }
                         viewer->addTrajectoryPoint(Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2) + 0.2, 0, 1, 0);
-                        viewer->addTrajectoryPoint(Todom.translation()(0), Todom.translation()(1), Todom.translation()(2) + 0.2, 0.5, 0, 0.5);
+                        viewer->addTrajectoryPoint(Todom.translation()(0), Todom.translation()(1), Todom.translation()(2) + 0.2, 0, 1, 0);
                         viewer->displayTrajectory();
                         viewer->setCameraPointing(Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2) + 3);
                         viewer->repaint();
@@ -225,17 +199,8 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
             Eigen::MatrixXd global_cov = local_cov;
             global_cov.block<3, 3>(0, 0) = global_cov_pos;
 
-            // // Include global constraints? -> roll, pitch and z (height).
-            // // Force initialization to be only yaw. Set roll, pitch and height to zero + put in a covariance with relative low variance in height, roll and pitch...
-            // Tinit.translation()(2) = 0.;
-            // // Get "robust yaw"..., set roll/pitch to zero.
-            // double yaw = Tinit.rotation().eulerAngles(0,1,2)(2);
-            // Tinit.rotation() = Eigen::AngleAxis<double>(0.,Eigen::Vector3d::UnitX()) *
-            //   Eigen::AngleAxis<double>(0.,Eigen::Vector3d::UnitY()) *
-            //   Eigen::AngleAxis<double>(yaw,Eigen::Vector3d::UnitZ()) ;
-
             matcherSC.only_xy_motion = false;//true;
-            //              matcherSC.lock_zrp_motion = true;
+
             match_ret = matcherSC.match(*map, ndlocal, Tinit, global_cov);
             std::cout << matcherSC.nb_match_calls << " successes : " << matcherSC.nb_success_reg << std::endl;
         } else {
@@ -272,12 +237,12 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
                     Tlast_fuse = Tnow;
                     if (visualize) { //&&ctr%20==0)
 #ifndef NO_NDT_VIZ
-                        if (ctr % 2 == 0) {
+                        if (ctr % 300 == 0) {
                             viewer->plotNDTSAccordingToOccupancy(-1, map);
                             //viewer->plotLocalNDTMap(cloud,resolution);
                         }
-                        viewer->addTrajectoryPoint(Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2) + 2.2, 0, 1, 0);
-                        viewer->addTrajectoryPoint(Todom.translation()(0), Todom.translation()(1), Todom.translation()(2) + 2.2, 0.5, 0, 0.5);
+                        viewer->addTrajectoryPoint(Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2) + 2.2, 1, 0, 0);
+                        viewer->addTrajectoryPoint(Todom.translation()(0), Todom.translation()(1), Todom.translation()(2) + 2.2, 0, 1, 0);
                         viewer->displayTrajectory();
                         viewer->setCameraPointing(Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2) + 3);
                         viewer->repaint();
