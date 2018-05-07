@@ -123,7 +123,7 @@ void ParticleFilter3D::normalize() {
     double summ = 0;
 
     for (unsigned i = 0; i < pcloud.size(); i++) {
-        pcloud[i].p *= pcloud[i].lik;
+        pcloud[i].p = pcloud[i].lik;//pcloud[i].p *= pcloud[i].lik;
         summ += pcloud[i].p;
     }
     if (summ > 0) {
