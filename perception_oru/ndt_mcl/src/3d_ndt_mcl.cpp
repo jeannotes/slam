@@ -147,9 +147,10 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
     }
 
     // std::cerr << "motion var(2) : " << m.transpose() << std::endl;
+	//matcher.match(map, cloud, Tmotion, true);
+	//pf.predict(Tmotion, 0, 0, 0, 0, 0, 0);
 
-    pf.predict(Tmotion,
-               m[0], m[1], m[2], m[3], m[4], m[5]);
+	pf.predict(Tmotion, m[0], m[1], m[2], m[3], m[4], m[5]);
 
     double t_pred = getDoubleTime() - time_start;
 

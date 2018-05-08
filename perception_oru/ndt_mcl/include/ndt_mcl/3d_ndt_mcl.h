@@ -14,6 +14,7 @@
 #include <ndt_map/pointcloud_utils.h>
 #include "ndt_mcl/ParticleFilter3D.h"
 #include <tf_conversions/tf_eigen.h>
+#include <ndt_registration/ndt_matcher_d2d_2d.h>
 
 /**
  * NDT MCL - Class implementation
@@ -21,6 +22,7 @@
 class NDTMCL3D {
 public:
     lslgeneric::NDTMap map; 		///<This is my map
+    lslgeneric::NDTMatcherD2D_2D matcher;
     ParticleFilter3D pf; 						///<This is the particle filter
     double resolution;
     double resolution_sensor;
@@ -30,7 +32,7 @@ public:
     double SIR_varP_threshold;
     int SIR_max_iters_wo_resampling;
     std::vector<double> motion_model, motion_model_offset;
-
+	double score_of_NDTMatherD2D;
     /**
     * Constructor
      */
@@ -43,6 +45,13 @@ public:
         counter = 0;
         zfilt_min = zfilter;
         sinceSIR = 0;
+
+        matcher.ITR_MAX = 30;
+        matcher.step_control = true;
+        matcher.n_neighbours = 2;
+		score_of_NDTMatherD2D = 0;
+
+		
         ///First, lets make our target map match the given map
         ///This is done because we want (possibly) lower resolution target map
         double cx, cy, cz;
