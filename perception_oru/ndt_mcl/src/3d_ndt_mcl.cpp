@@ -194,7 +194,8 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
 
 
             //ndts = local_map.pseudoTransformNDT(T);
-            double score = 1;
+            double score = 1; // originally it is 1, I think it should be 0
+            // if no gaussian, score and likelihood should be 0
 
             if (ndts.size() == 0) fprintf(stderr, "ERROR no gaussians in measurement!!!\n");
             Nn = ndts.size();
