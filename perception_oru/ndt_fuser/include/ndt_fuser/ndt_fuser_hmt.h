@@ -35,10 +35,11 @@ public:
     int ctr;
     std::string prefix;
     std::string hmt_map_dir;
+	double scores;
 #ifndef NO_NDT_VIZ
     NDTViz *viewer;
 #endif
-    FILE *fAddTimes, *fRegTimes;
+    FILE *fAddTimes, *fRegTimes, *fScores;
 
     NDTFuserHMT(double map_resolution, double map_size_x_, double map_size_y_, double map_size_z_, double sensor_range_ = 3,
                 bool visualize_ = false, bool be2D_ = false, bool doMultires_ = false, bool fuseIncomplete_ = false, int max_itr = 30,
@@ -89,6 +90,7 @@ public:
         char fname[1000];
         snprintf(fname, 999, "%s_addTime.txt", prefix.c_str());
         fAddTimes = fopen(fname, "w");
+		fScores = fopen("scores.txt", "w");
 
         std::cout << "MAP: resolution: " << resolution << " size " << map_size_x << " " << map_size_y << " " << map_size_z << " sr " << sensor_range << std::endl;
     }
@@ -99,6 +101,7 @@ public:
 #endif
         if (fAddTimes != NULL) fclose(fAddTimes);
         if (fRegTimes != NULL) fclose(fRegTimes);
+		if (fScores != NULL) fclose(fScores);
     }
 
     double getDoubleTime() {

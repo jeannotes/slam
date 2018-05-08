@@ -124,7 +124,7 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
             delete cell;
         }
         //do match
-        if (matcher2D.match( mapLow, ndlocalLow, Tinit, true)) {
+        if (matcher2D.match( mapLow, ndlocalLow, Tinit, scores, true)) {
             //if success, set Tmotion to result
             t2 = getDoubleTime();
             //std::cout<<"success: new initial guess! t= "<<t2-t1<<std::endl;
@@ -135,7 +135,8 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
 
     if (be2D) {
         t2 = getDoubleTime();
-        if (matcher2D.match( *map, ndlocal, Tinit, true) || fuseIncomplete) {
+        if (matcher2D.match( *map, ndlocal, Tinit,scores, true) || fuseIncomplete) {
+			fprintf(fScores, "%lf\n", scores);
             t3 = getDoubleTime();
             Eigen::Affine3d diff = (Tnow * Tmotion).inverse() * Tinit;
             if ((diff.translation().norm() > max_translation_norm ||
@@ -160,7 +161,7 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
                             viewer->plotNDTSAccordingToOccupancy(-1, map);
                             //viewer->plotLocalNDTMap(cloud,resolution);
                         }
-                        viewer->addTrajectoryPoint(Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2) + 0.2, 0, 1, 0);
+                        viewer->addTrajectoryPoint(Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2) + 0.2, 1, 0, 0);
                         viewer->addTrajectoryPoint(Todom.translation()(0), Todom.translation()(1), Todom.translation()(2) + 0.2, 0, 1, 0);
                         viewer->displayTrajectory();
                         viewer->setCameraPointing(Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2) + 3);
