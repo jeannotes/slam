@@ -198,7 +198,7 @@ void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, co
     index_->setSize(map_size(0), map_size(1), map_size(2));
     //lz->initializeAll();
 
-    fprintf(stderr, "centroid is %lf,%lf,%lf (origin: %lf %lf %lf) (map_size %lf %lf %lf) N=%d", centroid(0), centroid(1), centroid(2), origin(0), origin(1), origin(2), map_size(0), map_size(1), map_size(2), (int)pc.size());
+    //fprintf(stderr, "centroid is %lf,%lf,%lf (origin: %lf %lf %lf) (map_size %lf %lf %lf) N=%d", centroid(0), centroid(1), centroid(2), origin(0), origin(1), origin(2), map_size(0), map_size(1), map_size(2), (int)pc.size());
     // ROS_INFO("centroid is %f,%f,%f", centroid(0),centroid(1),centroid(2));
     // ROS_INFO("maxDist is %lf", maxDist);
 
