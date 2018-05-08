@@ -131,6 +131,99 @@ bool NDTMatcherD2D_2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
     return ret;
 }
 
+bool NDTMatcherD2D_2D::match(NDTMap& target,
+		  pcl::PointCloud<pcl::PointXYZ>& source,
+		  Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T,
+		  bool useInitialGuess){
+
+	struct timeval tv_start, tv_end;
+	struct timeval tv_start0, tv_end0;
+	double time_load = 0, time_match = 0, time_combined = 0;
+
+	gettimeofday(&tv_start0, NULL);
+
+	//initial guess
+	pcl::PointCloud<pcl::PointXYZ> sourceCloud = source;
+
+	Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor> Temp, Tinit;
+	Tinit.setIdentity();
+	if (useInitialGuess) {
+	  lslgeneric::transformPointCloudInPlace(T, sourceCloud);
+	  Tinit = T;
+	}
+
+	T.setIdentity();
+	bool ret = false;
+
+#if 0
+	if (isIrregularGrid) {
+
+	  OctTree<PointTarget> pr1;
+	  NDTMap<PointTarget> targetNDT( &pr1 );
+	  targetNDT.loadPointCloud( target );
+	  targetNDT.computeNDTCells();
+
+	  OctTree<PointSource> pr2;
+	  NDTMap<PointSource> sourceNDT( &pr2 );
+	  sourceNDT.loadPointCloud( source );
+	  sourceNDT.computeNDTCells();
+
+	  ret = this->match( targetNDT, sourceNDT, T );
+
+	} else
+#endif
+	{
+
+	  //iterative regular grid
+	  for (int r_ctr = resolutions.size() - 1; r_ctr >= 0;	r_ctr--) {
+
+		  current_resolution = resolutions[r_ctr];
+
+		  LazyGrid prototypeSource(current_resolution);
+		  LazyGrid prototypeTarget(current_resolution);
+
+		  gettimeofday(&tv_start, NULL);
+		  NDTMap targetNDT(target);																  
+
+		  NDTMap sourceNDT( &prototypeSource );
+		  sourceNDT.loadPointCloud( sourceCloud );
+		  sourceNDT.computeNDTCells();
+		  gettimeofday(&tv_end, NULL);
+
+		  time_load += (tv_end.tv_sec - tv_start.tv_sec) * 1000. + (tv_end.tv_usec - tv_start.tv_usec) / 1000.;
+		  Temp.setIdentity();
+
+		  gettimeofday(&tv_start, NULL);
+		  ret = this->match( targetNDT, sourceNDT, Temp, finalscore );
+		  lslgeneric::transformPointCloudInPlace(Temp, sourceCloud);
+		  gettimeofday(&tv_end, NULL);
+
+		  time_match += (tv_end.tv_sec - tv_start.tv_sec) * 1000. + (tv_end.tv_usec - tv_start.tv_usec) / 1000.;
+
+		  //transform moving
+		  T = Temp * T;
+
+#ifndef DO_DEBUG_PROC
+		  std::cout << "RESOLUTION: " << current_resolution << std::endl;
+		  std::cout << "rotation   : " << Temp.rotation().eulerAngles(0, 1, 2).transpose() << std::endl;
+		  std::cout << "translation: " << Temp.translation().transpose() << std::endl;
+		  std::cout << "--------------------------------------------------------\nOverall Transform:\n";
+		  std::cout << "rotation   : " << T.rotation().eulerAngles(0, 1, 2).transpose() << std::endl;
+		  std::cout << "translation: " << T.translation().transpose() << std::endl;
+
+#endif
+	  }
+	}
+	gettimeofday(&tv_end0, NULL);
+	time_combined = (tv_end0.tv_sec - tv_start0.tv_sec) * 1000. + (tv_end0.tv_usec - tv_start0.tv_usec) / 1000.;
+	//std::cout << "load: " << time_load << " match " << time_match << " combined " << time_combined << std::endl;
+	if (useInitialGuess) {
+	  T = T * Tinit;
+	}
+	return ret;
+
+}
+
 bool NDTMatcherD2D_2D::match( NDTMap& targetNDT,
                               NDTMap& sourceNDT,
                               Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T,

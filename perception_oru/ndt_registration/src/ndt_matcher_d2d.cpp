@@ -138,6 +138,9 @@ bool NDTMatcherD2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
     return ret;
 }
 
+/* point to map*/
+
+/* map to map*/
 bool NDTMatcherD2D::match( NDTMap& targetNDT,
                            NDTMap& sourceNDT,
                            Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T,

@@ -80,10 +80,28 @@ public:
      *   gives the initial pose estimate of  moving. When the
      *   algorithm terminates,  T holds the registration result.
      */
-    bool match( pcl::PointCloud<pcl::PointXYZ>& target,
-                pcl::PointCloud<pcl::PointXYZ>& source,
-                Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T,
-                bool useInitialGuess = false);
+     
+	bool match( pcl::PointCloud<pcl::PointXYZ>& target,
+	            pcl::PointCloud<pcl::PointXYZ>& source,
+	            Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T,
+	            bool useInitialGuess = false);
+	/**
+	 * Register two point clouds. Use only 2D rotations This method builds an NDT
+	 * representation of the "fixed" point cloud and uses that for
+	 * registering the "moving" point cloud.
+	 * \param  fixed
+	 *   Reference data. NDT structure is built for this point cloud.
+	 * \param  moving
+	 *   The output transformation registers this point cloud to \c fixed.
+	 * \param  T
+	 *   This is an input/output parameter. The initial value of T
+	 *   gives the initial pose estimate of  moving. When the
+	 *   algorithm terminates,  T holds the registration result.
+	 */
+	bool match( NDTMap& target,
+	            pcl::PointCloud<pcl::PointXYZ>& source,
+	            Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T,
+	            bool useInitialGuess = false);
 
     /**
      * Registers a two ndt maps using only 2D rotation/translation.
