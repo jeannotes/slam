@@ -91,7 +91,7 @@ bool NDTMatcherD2D_2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
             gettimeofday(&tv_start, NULL);
             NDTMap targetNDT( &prototypeTarget );
             targetNDT.loadPointCloud( target );
-            targetNDT.computeNDTCells();
+            targetNDT.computeNDTCells();                                                                
 
             NDTMap sourceNDT( &prototypeSource );
             sourceNDT.loadPointCloud( sourceCloud );
@@ -102,7 +102,7 @@ bool NDTMatcherD2D_2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
             Temp.setIdentity();
 
             gettimeofday(&tv_start, NULL);
-            ret = this->match( targetNDT, sourceNDT, Temp );
+            ret = this->match( targetNDT, sourceNDT, Temp, finalscore );
             lslgeneric::transformPointCloudInPlace(Temp, sourceCloud);
             gettimeofday(&tv_end, NULL);
 
@@ -134,6 +134,7 @@ bool NDTMatcherD2D_2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
 bool NDTMatcherD2D_2D::match( NDTMap& targetNDT,
                               NDTMap& sourceNDT,
                               Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T,
+                              double & scores_final,
                               bool useInitialGuess) {
 
     //locals
@@ -165,6 +166,7 @@ bool NDTMatcherD2D_2D::match( NDTMap& targetNDT,
         if (score_here < score_best) {
             Tbest = T;
             score_best = score_here;
+			scores_final = score_best;
             //std::cout << "best score " << score_best << " at " << itr_ctr << std::endl;
         }
 
@@ -176,7 +178,9 @@ bool NDTMatcherD2D_2D::match( NDTMap& targetNDT,
             }
             if (score_here > score_best) {
                 //std::cout << "crap iterations, best was " << score_best << " last was " << score_here << std::endl;
-                T = Tbest;
+				score_best = score_here;
+				T = Tbest;
+				scores_final = score_best;
             }
             return true;
         }
@@ -214,7 +218,9 @@ bool NDTMatcherD2D_2D::match( NDTMap& targetNDT,
             }
             if (score_here > score_best) {
                 //std::cout<<"crap iterations, best was "<<score_best<<" last was "<<score_here<<std::endl;
-                T = Tbest;
+				score_best = score_here;
+				T = Tbest;
+				scores_final = score_best;
             }
             return true;
         }
@@ -263,7 +269,9 @@ bool NDTMatcherD2D_2D::match( NDTMap& targetNDT,
     double score_here = derivativesNDT_2d(nextNDT, targetNDT, score_gradient_2d, H, false);
     if (score_here > score_best) {
         //std::cout<<"crap iterations, best was "<<score_best<<" last was "<<score_here<<std::endl;
+        score_best = score_here;
         T = Tbest;
+		scores_final = score_best;
     }
     for (unsigned int i = 0; i < nextNDT.size(); i++) {
         if (nextNDT[i] != NULL)
@@ -429,11 +437,11 @@ void NDTMatcherD2D_2D::computeDerivatives_2d(Eigen::Vector3d &x, Eigen::Matrix3d
 #define USE_OMP_NDT_MATCHER_D2D_2D
 //compute the score gradient of a point cloud + transformation to an NDT
 double NDTMatcherD2D_2D::derivativesNDT_2d(
-    const std::vector<NDTCell*> &sourceNDT,
-    const NDTMap &targetNDT,
-    Eigen::MatrixXd &score_gradient,
-    Eigen::MatrixXd &Hessian,
-    bool computeHessian
+								    const std::vector<NDTCell*> &sourceNDT,
+								    const NDTMap &targetNDT,
+								    Eigen::MatrixXd &score_gradient,
+								    Eigen::MatrixXd &Hessian,
+								    bool computeHessian
 ) {
 
 //    struct timeval tv_start, tv_end;

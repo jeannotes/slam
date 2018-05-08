@@ -99,6 +99,7 @@ public:
     bool match( NDTMap& target,
                 NDTMap& source,
                 Eigen::Transform<double, 3, Eigen::Affine, Eigen::ColMajor>& T,
+                double & scores_final,
                 bool useInitialGuess = false);
 
     //compute the score gradient & hessian of a point cloud + transformation to an NDT (assuming a 2D transformation)
@@ -137,6 +138,7 @@ protected:
     int NUMBER_OF_ACTIVE_CELLS;
     int NUMBER_OF_POINTS;
     double lfd1, lfd2;
+	double scores_final;
     int iteration_counter_internal;
     bool isIrregularGrid;
     std::vector<double> resolutions;
