@@ -201,7 +201,9 @@ public:
 
         if (matchLaser) match2D = true;
         fuser = new lslgeneric::NDTFuserHMT(resolution, size_x, size_y, size_z,
-                                            sensor_range, visualize, match2D, false, false, 30, map_name, beHMT, map_dir, true, do_soft_constraints);
+                                            sensor_range, visualize, match2D, 
+                                            false, false, 30, map_name, beHMT, 
+                                            map_dir, true, do_soft_constraints);
 
         fuser->setMotionParams(motion_params);
         fuser->setSensorPose(sensor_pose_);
