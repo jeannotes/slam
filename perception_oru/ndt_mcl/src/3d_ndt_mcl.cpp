@@ -139,22 +139,17 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
     incr << fabs(tr[0]), fabs(tr[1]), fabs(tr[2]), fabs(rot[0]), fabs(rot[1]), fabs(rot[2]);
     Eigen::Matrix<double, 6, 1> m = motion_model_m * incr;
 
-    // std::cerr << "incr : " << incr.transpose() << std::endl;
-    // std::cerr << "motion var : " << m.transpose() << std::endl;
-
     for (size_t i = 0; i < motion_model_offset.size(); i++) {
         m[i] += motion_model_offset[i];
     }
-
-    // std::cerr << "motion var(2) : " << m.transpose() << std::endl;
-	//matcher.match(map, cloud, Tmotion, true);
-	//pf.predict(Tmotion, 0, 0, 0, 0, 0, 0);
-
 	pf.predict(Tmotion, m[0], m[1], m[2], m[3], m[4], m[5]);
 
+/*
+	matcher.match(map, cloud, Tmotion, true);
+	pf.predict(Tmotion, 0, 0, 0, 0, 0, 0);
+*/
     double t_pred = getDoubleTime() - time_start;
 
-   // std::cerr << "cloud points " << cloud.points.size() << " res :" << resolution << " sres: " << resolution_sensor << std::endl;
     lslgeneric::NDTMap local_map(new lslgeneric::LazyGrid(resolution_sensor));
     //local_map.guessSize(0,0,0,30,30,10); //sensor_range,sensor_range,map_size_z);
     local_map.loadPointCloud(cloud);//,30); //sensor_range);
