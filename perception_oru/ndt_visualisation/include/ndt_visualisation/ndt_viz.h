@@ -349,7 +349,7 @@ public:
         //win3D->setCameraPointingToPoint(x/s,y/s,3.0);
         win3D->addObject(&gl_ellipsoids);
         win3D->repaint();
-        fprintf(stderr, "(%lf %lf) s=%lf\n", x / s, y / s, s);
+        // fprintf(stderr, "(%lf %lf) s=%lf\n", x / s, y / s, s);
         for (unsigned int i = 0; i < global_ndts.size(); i++) delete global_ndts[i];
 
     }
