@@ -21,7 +21,9 @@ void NDTFuserHMT::initialize(Eigen::Affine3d initPos, pcl::PointCloud<pcl::Point
         map = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(resolution));
         if (preLoad) {
             char fname[1000];
-            snprintf(fname, 999, "%s/%s_map.jff", hmt_map_dir.c_str(), prefix.c_str());
+			std::cout << "Trying to pre-load maps at " <<
+				hmt_map_dir.c_str() << prefix.c_str() << std::endl;
+            snprintf(fname, 999, "%s/%s.jff", hmt_map_dir.c_str(), prefix.c_str());
             std::cerr << "Loading " << fname << std::endl;
             map->loadFromJFF(fname);
         } else {
@@ -136,7 +138,7 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
     if (be2D) {
         t2 = getDoubleTime();
         if (matcher2D.match( *map, ndlocal, Tinit,scores, true) || fuseIncomplete) {
-			fprintf(fScores, "%lf\n", scores);
+			//fprintf(fScores, "%lf\n", scores);
             t3 = getDoubleTime();
             Eigen::Affine3d diff = (Tnow * Tmotion).inverse() * Tinit;
             if ((diff.translation().norm() > max_translation_norm ||
@@ -144,16 +146,19 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
                 fprintf(stderr, "****  NDTFuserHMT -- ALMOST DEFINATELY A REGISTRATION FAILURE *****\n");
                 Tnow = Tnow * Tmotion;
             } else {
-                Tnow = Tinit;
+                Tnow = Tinit * sensor_pose;
                 lslgeneric::transformPointCloudInPlace(Tnow, cloud);
-                Eigen::Affine3d spose = Tnow * sensor_pose;
+                Eigen::Affine3d spose = Tnow;
                 Eigen::Affine3d diff_fuse = Tlast_fuse.inverse() * Tnow;
                 if (diff_fuse.translation().norm() > translation_fuse_delta ||
                         diff_fuse.rotation().eulerAngles(0, 1, 2).norm() > rotation_fuse_delta) {
 
                     //map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 1250, map_size_z/2, 0.06);
-                    map->addPointCloudMeanUpdate(spose.translation(), cloud, localMapSize, 1e5, 25, 2 * map_size_z, 0.06);
 
+					map->addPointCloudMeanUpdate(spose.translation(), cloud, localMapSize, 1e5, 25, 2 * map_size_z, 0.06);
+/*
+attention, if just localization, we can uncomment it.
+*/
                     Tlast_fuse = Tnow;
                     if (visualize) { //&&ctr%20==0)
 #ifndef NO_NDT_VIZ
@@ -161,6 +166,13 @@ Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl
                             viewer->plotNDTSAccordingToOccupancy(-1, map);
                             //viewer->plotLocalNDTMap(cloud,resolution);
                         }
+						viewer->clearParticles();
+			            for (int i = 0; i < cloud.points.size(); i++) {
+			                viewer->addParticle(cloud.points[i].x,
+			                                    cloud.points[i].y,
+			                                    cloud.points[i].z, 1.0, 1.0, 1.0);
+			            }
+						viewer->displayParticles();
                         viewer->addTrajectoryPoint(Tnow.translation()(0), Tnow.translation()(1), Tnow.translation()(2) + 0.2, 1, 0, 0);
                         viewer->addTrajectoryPoint(Todom.translation()(0), Todom.translation()(1), Todom.translation()(2) + 0.2, 0, 1, 0);
                         viewer->displayTrajectory();

@@ -70,8 +70,11 @@ protected:
     std::string points_topic, laser_topic, map_dir, map_name, odometry_topic,
         world_frame, fuser_frame, init_pose_frame, gt_topic, bag_name;
     double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_;
-    bool visualize, match2D, matchLaser, beHMT, useOdometry, plotGTTrack,
-         initPoseFromGT, initPoseFromTF, initPoseSet, renderGTmap;
+    bool visualize, match2D,/* only match in two dimension */
+		matchLaser/* use laser instead of multi-channel laser */, 
+		 beHMT, useOdometry, plotGTTrack,
+         initPoseFromGT, initPoseFromTF, initPoseSet,
+         renderGTmap, preload/*load the map*/;
 
     double pose_init_x, pose_init_y, pose_init_z,
            pose_init_r, pose_init_p, pose_init_t;
@@ -129,6 +132,9 @@ public:
         param_nh.param("size_x_meters", size_x, 10.);
         param_nh.param("size_y_meters", size_y, 10.);
         param_nh.param("size_z_meters", size_z, 10.);
+
+		//load the map or not
+		param_nh.param("preload", preload, false);
 
         ///range to cutoff sensor measurements
         param_nh.param("sensor_range", sensor_range, 3.);
@@ -262,7 +268,7 @@ public:
             }
             ROS_INFO("Init pose is (%lf,%lf,%lf)", pose_.translation()(0), pose_.translation()(1),
                      pose_.rotation().eulerAngles(0, 1, 2)(0));
-            fuser->initialize(pose_, cloud);
+            fuser->initialize(pose_, cloud, preload);
             nb_added_clouds_++;
         } else {
             //sanity check for odometry

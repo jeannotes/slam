@@ -130,7 +130,7 @@ public:
             return (map_hmt->writeTo() == 0);
         } else {
             char fname[1000];
-            snprintf(fname, 999, "%s/%s_map.jff", hmt_map_dir.c_str(), prefix.c_str());
+            snprintf(fname, 999, "%s/%s.jff", hmt_map_dir.c_str(), prefix.c_str());
             return (map->writeToJFF(fname) == 0);
         }
     }
