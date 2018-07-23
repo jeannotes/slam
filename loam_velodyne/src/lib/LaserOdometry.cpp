@@ -544,7 +544,7 @@ void LaserOdometry::process() {
 // ld2 is the final distance of equation (2)
                     float ld2 = a012 / l12;
 
-                    // TODO: Why writing to a variable that's never read?
+                    //  TODO: Why writing to a variable that's never read?
                     pointProj = pointSel;
                     pointProj.x -= la * ld2;
                     pointProj.y -= lb * ld2;
